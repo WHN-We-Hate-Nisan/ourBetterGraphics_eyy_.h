@@ -12,10 +12,19 @@ struct Vect2 {
 struct Bect2 {
 	int x, y;
 };
-class Vect3 {
+class Bect3 {
 public:
 	int x, y, z;
-	Vect3(int x = 0, int y = 0, int z = 0) {
+	Bect3(int x = 0, int y = 0, int z = 0) {
+		this->x = x;
+		this->y = y;
+		this->z = z;
+	}
+};
+class Vect3 {
+public:
+	float x, y, z;
+	Vect3(float x = 0, float y = 0, float z = 0) {
 		this->x = x;
 		this->y = y;
 		this->z = z;
@@ -145,6 +154,7 @@ void drawBresLine(Bect2 v1, Bect2 v2, unsigned int color) {
 		}
 	}
 }
+
 void matMul(float mat1[][3], float mat2[][3], float ans[][3]) {
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)
@@ -270,6 +280,7 @@ void drawTriangle(float newPoint[][3], unsigned color) {
 	drawBresLine(Bect2{ nx2 + 500, ny2 + 400 }, Bect2{ nx3 + 500, ny3 + 400 }, color);
 	drawBresLine(Bect2{ nx3 + 500, ny3 + 400 }, Bect2{ nx1 + 500, ny1 + 400 }, color);
 }
+
 int getMaxX() {
 	return globalBuffer.width / 2;
 }
@@ -283,3 +294,153 @@ void DDAlgorithm(float x1, float y1, float x2, float y2) {
 void DDAlgorithm(float x1, float y1, float x2, float y2, unsigned color) {
 	drawDDALine(Bect2{ (int)x1,(int)y1 }, Bect2{ (int)x2, (int)y2 }, color);
 }
+
+class Shape3D {
+private:
+	std::vector <Vect3> vertSet;
+	std::vector<Vect3> tempVector;
+	int n;
+	float tempMatrix[4][max_Vertex] = { 0 };
+
+	auto matrixify(std::vector<Vect3> vect) {
+		for (int i = 0; i < 4; i++)
+			for (int k = 0; k < vect.size(); k++)
+				tempMatrix[i][k] = (i == 0) ? vect[k].x : (i == 1) ? vect[k].y : (i == 2) ? vect[k].z : 1;
+		return tempMatrix;
+	}
+	auto matrixify(std::vector<Vect3> vect, float resMat[4][max_Vertex]) {
+		for (int i = 0; i < 4; i++)
+			for (int k = 0; k < vect.size(); k++)
+				resMat[i][k] = (i == 0) ? vect[k].x : (i == 1) ? vect[k].y : (i == 2) ? vect[k].z : 1;
+	}
+	auto vectorify(float matrix[][max_Vertex]) {
+		tempVector.clear();
+		for (int k = 0; k < n; k++)
+			tempVector.push_back( Vect3( matrix[0][k], matrix[1][k] ) );
+		return tempVector;
+	}
+public:
+	Shape3D() {
+		Vect3  A(0, 0, 0),
+			B(0, 0, 100),
+			C(0, 100, 100),
+			D(0, 100, 0),
+			E(100, 100, 0),
+			F(100, 0, 0),
+			G(100, 0, 100),
+			H(100, 100, 100);
+		std::vector <Vect3> arr = { B,C,H,G,A,D,E,F };
+		this->vertSet = arr;
+		this->n = vertSet.size();
+	}
+	Shape3D(std::vector <Vect3> vertSet) {
+		this->vertSet = vertSet;
+		this->n = vertSet.size();
+	}
+	void transformShape(float matA[][4], float matB[][max_Vertex], int n)
+	{
+		float result[4][max_Vertex] = { 0 };
+		for (int i = 0; i < 4; i++)
+			for (int j = 0; j < n; j++)
+				for (int k = 0; k < 4; k++)
+					result[i][j] += matA[i][k] * matB[k][j];
+		this->vertSet = vectorify(result);
+	}
+	void draw() {
+		int X = getMaxX(), Y = getMaxY();
+		for (int i = 1; i < vertSet.size(); i++)
+			DDAlgorithm(vertSet[i - 1].x + X, vertSet[i - 1].y + Y, vertSet[i].x + X, vertSet[i].y + Y);
+		DDAlgorithm(vertSet[vertSet.size() - 1].x + X, vertSet[vertSet.size() - 1].y + Y, vertSet[0].x + X, vertSet[0].y + Y);
+	}
+	void translate(int x, int y, int z)
+	{
+		float tranMatrix[4][4] = {
+									{1,  0,   0,   x },
+									{0,  1,   0,   y },
+									{0,  0,   1,   z },
+									{0,  0,   0,   1 }
+		};
+		transformShape(tranMatrix, matrixify(vertSet), this->n);
+	}
+	void scale(int s)
+	{
+		float tranMatrix[4][4] = { {s,  0,   0,   0 },
+									{0,  s,   0,   0 },
+									{0,  0,   s,   0 },
+									{0,  0,   0,   1 } };
+		transformShape(tranMatrix, matrixify(vertSet), this->n);
+	}
+	void rotateZ(float theeta) {
+		theeta *= pi / 180;
+		float tranMatrix[4][4] = {
+									cos(theeta),    -sin(theeta),   0,  0,
+									sin(theeta),    cos(theeta),    0,  0,
+									0,              0,              1,  0,
+									0,              0,              0,  1
+		};
+		transformShape(tranMatrix, matrixify(vertSet), this->n);
+	}
+	void rotateX(float theeta) {
+		theeta *= pi / 180;
+		float tranMatrix[4][4] = {
+									1,              0,              0,              0,
+									0,              cos(theeta),    -sin(theeta),   0,
+									0,              sin(theeta),    cos(theeta),    0,
+									0,              0,              0,				1
+		};
+		transformShape(tranMatrix, matrixify(vertSet), this->n);
+	}
+	void rotateY(float theeta)
+	{
+		theeta *= pi / 180;
+		float tranMatrix[4][4] = {
+									  cos(theeta),       0,       sin(theeta),       0,
+									  0,                 1,       0,                 0,
+									  -sin(theeta),      0,       cos(theeta),       0,
+									  0,                 0,       0,                 1
+		};
+		transformShape(tranMatrix, matrixify(vertSet), this->n);
+	}
+	void orthographic_projection(bool x, bool y, bool z)
+	{
+		float tranMatrix[4][4] = {
+									!x,     0,          0,      0,
+									0,      !y,         0,      0,
+									0,      0,          !z,     0,
+									0,      0,          0,      1
+		};
+		transformShape(tranMatrix, matrixify(vertSet), this->n);
+	}
+	void perspective_projection(float zprp, float zvp)
+	{
+		float dp = zprp - zvp;
+		float tranMatrix[4][4] = {
+									  1,         0,       0,            0,
+									  0,         1,       0,            0,
+									  0,         0,       -zvp / dp,    zvp * (zprp / dp),
+									  0,         0,       -1 / dp,      zprp / dp
+		};
+		transformShape(tranMatrix, matrixify(vertSet), this->n);
+		float homoMat[4][max_Vertex] = { 0 };
+		matrixify(vertSet, homoMat);
+		for (int i = 0; i < this->n; i++)
+		{
+			homoMat[0][i] /= homoMat[3][i];
+			homoMat[1][i] /= homoMat[3][i];
+			homoMat[2][i] /= homoMat[3][i];
+			homoMat[3][i] = 1;
+		}
+		this->vertSet = vectorify(homoMat);
+	}
+	void drawCube() {
+		int X = getMaxX(), Y = getMaxY();
+		for (int i = 1; i < 4; i++)
+			DDAlgorithm(vertSet[i - 1].x + X, vertSet[i - 1].y + Y, vertSet[i].x + X, vertSet[i].y + Y);
+		DDAlgorithm(vertSet[3].x + X, vertSet[3].y + Y, vertSet[0].x + X, vertSet[0].y + Y);
+		for (int i = 5; i < vertSet.size(); i++)
+			DDAlgorithm(vertSet[i - 1].x + X, vertSet[i - 1].y + Y, vertSet[i].x + X, vertSet[i].y + Y);
+		DDAlgorithm(vertSet[vertSet.size() - 1].x + X, vertSet[vertSet.size() - 1].y + Y, vertSet[4].x + X, vertSet[4].y + Y);
+		for (int i = 0; i <= 3; i++)
+			DDAlgorithm(vertSet[i].x + X, vertSet[i].y + Y, vertSet[4 + i].x + X, vertSet[4 + i].y + Y);
+	}
+};
