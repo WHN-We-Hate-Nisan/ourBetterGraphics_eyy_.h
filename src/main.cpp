@@ -24,154 +24,7 @@ void Products(float matA[][4], float matB[][max_Vertex], float result[][max_Vert
 				result[i][j] += matA[i][k] * matB[k][j];
 }
 
-class poly3d {
-private:
-	std::vector <Vect3> vertSet;
-	int n;
-	float tempMatrix[4][max_Vertex] = { 0 };
-	
-	auto matrixify(std::vector<Vect3> vect) {
-		for (int i = 0; i < 4; i++)
-			for (int k = 0; k < vect.size(); k++)
-				tempMatrix[i][k] = (i == 0) ? vect[k].x : (i == 1) ? vect[k].y : (i == 2) ? vect[k].z : 1;
-		return tempMatrix;
-	}
-	auto matrixify(std::vector<Vect3> vect, float resMat[4][max_Vertex]) {
-		for (int i = 0; i < 4; i++)
-			for (int k = 0; k < vect.size(); k++)
-				resMat[i][k] = (i == 0) ? vect[k].x : (i == 1) ? vect[k].y : (i == 2) ? vect[k].z : 1;
-	}
-	auto vectorify(float matrix[][max_Vertex]) {
-		std::vector<Vect3> temp;
-		for (int k = 0; k < n; k++) 
-			temp.push_back( Vect3( matrix[0][k], matrix[1][k] ) );
-		return temp;
-	}
-public:
-	poly3d() {
-		Vect3  A(0,   0,   0),
-				B(0,   0,   100),
-				C(0,   100, 100),
-				D(0,   100, 0),
-				E(100, 100, 0),
-				F(100, 0,   0),
-				G(100, 0,   100),
-				H(100, 100, 100);
-		std::vector <Vect3> arr = {B,C,H,G,A,D,E,F};
-		this->vertSet = arr;
-		this->n = vertSet.size();
-	}
-	poly3d(std::vector <Vect3> vertSet) {
-		this->vertSet = vertSet;
-		this->n = vertSet.size();
-	}
-	void transformShape(float matA[][4], float matB[][max_Vertex], int n)
-	{
-		float result[4][max_Vertex] = { 0 };
-		for (int i = 0; i < 4; i++)
-			for (int j = 0; j < n; j++)
-				for (int k = 0; k < 4; k++)
-					result[i][j] += matA[i][k] * matB[k][j];
-		this->vertSet = vectorify(result);
-	}
-	void draw() {
-		int X = getMaxX(), Y = getMaxY();
-		for (int i = 1; i < vertSet.size(); i++)
-			DDAlgorithm(vertSet[i - 1].x + X, vertSet[i - 1].y + Y, vertSet[i].x + X, vertSet[i].y + Y);
-		DDAlgorithm(vertSet[vertSet.size() - 1].x + X, vertSet[vertSet.size() - 1].y + Y, vertSet[0].x + X, vertSet[0].y + Y);
-	}
-	void translate(int x, int y, int z)
-	{
-		float tranMatrix[4][4] = {
-									{1,  0,   0,   x },
-									{0,  1,   0,   y },
-									{0,  0,   1,   z },
-									{0,  0,   0,   1 }
-		};
-		transformShape(tranMatrix, matrixify(vertSet), this->n);
-	}
-	void scale(int s)
-	{
-		float tranMatrix[4][4] = {	{s,  0,   0,   0 },
-									{0,  s,   0,   0 },
-									{0,  0,   s,   0 },
-									{0,  0,   0,   1 }};
-		transformShape(tranMatrix, matrixify(vertSet), this->n);
-	}
-	void rotateZ(float theeta) {
-		theeta *= pi / 180;
-		float tranMatrix[4][4] = {
-									cos(theeta),    -sin(theeta),   0,  0,
-									sin(theeta),    cos(theeta),    0,  0,
-									0,              0,              1,  0,
-									0,              0,              0,  1
-		};
-		transformShape(tranMatrix, matrixify(vertSet), this->n);
-	}
-	void rotateX(float theeta) {
-		theeta *= pi / 180;
-		float tranMatrix[4][4] = {
-									1,              0,              0,              0,
-									0,              cos(theeta),    -sin(theeta),   0,
-									0,              sin(theeta),    cos(theeta),    0,
-									0,              0,              0,				1
-		};
-		transformShape(tranMatrix, matrixify(vertSet), this->n);
-	}
-	void rotateY(float theeta)
-	{
-		theeta *= pi / 180;
-		float tranMatrix[4][4] = {
-									  cos(theeta),       0,       sin(theeta),       0,
-									  0,                 1,       0,                 0,
-									  -sin(theeta),      0,       cos(theeta),       0,
-									  0,                 0,       0,                 1
-		};
-		transformShape(tranMatrix, matrixify(vertSet), this->n);
-	}
-	void orthographic_projection(bool x, bool y, bool z)
-	{
-		float tranMatrix[4][4] = {
-									!x,     0,          0,      0,
-									0,      !y,         0,      0,
-									0,      0,          !z,     0,
-									0,      0,          0,      1
-		};
-		transformShape(tranMatrix, matrixify(vertSet), this->n);
-	}
-	void perspective_projection(float zprp, float zvp)
-	{
-		float dp = zprp - zvp;
-		float tranMatrix[4][4] = {
-									  1,         0,       0,            0,
-									  0,         1,       0,            0,
-									  0,         0,       -zvp / dp,    zvp * (zprp / dp),
-									  0,         0,       -1 / dp,      zprp / dp
-		};
-		transformShape(tranMatrix, matrixify(vertSet), this->n);		
-		float homoMat[4][max_Vertex] = { 0 };
-		matrixify(vertSet, homoMat);
-		for (int i = 0; i < this->n; i++)
-		{
-			homoMat[0][i] /= homoMat[3][i];
-			homoMat[1][i] /= homoMat[3][i];
-			homoMat[2][i] /= homoMat[3][i];
-			homoMat[3][i] = 1;
-		}		
-		this->vertSet = vectorify(homoMat);
-	}	
-	void drawCube() {
-		int X = getMaxX(), Y = getMaxY();
-		for (int i = 1; i < 4; i++) 
-			DDAlgorithm(vertSet[i - 1].x + X, vertSet[i - 1].y + Y, vertSet[i].x + X, vertSet[i].y + Y);
-		DDAlgorithm(vertSet[3].x + X, vertSet[3].y + Y, vertSet[0].x + X, vertSet[0].y + Y);
-		for (int i = 5; i < vertSet.size(); i++) 
-			DDAlgorithm(vertSet[i - 1].x + X, vertSet[i - 1].y + Y, vertSet[i].x + X, vertSet[i].y + Y);
-		DDAlgorithm(vertSet[vertSet.size() - 1].x + X, vertSet[vertSet.size() - 1].y + Y, vertSet[4].x + X, vertSet[4].y + Y);
-		for (int i = 0; i <= 3; i++)
-			DDAlgorithm(vertSet[i].x + X, vertSet[i].y + Y, vertSet[4 + i].x + X, vertSet[4 + i].y + Y);
-	}
-};
+
 
 
 //float result[4][100] = { 0 };
@@ -279,43 +132,43 @@ public:
 //}
 
 
-void Transformations() {
-	int x1 = 80, x2 = 60, x3 = 55, y1 = 90, y2 = 105, y3 = 90;
-	int nx1, nx2, nx3, ny1, ny2, ny3;
-	drawBresLine(Bect2{ 500, 0 }, Bect2{ 500, 800 }, 0x90ee90);
-	drawBresLine(Bect2{ 0, 400 }, Bect2{ 1000, 400 }, 0x90ee90);
-	float point[3][3] = { {x1,x2,x3},{y1,y2,y3},{1,1,1} };
-	float newPoint[3][3] = {};
-	drawBresLine(Bect2{ x1 + 500, y1 + 400 }, Bect2{ x2 + 500, y2 + 400 }, 0x90ee99);
-	drawBresLine(Bect2{ x2 + 500, y2 + 400 }, Bect2{ x3 + 500, y3 + 400 }, 0x90ee99);
-	drawBresLine(Bect2{ x3 + 500 , y3 + 400 }, Bect2{ x1 + 500, y1 + 400 }, 0x90ee99);
-
-	//1.Translation with specified parameters
-	translation(point, newPoint, Vect2{ 25,30 }); drawTriangle(newPoint, 0xffadad);
-	//2.Rotation with specified parameters
-	rotation(point, newPoint, 150); drawTriangle(newPoint, 0xffd6a5);
-	//3.Scaling with specified parameters
-	scaling(point, newPoint, Vect2{ 2.6, 1.3 }); drawTriangle(newPoint, 0xfdffb6);
-	//4.Rotation about a pivot point
-	rotationPivot(point, newPoint, 45, Bect2{ -100,50 }); drawTriangle(newPoint, 0xcaffbf);
-	//5.Scaling about a fixed point
-	scalingFixed(point, newPoint, Bect2{ 35, -80 }, Vect2{ 2.6, 1.3 }); drawTriangle(newPoint, 0x9bf6ff);
-	//6.Scaling with orthogonal axis at certain	angle from x - axis
-	scalingWithAngle(point, newPoint, 60, Vect2{ 1.6, 2.1 }); drawTriangle(newPoint, 0x9bf6ff);
-	//7.Reflection with specified axis
-	reflection(point, newPoint, 1); drawTriangle(newPoint, 0xa0c4ff);
-	//reflection(point, newPoint,2); drawTriangle(newPoint);
-	//reflection(point, newPoint,3); drawTriangle(newPoint);
-	//reflection(point, newPoint,4); drawTriangle(newPoint);
-
-//8.Shearing with specified parameter
-	shearing(point, newPoint, 3, Vect2{ -1.2, 0.5 }); drawTriangle(newPoint, 0xbdb2ff);
-	//shearing(point, newPoint, 2, Vect2{ -1.2, 0.5 }); drawTriangle(newPoint);
-	//shearing(point, newPoint, 1, Vect2{ -1.2, 0.5 }); drawTriangle(newPoint);
-
-//9.Shearing with specified reference line
-	shearigRef(point, newPoint, 1, 2, 2); drawTriangle(newPoint, 0xffc6ff);
-}
+//void Transformations() {
+//	int x1 = 80, x2 = 60, x3 = 55, y1 = 90, y2 = 105, y3 = 90;
+//	int nx1, nx2, nx3, ny1, ny2, ny3;
+//	drawBresLine(Bect2{ 500, 0 }, Bect2{ 500, 800 }, 0x90ee90);
+//	drawBresLine(Bect2{ 0, 400 }, Bect2{ 1000, 400 }, 0x90ee90);
+//	float point[3][3] = { {x1,x2,x3},{y1,y2,y3},{1,1,1} };
+//	float newPoint[3][3] = {};
+//	drawBresLine(Bect2{ x1 + 500, y1 + 400 }, Bect2{ x2 + 500, y2 + 400 }, 0x90ee99);
+//	drawBresLine(Bect2{ x2 + 500, y2 + 400 }, Bect2{ x3 + 500, y3 + 400 }, 0x90ee99);
+//	drawBresLine(Bect2{ x3 + 500 , y3 + 400 }, Bect2{ x1 + 500, y1 + 400 }, 0x90ee99);
+//
+//	//1.Translation with specified parameters
+//	translation(point, newPoint, Vect2{ 25,30 }); drawTriangle(newPoint, 0xffadad);
+//	//2.Rotation with specified parameters
+//	rotation(point, newPoint, 150); drawTriangle(newPoint, 0xffd6a5);
+//	//3.Scaling with specified parameters
+//	scaling(point, newPoint, Vect2{ 2.6, 1.3 }); drawTriangle(newPoint, 0xfdffb6);
+//	//4.Rotation about a pivot point
+//	rotationPivot(point, newPoint, 45, Bect2{ -100,50 }); drawTriangle(newPoint, 0xcaffbf);
+//	//5.Scaling about a fixed point
+//	scalingFixed(point, newPoint, Bect2{ 35, -80 }, Vect2{ 2.6, 1.3 }); drawTriangle(newPoint, 0x9bf6ff);
+//	//6.Scaling with orthogonal axis at certain	angle from x - axis
+//	scalingWithAngle(point, newPoint, 60, Vect2{ 1.6, 2.1 }); drawTriangle(newPoint, 0x9bf6ff);
+//	//7.Reflection with specified axis
+//	reflection(point, newPoint, 1); drawTriangle(newPoint, 0xa0c4ff);
+//	//reflection(point, newPoint,2); drawTriangle(newPoint);
+//	//reflection(point, newPoint,3); drawTriangle(newPoint);
+//	//reflection(point, newPoint,4); drawTriangle(newPoint);
+//
+////8.Shearing with specified parameter
+//	shearing(point, newPoint, 3, Vect2{ -1.2, 0.5 }); drawTriangle(newPoint, 0xbdb2ff);
+//	//shearing(point, newPoint, 2, Vect2{ -1.2, 0.5 }); drawTriangle(newPoint);
+//	//shearing(point, newPoint, 1, Vect2{ -1.2, 0.5 }); drawTriangle(newPoint);
+//
+////9.Shearing with specified reference line
+//	shearigRef(point, newPoint, 1, 2, 2); drawTriangle(newPoint, 0xffc6ff);
+//}
 
 LRESULT CALLBACK WindowProc(HWND window_handle, unsigned int message, WPARAM w_param, LPARAM l_param)
 {
@@ -370,7 +223,9 @@ int CALLBACK WinMain(
 			MSG message;
 			HDC deviceContext = GetDC(window_handle);
 
-			int* i = new int(0);
+			int angle=0;
+			int i = 21;
+			int flag = 1;
 
 			while (globalRunning)
 			{
@@ -387,15 +242,87 @@ int CALLBACK WinMain(
 				//rotationy(30, result, n);
 				//rotationx(30, result, n);
 
-				poly3d p1;
+				Shape3D p1;
+				p1.rotateX(45);
+				p1.rotateY(angle);
+				p1.rotateZ(angle);
+				//p1.translate(getMidX(), getMidY(), i);
+				//p1.oblique_projection(60, 20);
 				p1.drawCube();
-				(*i) %= 360;
+
+				/*
+				Vect3<float> off(getMaxX(), getMaxY(), 0);
+				//B,C,H,G,A,D,E,F
+				//0,1,2,3,4,5,6,7
+				
+				auto vertSet = p1.vertSet;
+
+				unsigned int front = 0xcaffbf, middle = 0x9bf6ff, back = 0xffffff;
+				
+				//Back
+				drawBresLine(vertSet[0], vertSet[3], back, off); //BG
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[3], vertSet[2], back, off); //GH
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[2], vertSet[1], back, off); //HC
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[1], vertSet[0], back, off); //CB
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+
+				//Middle
+				drawBresLine(vertSet[4], vertSet[0], middle, off); //AB
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[3], vertSet[7], middle, off); //FG
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[5], vertSet[1], middle, off); //DC
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[6], vertSet[2], middle, off); //EH
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+
+				//Front
+				drawBresLine(vertSet[4], vertSet[7], front, off); //AF
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[7], vertSet[6], front, off); //FE
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[6], vertSet[5], front, off); //ED
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[5], vertSet[4], front, off); //DA
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+				*/
+				
+				angle++;
+				angle %= 360;
+				i += flag;
+				if (i >= 160 || i <= 20) flag *= -1;
 				//Transformations();
 #pragma region Initializer
 				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
 					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+				Sleep(20);
 			}
-			delete i;
 		}
 	}
 	return 0;
