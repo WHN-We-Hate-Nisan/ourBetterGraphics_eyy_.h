@@ -1,5 +1,7 @@
 # Prerequisites
 *.d
+#Debug Folder
+ourBetterGraphics_eyy_/Debug/
 
 # Compiled Object files
 *.slo
