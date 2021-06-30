@@ -132,43 +132,43 @@ void Products(float matA[][4], float matB[][max_Vertex], float result[][max_Vert
 //}
 
 
-void Transformations() {
-	int x1 = 80, x2 = 60, x3 = 55, y1 = 90, y2 = 105, y3 = 90;
-	int nx1, nx2, nx3, ny1, ny2, ny3;
-	drawBresLine(Bect2{ 500, 0 }, Bect2{ 500, 800 }, 0x90ee90);
-	drawBresLine(Bect2{ 0, 400 }, Bect2{ 1000, 400 }, 0x90ee90);
-	float point[3][3] = { {x1,x2,x3},{y1,y2,y3},{1,1,1} };
-	float newPoint[3][3] = {};
-	drawBresLine(Bect2{ x1 + 500, y1 + 400 }, Bect2{ x2 + 500, y2 + 400 }, 0x90ee99);
-	drawBresLine(Bect2{ x2 + 500, y2 + 400 }, Bect2{ x3 + 500, y3 + 400 }, 0x90ee99);
-	drawBresLine(Bect2{ x3 + 500 , y3 + 400 }, Bect2{ x1 + 500, y1 + 400 }, 0x90ee99);
-
-	//1.Translation with specified parameters
-	translation(point, newPoint, Vect2{ 25,30 }); drawTriangle(newPoint, 0xffadad);
-	//2.Rotation with specified parameters
-	rotation(point, newPoint, 150); drawTriangle(newPoint, 0xffd6a5);
-	//3.Scaling with specified parameters
-	scaling(point, newPoint, Vect2{ 2.6, 1.3 }); drawTriangle(newPoint, 0xfdffb6);
-	//4.Rotation about a pivot point
-	rotationPivot(point, newPoint, 45, Bect2{ -100,50 }); drawTriangle(newPoint, 0xcaffbf);
-	//5.Scaling about a fixed point
-	scalingFixed(point, newPoint, Bect2{ 35, -80 }, Vect2{ 2.6, 1.3 }); drawTriangle(newPoint, 0x9bf6ff);
-	//6.Scaling with orthogonal axis at certain	angle from x - axis
-	scalingWithAngle(point, newPoint, 60, Vect2{ 1.6, 2.1 }); drawTriangle(newPoint, 0x9bf6ff);
-	//7.Reflection with specified axis
-	reflection(point, newPoint, 1); drawTriangle(newPoint, 0xa0c4ff);
-	//reflection(point, newPoint,2); drawTriangle(newPoint);
-	//reflection(point, newPoint,3); drawTriangle(newPoint);
-	//reflection(point, newPoint,4); drawTriangle(newPoint);
-
-//8.Shearing with specified parameter
-	shearing(point, newPoint, 3, Vect2{ -1.2, 0.5 }); drawTriangle(newPoint, 0xbdb2ff);
-	//shearing(point, newPoint, 2, Vect2{ -1.2, 0.5 }); drawTriangle(newPoint);
-	//shearing(point, newPoint, 1, Vect2{ -1.2, 0.5 }); drawTriangle(newPoint);
-
-//9.Shearing with specified reference line
-	shearigRef(point, newPoint, 1, 2, 2); drawTriangle(newPoint, 0xffc6ff);
-}
+//void Transformations() {
+//	int x1 = 80, x2 = 60, x3 = 55, y1 = 90, y2 = 105, y3 = 90;
+//	int nx1, nx2, nx3, ny1, ny2, ny3;
+//	drawBresLine(Bect2{ 500, 0 }, Bect2{ 500, 800 }, 0x90ee90);
+//	drawBresLine(Bect2{ 0, 400 }, Bect2{ 1000, 400 }, 0x90ee90);
+//	float point[3][3] = { {x1,x2,x3},{y1,y2,y3},{1,1,1} };
+//	float newPoint[3][3] = {};
+//	drawBresLine(Bect2{ x1 + 500, y1 + 400 }, Bect2{ x2 + 500, y2 + 400 }, 0x90ee99);
+//	drawBresLine(Bect2{ x2 + 500, y2 + 400 }, Bect2{ x3 + 500, y3 + 400 }, 0x90ee99);
+//	drawBresLine(Bect2{ x3 + 500 , y3 + 400 }, Bect2{ x1 + 500, y1 + 400 }, 0x90ee99);
+//
+//	//1.Translation with specified parameters
+//	translation(point, newPoint, Vect2{ 25,30 }); drawTriangle(newPoint, 0xffadad);
+//	//2.Rotation with specified parameters
+//	rotation(point, newPoint, 150); drawTriangle(newPoint, 0xffd6a5);
+//	//3.Scaling with specified parameters
+//	scaling(point, newPoint, Vect2{ 2.6, 1.3 }); drawTriangle(newPoint, 0xfdffb6);
+//	//4.Rotation about a pivot point
+//	rotationPivot(point, newPoint, 45, Bect2{ -100,50 }); drawTriangle(newPoint, 0xcaffbf);
+//	//5.Scaling about a fixed point
+//	scalingFixed(point, newPoint, Bect2{ 35, -80 }, Vect2{ 2.6, 1.3 }); drawTriangle(newPoint, 0x9bf6ff);
+//	//6.Scaling with orthogonal axis at certain	angle from x - axis
+//	scalingWithAngle(point, newPoint, 60, Vect2{ 1.6, 2.1 }); drawTriangle(newPoint, 0x9bf6ff);
+//	//7.Reflection with specified axis
+//	reflection(point, newPoint, 1); drawTriangle(newPoint, 0xa0c4ff);
+//	//reflection(point, newPoint,2); drawTriangle(newPoint);
+//	//reflection(point, newPoint,3); drawTriangle(newPoint);
+//	//reflection(point, newPoint,4); drawTriangle(newPoint);
+//
+////8.Shearing with specified parameter
+//	shearing(point, newPoint, 3, Vect2{ -1.2, 0.5 }); drawTriangle(newPoint, 0xbdb2ff);
+//	//shearing(point, newPoint, 2, Vect2{ -1.2, 0.5 }); drawTriangle(newPoint);
+//	//shearing(point, newPoint, 1, Vect2{ -1.2, 0.5 }); drawTriangle(newPoint);
+//
+////9.Shearing with specified reference line
+//	shearigRef(point, newPoint, 1, 2, 2); drawTriangle(newPoint, 0xffc6ff);
+//}
 
 LRESULT CALLBACK WindowProc(HWND window_handle, unsigned int message, WPARAM w_param, LPARAM l_param)
 {
@@ -223,7 +223,9 @@ int CALLBACK WinMain(
 			MSG message;
 			HDC deviceContext = GetDC(window_handle);
 
-			int* i = new int(0);
+			int angle=0;
+			int i = 21;
+			int flag = 1;
 
 			while (globalRunning)
 			{
@@ -241,16 +243,86 @@ int CALLBACK WinMain(
 				//rotationx(30, result, n);
 
 				Shape3D p1;
-				p1.rotateZ(45);
-				p1.rotateY(30);
+				p1.rotateX(45);
+				p1.rotateY(angle);
+				p1.rotateZ(angle);
+				//p1.translate(getMidX(), getMidY(), i);
+				//p1.oblique_projection(60, 20);
 				p1.drawCube();
-				(*i) %= 360;
+
+				/*
+				Vect3<float> off(getMaxX(), getMaxY(), 0);
+				//B,C,H,G,A,D,E,F
+				//0,1,2,3,4,5,6,7
+				
+				auto vertSet = p1.vertSet;
+
+				unsigned int front = 0xcaffbf, middle = 0x9bf6ff, back = 0xffffff;
+				
+				//Back
+				drawBresLine(vertSet[0], vertSet[3], back, off); //BG
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[3], vertSet[2], back, off); //GH
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[2], vertSet[1], back, off); //HC
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[1], vertSet[0], back, off); //CB
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+
+				//Middle
+				drawBresLine(vertSet[4], vertSet[0], middle, off); //AB
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[3], vertSet[7], middle, off); //FG
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[5], vertSet[1], middle, off); //DC
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[6], vertSet[2], middle, off); //EH
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+
+				//Front
+				drawBresLine(vertSet[4], vertSet[7], front, off); //AF
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[7], vertSet[6], front, off); //FE
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[6], vertSet[5], front, off); //ED
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+
+				drawBresLine(vertSet[5], vertSet[4], front, off); //DA
+				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
+					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+				*/
+				
+				angle++;
+				angle %= 360;
+				i += flag;
+				if (i >= 160 || i <= 20) flag *= -1;
 				//Transformations();
 #pragma region Initializer
 				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
 					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+				Sleep(20);
 			}
-			delete i;
 		}
 	}
 	return 0;

@@ -6,29 +6,17 @@
 constexpr float pi = 3.14159f;
 constexpr int max_Vertex = 12;
 
+template<typename T = int>
 struct Vect2 {
-	float x, y;
+	T x, y;
+	Vect2() :x(0), y(0) {}
+	Vect2(T x, T y) :x(x), y(y) {}
 };
-struct Bect2 {
-	int x, y;
-};
-class Bect3 {
-public:
-	int x, y, z;
-	Bect3(int x = 0, int y = 0, int z = 0) {
-		this->x = x;
-		this->y = y;
-		this->z = z;
-	}
-};
-class Vect3 {
-public:
-	float x, y, z;
-	Vect3(float x = 0, float y = 0, float z = 0) {
-		this->x = x;
-		this->y = y;
-		this->z = z;
-	}
+template<typename T = int>
+struct Vect3 : public Vect2<T> {
+	T z;
+	Vect3() :Vect2<T>(0,0), z(z) {}
+	Vect3(T x, T y, T z) :Vect2<T>(x,y), z(z) {}
 };
 struct Bitmap {
 	BITMAPINFO info;
@@ -56,7 +44,7 @@ void consoleLogSpace(int out) {
 int Clamp(int current, int min, int max) {
 	return current < min ? min : current > max ? max : current;
 }
-void drawRect(Bect2 v1, Bect2 v2, unsigned int color) {
+void drawRect( Vect2<int> v1,  Vect2<int> v2, unsigned int color) {
 	unsigned int* pixel = (unsigned int*)globalBuffer.memory + v1.y * globalBuffer.height + v1.x;
 
 	for (int y = v1.y; y < v2.y; y++) {
@@ -78,7 +66,7 @@ void clrScr() {
 inline void drawPixel(int x, int y, unsigned int color) {
 	*((unsigned int*)globalBuffer.memory + y * globalBuffer.width + x) = color;
 }
-void drawDDALine(Bect2 v1, Bect2 v2, unsigned int color)
+void drawDDALine(Vect2<int> v1,  Vect2<int> v2, unsigned int color)
 {
 	int dx, dy, steps;
 	float xincr, yincr, x, y;
@@ -104,7 +92,25 @@ void drawDDALine(Bect2 v1, Bect2 v2, unsigned int color)
 		y += yincr;
 	}
 }
-void drawBresLine(Bect2 v1, Bect2 v2, unsigned int color) {
+void DDAlgorithm(float x1, float y1, float x2, float y2) {
+	drawDDALine(Vect2<int>{ (int)x1,(int)y1 }, Vect2<int>{ (int)x2, (int)y2 }, 0xffffff);
+}
+void DDAlgorithm(float x1, float y1, float x2, float y2, unsigned color) {
+	drawDDALine(Vect2<int>{ (int)x1,(int)y1 }, Vect2<int>{ (int)x2, (int)y2 }, color);
+}
+void drawBresLine(Vect2<int> v1,  Vect2<int> v2, unsigned int color) {
+	if (v1.x < 0 || v1.x >= globalBuffer.width || v1.y < 0 || v1.y >= globalBuffer.height) {
+		consoleLog("\nOut OF Bounds: \t");
+		consoleLog("x:"); consoleLogSpace(v1.x);
+		consoleLog("y:"); consoleLogSpace(v1.y);
+		return;
+	}
+	if (v2.x < 0 || v2.x >= globalBuffer.width || v2.y < 0 || v2.y >= globalBuffer.height) {
+		consoleLog("\nOut OF Bounds: \t");
+		consoleLog("x:"); consoleLogSpace(v2.x);
+		consoleLog("y:"); consoleLogSpace(v2.y);
+		return;
+	}
 	//Bresengham's Algorithm
 	int dx, dy, i, e;
 	int incx, incy, inc1, inc2;
@@ -154,7 +160,18 @@ void drawBresLine(Bect2 v1, Bect2 v2, unsigned int color) {
 		}
 	}
 }
-
+void drawBresLine(Vect2<float> v1, Vect2<float> v2, unsigned int color) {
+	drawBresLine(Vect2<int>(v1.x, v1.y), Vect2<int>(v2.x, v2.y), color);
+}
+void drawBresLine(Vect3<float> v1, Vect3<float> v2, unsigned int color, Vect3<float> offset=Vect3<float>(0,0,0) ) {
+	drawBresLine(Vect2<int>(v1.x + offset.x, v1.y + offset.y), Vect2<int>(v2.x + offset.x, v2.y + offset.y), color);
+}
+void drawBresLine(float x1, float y1, float x2, float y2) {
+	drawBresLine(Vect2<int>{ (int)x1,(int)y1 }, Vect2<int>{ (int)x2, (int)y2 }, 0xffffff);
+}
+void drawBresLine(float x1, float y1, float x2, float y2, unsigned color) {
+	drawBresLine(Vect2<int>{ (int)x1,(int)y1 }, Vect2<int>{ (int)x2, (int)y2 }, color);
+}
 void matMul(float mat1[][3], float mat2[][3], float ans[][3]) {
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)
@@ -164,7 +181,7 @@ void matMul(float mat1[][3], float mat2[][3], float ans[][3]) {
 			for (int k = 0; k < 3; k++)
 				ans[i][j] += mat1[i][k] * mat2[k][j];
 }
-void translation(float point[][3], float newPoint[][3], Vect2 translationFactor) {
+void translation(float point[][3], float newPoint[][3], Vect2<float> translationFactor) {
 	float composite[3][3] = { {1,0,translationFactor.x},{0,1,translationFactor.y},{0,0,1} };
 	matMul(composite, point, newPoint);
 }
@@ -177,7 +194,7 @@ void rotate(float point[][3], float newPoint[][3], float rad) {
 	float composite[3][3] = { {cos(rad),-sin(rad),0},{sin(rad),cos(rad),0},{0,0,1} };
 	matMul(composite, point, newPoint);
 }
-void scaling(float point[][3], float newPoint[][3], Vect2 scalingFactor) {
+void scaling(float point[][3], float newPoint[][3], Vect2<float> scalingFactor) {
 	float composite[3][3] = { {scalingFactor.x,0,0},{0,scalingFactor.y,0},{0,0,1} };
 	matMul(composite, point, newPoint);
 }
@@ -185,18 +202,18 @@ void scale(float point[][3], float newPoint[][3], float sx, float sy) {
 	float composite[3][3] = { {sx,0,0},{0,sy,0},{0,0,1} };
 	matMul(composite, point, newPoint);
 }
-void rotationPivot(float point[][3], float newPoint[][3], int angle, Bect2 pivot) {
+void rotationPivot(float point[][3], float newPoint[][3], int angle,  Vect2<int> pivot) {
 	float rad = 3.14 * angle / 180;
 	float composite[3][3] = { {cos(rad),-sin(rad),pivot.x * (1 - cos(rad)) + pivot.y * sin(rad)},
 		{sin(rad),cos(rad),pivot.y * (1 - cos(rad)) - pivot.x * sin(rad)},{0,0,1} };
 	matMul(composite, point, newPoint);
 }
-void scalingFixed(float point[][3], float newPoint[][3], Bect2 fixedPoint, Vect2 scalingFactor) {
+void scalingFixed(float point[][3], float newPoint[][3],  Vect2<int> fixedPoint, Vect2<float> scalingFactor) {
 	float composite[3][3] = { {scalingFactor.x,0,fixedPoint.x * (1 - fixedPoint.x)},
 		{0,scalingFactor.y,fixedPoint.y * (1 - scalingFactor.y)},{0,0,1} };
 	matMul(composite, point, newPoint);
 }
-void scalingWithAngle(float point[][3], float newPoint[][3], int angle, Vect2 scalingFactor) {
+void scalingWithAngle(float point[][3], float newPoint[][3], int angle, Vect2<float> scalingFactor) {
 	float rad = 3.14 * angle / 180;
 	rotate(point, newPoint, -rad);
 	scale(newPoint, newPoint, scalingFactor.x, scalingFactor.y);
@@ -228,7 +245,7 @@ void reflection(float point[][3], float newPoint[][3], int choice) {
 	}
 	}
 }
-void shearing(float point[][3], float newPoint[][3], int choice, Vect2 shearingParams) {
+void shearing(float point[][3], float newPoint[][3], int choice, Vect2<float> shearingParams) {
 	//1.x-direction relative to x-axis(y=0) 2.y-direction relative to yaxis(x=0) 3.In both direction
 	switch (choice) {
 	case 1: {
@@ -276,39 +293,33 @@ void drawTriangle(float newPoint[][3], unsigned color) {
 	int ny3 = newPoint[1][2];
 
 	//Draw Output
-	drawBresLine(Bect2{ nx1 + 500, ny1 + 400 }, Bect2{ nx2 + 500, ny2 + 400 }, color);
-	drawBresLine(Bect2{ nx2 + 500, ny2 + 400 }, Bect2{ nx3 + 500, ny3 + 400 }, color);
-	drawBresLine(Bect2{ nx3 + 500, ny3 + 400 }, Bect2{ nx1 + 500, ny1 + 400 }, color);
+	drawBresLine(Vect2<int>{ nx1 + 500, ny1 + 400 }, Vect2<int>{ nx2 + 500, ny2 + 400 }, color);
+	drawBresLine(Vect2<int>{ nx2 + 500, ny2 + 400 }, Vect2<int>{ nx3 + 500, ny3 + 400 }, color);
+	drawBresLine(Vect2<int>{ nx3 + 500, ny3 + 400 }, Vect2<int>{ nx1 + 500, ny1 + 400 }, color);
 }
 
-int getMaxX() {
+int getMidX() {
 	return globalBuffer.width / 2;
 }
-int getMaxY() {
+int getMidY() {
 	return globalBuffer.height / 2;
 }
 
-void DDAlgorithm(float x1, float y1, float x2, float y2) {
-	drawDDALine(Bect2{ (int)x1,(int)y1 }, Bect2{ (int)x2, (int)y2 }, 0xffffff);
-}
-void DDAlgorithm(float x1, float y1, float x2, float y2, unsigned color) {
-	drawDDALine(Bect2{ (int)x1,(int)y1 }, Bect2{ (int)x2, (int)y2 }, color);
-}
 
 class Shape3D {
-private:
-	std::vector <Vect3> vertSet;
-	std::vector<Vect3> tempVector;
+public:
+	std::vector <Vect3<float>> vertSet;
+	std::vector<Vect3<float>> tempVector;
 	int n;
 	float tempMatrix[4][max_Vertex] = { 0 };
 
-	auto matrixify(std::vector<Vect3> vect) {
+	auto matrixify(std::vector<Vect3<float>> vect) {
 		for (int i = 0; i < 4; i++)
 			for (int k = 0; k < vect.size(); k++)
 				tempMatrix[i][k] = (i == 0) ? vect[k].x : (i == 1) ? vect[k].y : (i == 2) ? vect[k].z : 1;
 		return tempMatrix;
 	}
-	auto matrixify(std::vector<Vect3> vect, float resMat[4][max_Vertex]) {
+	void matrixify(std::vector<Vect3<float>> vect, float resMat[4][max_Vertex]) {
 		for (int i = 0; i < 4; i++)
 			for (int k = 0; k < vect.size(); k++)
 				resMat[i][k] = (i == 0) ? vect[k].x : (i == 1) ? vect[k].y : (i == 2) ? vect[k].z : 1;
@@ -316,24 +327,26 @@ private:
 	auto vectorify(float matrix[][max_Vertex]) {
 		tempVector.clear();
 		for (int k = 0; k < n; k++)
-			tempVector.push_back( Vect3( matrix[0][k], matrix[1][k] ) );
+			tempVector.push_back( Vect3<float>( matrix[0][k], matrix[1][k], matrix[2][k]));
 		return tempVector;
 	}
 public:
 	Shape3D() {
-		Vect3  A(0, 0, 0),
-			B(0, 0, 100),
-			C(0, 100, 100),
-			D(0, 100, 0),
-			E(100, 100, 0),
-			F(100, 0, 0),
-			G(100, 0, 100),
-			H(100, 100, 100);
-		std::vector <Vect3> arr = { B,C,H,G,A,D,E,F };
+		int cubeWidth = 100;
+		Vect3<float>  
+			A(0,		 0,			0),
+			B(0,		 0,			cubeWidth),
+			C(0,		 cubeWidth, cubeWidth),
+			D(0,		 cubeWidth, 0),
+			E(cubeWidth, cubeWidth, 0),
+			F(cubeWidth, 0,			0),
+			G(cubeWidth, 0,			cubeWidth),
+			H(cubeWidth, cubeWidth, cubeWidth);
+		std::vector <Vect3<float>> arr = { B,C,H,G,A,D,E,F };
 		this->vertSet = arr;
 		this->n = vertSet.size();
 	}
-	Shape3D(std::vector <Vect3> vertSet) {
+	Shape3D(std::vector <Vect3<float>> vertSet) {
 		this->vertSet = vertSet;
 		this->n = vertSet.size();
 	}
@@ -347,7 +360,7 @@ public:
 		this->vertSet = vectorify(result);
 	}
 	void draw() {
-		int X = getMaxX(), Y = getMaxY();
+		int X = getMidX(), Y = getMidY();
 		for (int i = 1; i < vertSet.size(); i++)
 			DDAlgorithm(vertSet[i - 1].x + X, vertSet[i - 1].y + Y, vertSet[i].x + X, vertSet[i].y + Y);
 		DDAlgorithm(vertSet[vertSet.size() - 1].x + X, vertSet[vertSet.size() - 1].y + Y, vertSet[0].x + X, vertSet[0].y + Y);
@@ -394,7 +407,7 @@ public:
 	{
 		theeta *= pi / 180;
 		float tranMatrix[4][4] = {
-									  cos(theeta),       0,       sin(theeta),       0,
+									  cos(theeta),       0,       +sin(theeta),       0,
 									  0,                 1,       0,                 0,
 									  -sin(theeta),      0,       cos(theeta),       0,
 									  0,                 0,       0,                 1
@@ -411,36 +424,94 @@ public:
 		};
 		transformShape(tranMatrix, matrixify(vertSet), this->n);
 	}
+	void oblique_projection(float alpha, float theeta)
+	{
+		if (alpha == 0 || alpha == 90 || alpha == 180 || alpha == 270 || alpha == 360) return;
+		theeta *= pi / 180;
+		alpha  *= pi / 180;
+		float l1 = 1 / tan(alpha);
+		float tranMatrix[4][4] = {
+									{1, 0, l1 * cos(theeta), 0},
+									{0, 1, l1 * sin(theeta), 0},
+									{0, 0, 0,				 0},
+									{0, 0, 0,				 1} 
+		};				
+		transformShape(tranMatrix, matrixify(vertSet), this->n);
+	}
 	void perspective_projection(float zprp, float zvp)
 	{
 		float dp = zprp - zvp;
+		if (!dp) {
+			consoleLog("DP is zero");
+			return;
+		}
 		float tranMatrix[4][4] = {
 									  1,         0,       0,            0,
 									  0,         1,       0,            0,
 									  0,         0,       -zvp / dp,    zvp * (zprp / dp),
 									  0,         0,       -1 / dp,      zprp / dp
 		};
-		transformShape(tranMatrix, matrixify(vertSet), this->n);
-		float homoMat[4][max_Vertex] = { 0 };
-		matrixify(vertSet, homoMat);
+		float matB[4][max_Vertex] = { 0 };
+		matrixify(vertSet, matB);
+		float result[4][max_Vertex] = { 0 };
+		for (int i = 0; i < 4; i++)
+			for (int j = 0; j < n; j++)
+				for (int k = 0; k < 4; k++)
+					result[i][j] += tranMatrix[i][k] * matB[k][j];
 		for (int i = 0; i < this->n; i++)
 		{
-			homoMat[0][i] /= homoMat[3][i];
-			homoMat[1][i] /= homoMat[3][i];
-			homoMat[2][i] /= homoMat[3][i];
-			homoMat[3][i] = 1;
+			result[0][i] /= result[3][i];
+			result[1][i] /= result[3][i];
+			result[2][i] /= result[3][i];
+			result[3][i] = 1;
 		}
-		this->vertSet = vectorify(homoMat);
+		this->vertSet = vectorify(result);
 	}
 	void drawCube() {
-		int X = getMaxX(), Y = getMaxY();
-		for (int i = 1; i < 4; i++)
-			DDAlgorithm(vertSet[i - 1].x + X, vertSet[i - 1].y + Y, vertSet[i].x + X, vertSet[i].y + Y);
-		DDAlgorithm(vertSet[3].x + X, vertSet[3].y + Y, vertSet[0].x + X, vertSet[0].y + Y);
-		for (int i = 5; i < vertSet.size(); i++)
-			DDAlgorithm(vertSet[i - 1].x + X, vertSet[i - 1].y + Y, vertSet[i].x + X, vertSet[i].y + Y);
-		DDAlgorithm(vertSet[vertSet.size() - 1].x + X, vertSet[vertSet.size() - 1].y + Y, vertSet[4].x + X, vertSet[4].y + Y);
-		for (int i = 0; i <= 3; i++)
-			DDAlgorithm(vertSet[i].x + X, vertSet[i].y + Y, vertSet[4 + i].x + X, vertSet[4 + i].y + Y);
+		Vect3<float> off(getMidX(), getMidY(), 0);
+		//B,C,H,G,A,D,E,F
+		//0,1,2,3,4,5,6,7
+		
+		unsigned int front= 0xcaffbf, middle= 0x9bf6ff, back = 0xffffff;
+		//Back
+		drawBresLine(vertSet[0], vertSet[3], back, off); //BG
+		drawBresLine(vertSet[3], vertSet[2], back, off); //GH
+		drawBresLine(vertSet[2], vertSet[1], back, off); //HC
+		drawBresLine(vertSet[1], vertSet[0], back, off); //CB
+
+		//Middle
+		drawBresLine(vertSet[4], vertSet[0], middle, off); //AB
+		drawBresLine(vertSet[3], vertSet[7], middle, off); //FG
+		drawBresLine(vertSet[5], vertSet[1], middle, off); //DC
+		drawBresLine(vertSet[2], vertSet[6], middle, off); //EH
+
+		//Front
+		drawBresLine(vertSet[4], vertSet[7], front, off); //AF
+		drawBresLine(vertSet[7], vertSet[6], front, off); //FE
+		drawBresLine(vertSet[6], vertSet[5], front, off); //ED
+		drawBresLine(vertSet[5], vertSet[4], front, off); //DA
+	}
+	void drawCube2() {
+		//B,C,H,G,A,D,E,F
+		//0,1,2,3,4,5,6,7
+
+		unsigned int front = 0xcaffbf, middle = 0x9bf6ff, back = 0xffffff;
+		//Back
+		drawBresLine(vertSet[0], vertSet[3], back); //BG
+		drawBresLine(vertSet[3], vertSet[2], back); //GH
+		drawBresLine(vertSet[2], vertSet[1], back); //HC
+		drawBresLine(vertSet[1], vertSet[0], back); //CB
+
+		//Middle
+		drawBresLine(vertSet[4], vertSet[0], middle); //AB
+		drawBresLine(vertSet[3], vertSet[7], middle); //FG
+		drawBresLine(vertSet[5], vertSet[1], middle); //DC
+		drawBresLine(vertSet[2], vertSet[6], middle); //EH
+
+		//Front
+		drawBresLine(vertSet[4], vertSet[7], front); //AF
+		drawBresLine(vertSet[7], vertSet[6], front); //FE
+		drawBresLine(vertSet[6], vertSet[5], front); //ED
+		drawBresLine(vertSet[5], vertSet[4], front); //DA
 	}
 };
