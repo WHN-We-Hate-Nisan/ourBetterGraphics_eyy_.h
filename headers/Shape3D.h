@@ -26,8 +26,7 @@ public:
 		return tempVector;
 	}
 public:
-	Shape3D() {
-		int cubeWidth = 100;
+	Shape3D(int cubeWidth) {
 		Vect3<float>
 			A(0, 0, 0),
 			B(0, 0, cubeWidth),
@@ -40,6 +39,9 @@ public:
 		std::vector <Vect3<float>> arr = { B,C,H,G,A,D,E,F };
 		this->vertSet = arr;
 		this->n = vertSet.size();
+	}
+	Shape3D() {
+		Shape3D(100);
 	}
 	Shape3D(std::vector <Vect3<float>> vertSet) {
 		this->vertSet = vertSet;
@@ -186,28 +188,29 @@ public:
 		DrawBresLine(vertSet[6], vertSet[5], front, off); //ED
 		DrawBresLine(vertSet[5], vertSet[4], front, off); //DA
 	}
-	void drawCubeOrigin() {
+	void drawCubeOrigin(float x = 0, float y = 0, float z = 0, 
+						unsigned int front = 0xcaffbf, unsigned int middle = 0x9bf6ff, unsigned int back = 0xffffff) {
+		Vect3<float> off(x, y, z);
 		//B,C,H,G,A,D,E,F
 		//0,1,2,3,4,5,6,7
-
-		unsigned int front = 0xcaffbf, middle = 0x9bf6ff, back = 0xffffff;
+		
 		//Back
-		DrawBresLine(vertSet[0], vertSet[3], back); //BG
-		DrawBresLine(vertSet[3], vertSet[2], back); //GH
-		DrawBresLine(vertSet[2], vertSet[1], back); //HC
-		DrawBresLine(vertSet[1], vertSet[0], back); //CB
+		DrawBresLine(vertSet[0], vertSet[3], back, off); //BG
+		DrawBresLine(vertSet[3], vertSet[2], back, off); //GH
+		DrawBresLine(vertSet[2], vertSet[1], back, off); //HC
+		DrawBresLine(vertSet[1], vertSet[0], back, off); //CB
 
 		//Middle
-		DrawBresLine(vertSet[4], vertSet[0], middle); //AB
-		DrawBresLine(vertSet[3], vertSet[7], middle); //FG
-		DrawBresLine(vertSet[5], vertSet[1], middle); //DC
-		DrawBresLine(vertSet[2], vertSet[6], middle); //EH
+		DrawBresLine(vertSet[4], vertSet[0], middle, off); //AB
+		DrawBresLine(vertSet[3], vertSet[7], middle, off); //FG
+		DrawBresLine(vertSet[5], vertSet[1], middle, off); //DC
+		DrawBresLine(vertSet[2], vertSet[6], middle, off); //EH
 
 		//Front
-		DrawBresLine(vertSet[4], vertSet[7], front); //AF
-		DrawBresLine(vertSet[7], vertSet[6], front); //FE
-		DrawBresLine(vertSet[6], vertSet[5], front); //ED
-		DrawBresLine(vertSet[5], vertSet[4], front); //DA
+		DrawBresLine(vertSet[4], vertSet[7], front, off); //AF
+		DrawBresLine(vertSet[7], vertSet[6], front, off); //FE
+		DrawBresLine(vertSet[6], vertSet[5], front, off); //ED
+		DrawBresLine(vertSet[5], vertSet[4], front, off); //DA
 	}
 };
 

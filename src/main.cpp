@@ -74,16 +74,13 @@ int CALLBACK WinMain(
 				//rotationx(30, result, n);
 				
 				//My Beautiful Baby
-				/*Shape3D p1;
-				p1.rotateX(45);
-				p1.rotateY(angle);
-				p1.rotateZ(angle);
-				//p1.translate(getMidX(), getMidY(), i);
-				//p1.oblique_projection(60, 20);
-				p1.drawCube();*/
+				Shape3D p1;
 				
-				Shape2D pram1(200, angle, 10);
-				pram1.DrawShape();
+				//Assignment 1
+
+				p1.drawCubeOrigin();
+				/*Shape2D pram1(200, angle, 10);
+				pram1.DrawShape();*/
 
 				angle++;
 				angle %= 360;
