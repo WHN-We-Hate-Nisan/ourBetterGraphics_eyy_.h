@@ -1,7 +1,9 @@
 # Prerequisites
 *.d
+
 #Debug Folder
 ourBetterGraphics_eyy_/Debug/
+
 #.vs file
 ourBetterGraphics_eyy_/.vs/
 
