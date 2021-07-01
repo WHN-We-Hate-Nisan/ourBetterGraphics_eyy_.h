@@ -4,19 +4,19 @@
 #include <cstdlib>
 #include <vector>
 constexpr float pi = 3.14159f;
-constexpr int max_Vertex = 12;
+constexpr int max_Vertex = 15;
 
 template<typename T = int>
 struct Vect2 {
 	T x, y;
 	Vect2() :x(0), y(0) {}
-	Vect2(T x, T y) :x(x), y(y) {}
+	Vect2(T x, T y) : x(x), y(y) {}
 };
 template<typename T = int>
 struct Vect3 : public Vect2<T> {
 	T z;
 	Vect3() :Vect2<T>(0, 0), z(z) {}
-	Vect3(T x, T y, T z) :Vect2<T>(x, y), z(z) {}
+	Vect3(T x, T y, T z) : Vect2<T>(x, y), z(z) {}
 };
 struct Bitmap {
 	BITMAPINFO info;
@@ -53,7 +53,8 @@ void ClrScr() {
 	}
 }
 
-inline void DrawPixel(int x, int y, unsigned int color) {
+inline void DrawPixel(int x, int y, unsigned int color) {	
+	if (x < 0 || x >= globalBuffer.width || y < 0 || y >= globalBuffer.height) return;
 	*((unsigned int*)globalBuffer.memory + y * globalBuffer.width + x) = color;
 }
 void DrawRect(Vect2<int> v1, Vect2<int> v2, unsigned int color) {
@@ -116,7 +117,7 @@ void DrawDDALine(Vect3<float> v1, Vect3<float> v2, unsigned int color, Vect3<flo
 }
 
 void DrawBresLine(Vect2<int> v1, Vect2<int> v2, unsigned int color) {
-	if (v1.x < 0 || v1.x >= globalBuffer.width || v1.y < 0 || v1.y >= globalBuffer.height) {
+	/*if (v1.x < 0 || v1.x >= globalBuffer.width || v1.y < 0 || v1.y >= globalBuffer.height) {
 		consoleLog("\nOut OF Bounds: \t");
 		consoleLog("x:"); consoleLogSpace(v1.x);
 		consoleLog("y:"); consoleLogSpace(v1.y);
@@ -127,7 +128,7 @@ void DrawBresLine(Vect2<int> v1, Vect2<int> v2, unsigned int color) {
 		consoleLog("x:"); consoleLogSpace(v2.x);
 		consoleLog("y:"); consoleLogSpace(v2.y);
 		return;
-	}
+	}*/
 	//Bresengham's Algorithm
 	int dx, dy, i, e;
 	int incx, incy, inc1, inc2;

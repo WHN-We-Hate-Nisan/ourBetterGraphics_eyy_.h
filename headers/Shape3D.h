@@ -26,8 +26,7 @@ public:
 		return tempVector;
 	}
 public:
-	Shape3D() {
-		int cubeWidth = 100;
+	Shape3D(int cubeWidth) {
 		Vect3<float>
 			A(0, 0, 0),
 			B(0, 0, cubeWidth),
@@ -36,8 +35,39 @@ public:
 			E(cubeWidth, cubeWidth, 0),
 			F(cubeWidth, 0, 0),
 			G(cubeWidth, 0, cubeWidth),
-			H(cubeWidth, cubeWidth, cubeWidth);
-		std::vector <Vect3<float>> arr = { B,C,H,G,A,D,E,F };
+			H(cubeWidth, cubeWidth, cubeWidth),
+			x1(-getMidX() + 1, cubeWidth / 2, cubeWidth / 2),
+			x2( getMidX() - 1, cubeWidth / 2, cubeWidth / 2),
+			y1( cubeWidth / 2,-getMidY() + 1, cubeWidth / 2),
+			y2( cubeWidth / 2, getMidY() - 1, cubeWidth / 2),
+			z1( cubeWidth / 2, cubeWidth / 2,-300),
+			z0( cubeWidth / 2, cubeWidth / 2, 0),
+			z2( cubeWidth / 2, cubeWidth / 2, 300);
+
+		std::vector <Vect3<float>> arr = { B,C,H,G,A,D,E,F,x1,x2,y1,y2,z1,z0,z2 };
+		this->vertSet = arr;
+		this->n = vertSet.size();
+	}
+	Shape3D() {
+		int cubeWidth = 100;
+		Vect3<float>
+			A( 0,				0,		       0),
+			B( 0,				0,			   cubeWidth),
+			C( 0,				cubeWidth,     cubeWidth),
+			D( 0,				cubeWidth,     0),
+			E( cubeWidth,		cubeWidth,     0),
+			F( cubeWidth,		0,			   0),
+			G( cubeWidth,		0,			   cubeWidth),
+			H( cubeWidth,		cubeWidth,	   cubeWidth),
+			x1(-getMidX() + 1,  cubeWidth / 2, cubeWidth / 2),
+			x2( getMidX() - 1,  cubeWidth / 2, cubeWidth / 2),
+			y1( cubeWidth / 2, -getMidY() + 1, cubeWidth / 2),
+			y2( cubeWidth / 2,  getMidY() - 1, cubeWidth / 2),
+			z1( cubeWidth / 2,  cubeWidth / 2,-300),
+			z0( cubeWidth / 2,  cubeWidth / 2, 0),
+			z2( cubeWidth / 2,  cubeWidth / 2, 300);
+
+		std::vector <Vect3<float>> arr = { B,C,H,G,A,D,E,F,x1,x2,y1,y2,z1,z0,z2};
 		this->vertSet = arr;
 		this->n = vertSet.size();
 	}
@@ -72,7 +102,7 @@ public:
 	}
 	void scale(int s)
 	{
-		float tranMatrix[4][4] = { {s,  0,   0,   0 },
+		float tranMatrix[4][4] = {  {s,  0,   0,   0 },
 									{0,  s,   0,   0 },
 									{0,  0,   s,   0 },
 									{0,  0,   0,   1 } };
@@ -133,7 +163,7 @@ public:
 		};
 		transformShape(tranMatrix, matrixify(vertSet), this->n);
 	}
-	void perspective_projection(float zprp, float zvp)
+	void old_perspective_projection(float zprp, float zvp)
 	{
 		float dp = zprp - zvp;
 		if (!dp) {
@@ -143,6 +173,36 @@ public:
 		float tranMatrix[4][4] = {
 									  1,         0,       0,            0,
 									  0,         1,       0,            0,
+									  0,         0,       -zvp / dp,    zvp * (zprp / dp),
+									  0,         0,       -1 / dp,      zprp / dp
+		};
+		float matB[4][max_Vertex] = { 0 };
+		matrixify(vertSet, matB);
+		float result[4][max_Vertex] = { 0 };
+		for (int i = 0; i < 4; i++)
+			for (int j = 0; j < n; j++)
+				for (int k = 0; k < 4; k++)
+					result[i][j] += tranMatrix[i][k] * matB[k][j];
+		for (int i = 0; i < this->n; i++)
+		{
+			result[0][i] /= result[3][i];
+			result[1][i] /= result[3][i];
+			result[2][i] /= result[3][i];
+			result[3][i] = 1;
+		}
+		this->vertSet = vectorify(result);
+	}
+	void perspective_projection(float xprp, float yprp, float zprp, float zvp)
+	{
+		float dp = zprp - zvp;
+		if (!dp) {
+			consoleLog("DP is zero\n");
+			dp = 10;
+			//return;
+		}
+		float tranMatrix[4][4] = {
+									  1,         0,       xprp/dp,      -xprp*zvp/dp,
+									  0,         1,       yprp/dp,      -yprp*zvp/dp,
 									  0,         0,       -zvp / dp,    zvp * (zprp / dp),
 									  0,         0,       -1 / dp,      zprp / dp
 		};
@@ -185,29 +245,42 @@ public:
 		DrawBresLine(vertSet[7], vertSet[6], front, off); //FE
 		DrawBresLine(vertSet[6], vertSet[5], front, off); //ED
 		DrawBresLine(vertSet[5], vertSet[4], front, off); //DA
-	}
-	void drawCubeOrigin() {
-		//B,C,H,G,A,D,E,F
-		//0,1,2,3,4,5,6,7
 
-		unsigned int front = 0xcaffbf, middle = 0x9bf6ff, back = 0xffffff;
+		//Axes
+		DrawBresLine(vertSet[8],  vertSet[9], 0xff0000,  off); //x
+		DrawBresLine(vertSet[10], vertSet[11], 0xff0000, off); //y
+		DrawBresLine(vertSet[12], vertSet[13], 0xff0000, off); //z
+		DrawBresLine(vertSet[14], vertSet[13], 0xff0000, off); //z
+	}
+	void drawCubeOrigin(float x = 0, float y = 0, float z = 0, 
+						unsigned int front = 0xcaffbf, unsigned int middle = 0x9bf6ff, unsigned int back = 0xffffff) {
+		Vect3<float> off(x, y, z);
+		//B,C,H,G,A,D,E,F axes: x1,x2,y1,y2,z1,z0,z2
+		//0,1,2,3,4,5,6,7       8,9,10,11,12,13,14
+		
 		//Back
-		DrawBresLine(vertSet[0], vertSet[3], back); //BG
-		DrawBresLine(vertSet[3], vertSet[2], back); //GH
-		DrawBresLine(vertSet[2], vertSet[1], back); //HC
-		DrawBresLine(vertSet[1], vertSet[0], back); //CB
+		DrawBresLine(vertSet[0], vertSet[3], back, off); //BG
+		DrawBresLine(vertSet[3], vertSet[2], back, off); //GH
+		DrawBresLine(vertSet[2], vertSet[1], back, off); //HC
+		DrawBresLine(vertSet[1], vertSet[0], back, off); //CB
 
 		//Middle
-		DrawBresLine(vertSet[4], vertSet[0], middle); //AB
-		DrawBresLine(vertSet[3], vertSet[7], middle); //FG
-		DrawBresLine(vertSet[5], vertSet[1], middle); //DC
-		DrawBresLine(vertSet[2], vertSet[6], middle); //EH
+		DrawBresLine(vertSet[4], vertSet[0], middle, off); //AB
+		DrawBresLine(vertSet[3], vertSet[7], middle, off); //FG
+		DrawBresLine(vertSet[5], vertSet[1], middle, off); //DC
+		DrawBresLine(vertSet[2], vertSet[6], middle, off); //EH
 
 		//Front
-		DrawBresLine(vertSet[4], vertSet[7], front); //AF
-		DrawBresLine(vertSet[7], vertSet[6], front); //FE
-		DrawBresLine(vertSet[6], vertSet[5], front); //ED
-		DrawBresLine(vertSet[5], vertSet[4], front); //DA
+		DrawBresLine(vertSet[4], vertSet[7], front, off); //AF
+		DrawBresLine(vertSet[7], vertSet[6], front, off); //FE
+		DrawBresLine(vertSet[6], vertSet[5], front, off); //ED
+		DrawBresLine(vertSet[5], vertSet[4], front, off); //DA
+
+		//Axes
+		DrawBresLine(vertSet[8],  vertSet[9],  0xff0000, off); //x
+		DrawBresLine(vertSet[10], vertSet[11], 0xff0000, off); //y
+		DrawBresLine(vertSet[12], vertSet[13], 0xff0000, off); //z
+		DrawBresLine(vertSet[14], vertSet[13], 0xff0000, off); //z
 	}
 };
 

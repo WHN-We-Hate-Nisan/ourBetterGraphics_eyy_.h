@@ -37,7 +37,11 @@ public:
 					ans[i][j] += mat1[i][k] * mat2[k][j];
 	}
 	void translation(float point[][3], float newPoint[][3], Vect2<float> translationFactor) {
-		float composite[3][3] = { {1,0,translationFactor.x},{0,1,translationFactor.y},{0,0,1} };
+		float composite[3][3] = { 
+									{1,	 0,	translationFactor.x},
+									{0,  1,	translationFactor.y},
+									{0,	 0,	1} 
+		};
 		matMul(composite, point, newPoint);
 	}
 	void rotation(float point[][3], float newPoint[][3], int angle) {
