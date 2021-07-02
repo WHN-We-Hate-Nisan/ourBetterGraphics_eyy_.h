@@ -90,13 +90,13 @@ public:
 			DrawDDALine(vertSet[i - 1].x + X, vertSet[i - 1].y + Y, vertSet[i].x + X, vertSet[i].y + Y);
 		DrawDDALine(vertSet[vertSet.size() - 1].x + X, vertSet[vertSet.size() - 1].y + Y, vertSet[0].x + X, vertSet[0].y + Y);
 	}
-	void translate(int x, int y, int z)
+	void translate(Vect3<float> e)
 	{
 		float tranMatrix[4][4] = {
-									{1,  0,   0,   x },
-									{0,  1,   0,   y },
-									{0,  0,   1,   z },
-									{0,  0,   0,   1 }
+									{1,  0,   0,   e.x },
+									{0,  1,   0,   e.y },
+									{0,  0,   1,   e.z },
+									{0,  0,   0,   1   }
 		};
 		transformShape(tranMatrix, matrixify(vertSet), this->n);
 	}
@@ -138,6 +138,23 @@ public:
 									  0,                 0,       0,                 1
 		};
 		transformShape(tranMatrix, matrixify(vertSet), this->n);
+	}
+	void view(Vect3<float> e, Vect3<float> v = { 0, 1, 0 })
+	{
+		translate(-e);
+		// u,v,n axes
+		
+		Vect3<float> n = { 0,0,1 }; //find from a-e vector
+		//Normalize v
+		Vect3<float> u = { 1,0,0 }; //Find from VxN
+		// here same as x,y,n
+		float tranMatrix[4][4] = {
+										{u.x,  u.y,   u.z,   0 },
+										{v.x,  v.y,   v.z,   0 },
+										{n.x,  n.y,   n.z,   0 },
+										{0,	   0,     0,     1 }
+		};
+		transformShape(tranMatrix, matrixify(this->vertSet), this->n);
 	}
 	void orthographic_projection(bool x, bool y, bool z)
 	{

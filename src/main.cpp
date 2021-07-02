@@ -58,7 +58,7 @@ int CALLBACK WinMain(
 			int i = 0;
 			int flag = 1;
 
-			int x = 101, y = 101, z = -251, p = 301; 
+			int x = 1, y = 1, z = 51, p = 221; 
 			Vect3<int>  rot{ 0,0,0 }, rotBool{ 0,0,0 };
 			int isAltPressed;
 			while (globalRunning)
@@ -81,12 +81,12 @@ int CALLBACK WinMain(
 						if (vkCode == 'Z') p -= multiplier;
 						if (vkCode == 'C') p += multiplier;
 
-						if (vkCode == 'J') { rot.x += multiplier / 2; rotBool={1,0,0}; }
-						if (vkCode == 'L') { rot.x -= multiplier / 2; rotBool={1,0,0}; }
-						if (vkCode == 'I') { rot.y += multiplier / 2; rotBool={0,1,0}; }
-						if (vkCode == 'K') { rot.y -= multiplier / 2; rotBool={0,1,0}; }
-						if (vkCode == 'U') { rot.z += multiplier / 2; rotBool={0,0,1}; }
-						if (vkCode == 'O') { rot.z -= multiplier / 2; rotBool={0,0,1}; }
+						if (vkCode == 'J') { rot.x += multiplier / 2; rotBool = { 1,0,0 }; }
+						if (vkCode == 'L') { rot.x -= multiplier / 2; rotBool = { 1,0,0 }; }
+						if (vkCode == 'I') { rot.y += multiplier / 2; rotBool = { 0,1,0 }; }
+						if (vkCode == 'K') { rot.y -= multiplier / 2; rotBool = { 0,1,0 }; }
+						if (vkCode == 'U') { rot.z += multiplier / 2; rotBool = { 0,0,1 }; }
+						if (vkCode == 'O') { rot.z -= multiplier / 2; rotBool = { 0,0,1 }; }
 
 						break;
 					default:
@@ -121,17 +121,19 @@ int CALLBACK WinMain(
 				p1.translate(getMidX(), getMidY(), 0);*/
 
 				//Assignment4
-				/*p1.translate(-50, -50, -50);
+			/*	p1.translate({ -50, -50, -50 });
 				p1.perspective_projection(0, 0, 250, 300);
-				p2.translate(-50, -50, -50);
+				p2.translate({ -50, -50, -50 });
 				p2.perspective_projection(0, 0, 0, 200);
-				p3.translate(-50, -50, -50);
-				p3.perspective_projection(0, 0, 250, 300);
-				p4.translate(-50, -50, -50);
-				p4.perspective_projection(0, 0, 300, 250);*/
+			*/	p3.translate({ -50, -50, -50 });
+				p3.perspective_projection(21, 31, 251, 1);
+				p4.translate({ -50, -50, -50 });
+				p4.perspective_projection(1, 1, 310, 1);
 
-				p1.translate(-50, -50, -50);
-				//p1.perspective_projection(x, y, z, p);
+				//Assignment 5
+				/*p1.translate({ -50, -50, -50 });
+				p1.view({ 0, 0, -200 });
+				p1.perspective_projection(x, y, z, p);*/
 				
 				//AntiGimbal Rotation
 				/*if (rotBool.y)
@@ -151,8 +153,10 @@ int CALLBACK WinMain(
 					p1.rotateX(rot.x);
 				}*/
 
-				p1.drawCube();
-				//p3.drawCubeOrigin(500, 300);
+				//p1.drawCube();
+				p3.drawCubeOrigin(500, 300);
+				p4.drawCubeOrigin(500, 500);
+
 				/*Shape2D pram1(200, angle, 10);
 				pram1.DrawShape();*/
 
