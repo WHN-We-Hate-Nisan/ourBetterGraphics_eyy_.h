@@ -121,14 +121,14 @@ int CALLBACK WinMain(
 				p1.translate(getMidX(), getMidY(), 0);*/
 
 				//Assignment4
-				p1.translate({ -50, -50, -50 });
+			/*	p1.translate({ -50, -50, -50 });
 				p1.perspective_projection(0, 0, 250, 300);
 				p2.translate({ -50, -50, -50 });
 				p2.perspective_projection(0, 0, 0, 200);
-				p3.translate({ -50, -50, -50 });
-				p3.perspective_projection(20, 30, 250, 0);
+			*/	p3.translate({ -50, -50, -50 });
+				p3.perspective_projection(21, 31, 251, 1);
 				p4.translate({ -50, -50, -50 });
-				p4.perspective_projection(0, 0, 300, 250);
+				p4.perspective_projection(1, 1, 310, 1);
 
 				//Assignment 5
 				/*p1.translate({ -50, -50, -50 });
