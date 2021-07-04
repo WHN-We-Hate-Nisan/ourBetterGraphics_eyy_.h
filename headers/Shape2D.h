@@ -10,10 +10,9 @@ private:
 public:
 	Shape2D(float rad, float angle, int side, float offX=getMidX(), float offY= getMidY()):radius(rad),n(side) {
 		angle *=  pi / n;
-		for (int i = 0; i < n; i++) {
+		for (int i = 0; i < n; i++)
 			vertSet.push_back({ radius * cos(2 * pi * i / n + angle) + offX, 
 								radius * sin(2 * pi * i / n + angle) + offY });
-		}
 	}
 	Shape2D() {
 	}
