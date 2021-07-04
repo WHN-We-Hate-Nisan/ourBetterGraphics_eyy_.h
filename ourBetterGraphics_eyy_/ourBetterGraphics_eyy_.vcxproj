@@ -147,10 +147,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\Essentials.cpp" />
     <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\Shape2D.cpp" />
+    <ClCompile Include="..\src\Shape3D.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\headers\Essentials.h" />
     <ClInclude Include="..\headers\ourBetterGraphics_eyy_.h" />
+    <ClInclude Include="..\headers\Shape2D.h" />
+    <ClInclude Include="..\headers\Shape3D.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

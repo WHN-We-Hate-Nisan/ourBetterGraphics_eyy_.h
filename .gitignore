@@ -1,9 +1,13 @@
 # Prerequisites
 *.d
+
 #Debug Folder
 ourBetterGraphics_eyy_/Debug/
+
 #.vs file
 ourBetterGraphics_eyy_/.vs/
+ourBetterGraphics_eyy_/.vs/ourBetterGraphics_eyy_/v16/.suo
+ourBetterGraphics_eyy_/.vs/ourBetterGraphics_eyy_/v16/Browse.VC.db
 
 # Compiled Object files
 *.slo

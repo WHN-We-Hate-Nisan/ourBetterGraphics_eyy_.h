@@ -1,174 +1,5 @@
+
 #include"ourBetterGraphics_eyy_.h"
-
-void resetMatrix(float matrix[4][max_Vertex], int n) {
-	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < n; j++)
-			matrix[i][j] = 0.0;
-}
-void displaymatrix(float mat[4][max_Vertex], int n) {
-	consoleLog("Matrix Display\n");
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < n; j++) {
-			consoleLogSpace(mat[i][j]);
-		}
-		consoleLog("\n");
-	}
-	consoleLog("\n");
-}
-void Products(float matA[][4], float matB[][max_Vertex], float result[][max_Vertex], int n)
-{
-	resetMatrix(result, n);
-	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < n; j++)
-			for (int k = 0; k < 4; k++)
-				result[i][j] += matA[i][k] * matB[k][j];
-}
-
-
-
-
-//float result[4][100] = { 0 };
-//
-//void product(float first[4][4], float second[4][100], int n)
-//{
-//	float temp[4][100] = { 0 };
-//	for (int i = 0; i < 4; i++)
-//		for (int j = 0; j < n; j++)
-//			for (int k = 0; k < 4; k++)
-//				temp[i][j] += first[i][k] * second[k][j];
-//	for (int i = 0; i < 4; i++)
-//		for (int j = 0; j < n; j++)
-//			result[i][j] = temp[i][j];
-//}
-//void translate(int x, int y, int z, float vertices[4][100], int n)
-//{
-//	float Composite[4][4] = {
-//								{1,  0,     0,     x},
-//								{0,  1,     0,      y},
-//								{0,  0,     1,      z},
-//								{0,  0,     0,      1 }
-//	};
-//	product(Composite, vertices, n);
-//}
-//void rotationz(float theeta, float vertices[4][100], int n)
-//{
-//	theeta = theeta * (pi / 180);
-//	float Composite[4][4] = {
-//								cos(theeta),    -sin(theeta),   0,  0,
-//								sin(theeta),    cos(theeta),    0,  0,
-//								0,              0,              1,  0,
-//								0,              0,              0,  1
-//	};
-//	product(Composite, vertices, n);
-//}
-//void rotationx(float theeta, float vertices[4][100], int n)
-//{
-//	theeta = theeta * (pi / 180);
-//	float Composite[4][4] = {
-//								1,              0,              0,              0,
-//								0,              cos(theeta),    -sin(theeta),   0,
-//								0,              sin(theeta),    cos(theeta),    0,
-//								0,              0,              0,				1
-//	};
-//	product(Composite, vertices, n);
-//}
-//void rotationy(float theeta, float vertices[4][100], int n)
-//{
-//	theeta = theeta * (pi / 180);
-//	float Composite[4][4] = {
-//								  cos(theeta),       0,       sin(theeta),       0,
-//								  0,                 1,       0,                 0,
-//								  -sin(theeta),      0,       cos(theeta),       0,
-//								  0,                 0,       0,                 1
-//	};
-//	product(Composite, vertices, n);
-//}
-//void orthographic_projection(float vertices[4][100], int n, bool x, bool y, bool z)
-//{
-//	float Composite[4][4] = {
-//								!x,     0,          0,      0,
-//								0,      !y,         0,      0,
-//								0,      0,          !z,     0,
-//								0,      0,          0,      1
-//	};
-//	product(Composite, vertices, n);
-//}
-//void perspective_projection(float zprp, float zvp, float vertices[4][100], int n)
-//{
-//	float dp = zprp - zvp;
-//	float Composite[4][4] = {
-//								  1,         0,       0,            0,
-//								  0,         1,       0,            0,
-//								  0,         0,       -zvp / dp,      zvp * (zprp / dp),
-//								  0,         0,       -1 / dp,        zprp / dp
-//	};
-//
-//	product(Composite, vertices, n);
-//	for (int i = 0; i < n; i++)
-//	{
-//		result[0][i] /= result[3][i];
-//		result[1][i] /= result[3][i];
-//		result[2][i] /= result[3][i];
-//		result[3][i] = 1;
-//	}
-//	//for (int i = 0; i < n; i++)
-//	//{
-//	//	cout << result[0][i] << "   " << result[0][i] << "    " << result[0][i] << endl;
-//	//}
-//}
-//void Cube(int n, unsigned color)
-//{
-//	for (int i = 0; i < 4; i++)
-//		DDAlgorithm(result[0][i % 4], result[1][i % 4], result[0][(i + 1) % 4], result[1][(i + 1) % 4], color);
-//	for (int i = 0; i < 4; i++)
-//		DDAlgorithm(result[0][4 + i % 4], result[1][4 + i % 4], result[0][4 + (i + 1) % 4], result[1][4 + (i + 1) % 4], color);
-//	for (int i = 0; i < 4; i++)
-//		DDAlgorithm(result[0][i], result[1][i], result[0][4 + i], result[1][4 + i], color);
-//}
-//void Cube_3D(float mat[4][100], int n, unsigned color)
-//{
-//	translate(getMaxX(), getMaxY(), 0, mat, n);
-//	Cube(n, color);	
-//}
-
-
-void Transformations() {
-	int x1 = 80, x2 = 60, x3 = 55, y1 = 90, y2 = 105, y3 = 90;
-	int nx1, nx2, nx3, ny1, ny2, ny3;
-	drawBresLine(Bect2{ 500, 0 }, Bect2{ 500, 800 }, 0x90ee90);
-	drawBresLine(Bect2{ 0, 400 }, Bect2{ 1000, 400 }, 0x90ee90);
-	float point[3][3] = { {x1,x2,x3},{y1,y2,y3},{1,1,1} };
-	float newPoint[3][3] = {};
-	drawBresLine(Bect2{ x1 + 500, y1 + 400 }, Bect2{ x2 + 500, y2 + 400 }, 0x90ee99);
-	drawBresLine(Bect2{ x2 + 500, y2 + 400 }, Bect2{ x3 + 500, y3 + 400 }, 0x90ee99);
-	drawBresLine(Bect2{ x3 + 500 , y3 + 400 }, Bect2{ x1 + 500, y1 + 400 }, 0x90ee99);
-
-	//1.Translation with specified parameters
-	translation(point, newPoint, Vect2{ 25,30 }); drawTriangle(newPoint, 0xffadad);
-	//2.Rotation with specified parameters
-	rotation(point, newPoint, 150); drawTriangle(newPoint, 0xffd6a5);
-	//3.Scaling with specified parameters
-	scaling(point, newPoint, Vect2{ 2.6, 1.3 }); drawTriangle(newPoint, 0xfdffb6);
-	//4.Rotation about a pivot point
-	rotationPivot(point, newPoint, 45, Bect2{ -100,50 }); drawTriangle(newPoint, 0xcaffbf);
-	//5.Scaling about a fixed point
-	scalingFixed(point, newPoint, Bect2{ 35, -80 }, Vect2{ 2.6, 1.3 }); drawTriangle(newPoint, 0x9bf6ff);
-	//6.Scaling with orthogonal axis at certain	angle from x - axis
-	scalingWithAngle(point, newPoint, 60, Vect2{ 1.6, 2.1 }); drawTriangle(newPoint, 0x9bf6ff);
-	//7.Reflection with specified axis
-	reflection(point, newPoint, 1); drawTriangle(newPoint, 0xa0c4ff);
-	//reflection(point, newPoint,2); drawTriangle(newPoint);
-	//reflection(point, newPoint,3); drawTriangle(newPoint);
-	//reflection(point, newPoint,4); drawTriangle(newPoint);
-
-//8.Shearing with specified parameter
-	shearing(point, newPoint, 3, Vect2{ -1.2, 0.5 }); drawTriangle(newPoint, 0xbdb2ff);
-	//shearing(point, newPoint, 2, Vect2{ -1.2, 0.5 }); drawTriangle(newPoint);
-	//shearing(point, newPoint, 1, Vect2{ -1.2, 0.5 }); drawTriangle(newPoint);
-
-//9.Shearing with specified reference line
-	shearigRef(point, newPoint, 1, 2, 2); drawTriangle(newPoint, 0xffc6ff);
-}
 
 LRESULT CALLBACK WindowProc(HWND window_handle, unsigned int message, WPARAM w_param, LPARAM l_param)
 {
@@ -223,34 +54,122 @@ int CALLBACK WinMain(
 			MSG message;
 			HDC deviceContext = GetDC(window_handle);
 
-			int* i = new int(0);
+			int angle=0;
+			int i = 0;
+			int flag = 1;
 
+			int x = 1, y = 1, z = 51, p = 221; 
+			Vect3<int>  rot{ 0,0,0 }, rotBool{ 0,0,0 };
+			int isAltPressed;
 			while (globalRunning)
 			{
 				while (PeekMessage(&message, 0, 0, 0, PM_REMOVE))
 				{
+					int multiplier = 10;
+					unsigned int vkCode = message.wParam;
 					TranslateMessage(&message);
 					DispatchMessageA(&message);
+					switch (message.message)
+					{
+					case WM_KEYDOWN:
+						if (vkCode == 'W') y -= multiplier;
+						if (vkCode == 'S') y += multiplier;
+						if (vkCode == 'A') x -= multiplier;
+						if (vkCode == 'D') x += multiplier;
+						if (vkCode == 'Q') z -= multiplier;
+						if (vkCode == 'E') z += multiplier;
+						if (vkCode == 'Z') p -= multiplier;
+						if (vkCode == 'C') p += multiplier;
+
+						if (vkCode == 'J') { rot.x += multiplier / 2; rotBool = { 1,0,0 }; }
+						if (vkCode == 'L') { rot.x -= multiplier / 2; rotBool = { 1,0,0 }; }
+						if (vkCode == 'I') { rot.y += multiplier / 2; rotBool = { 0,1,0 }; }
+						if (vkCode == 'K') { rot.y -= multiplier / 2; rotBool = { 0,1,0 }; }
+						if (vkCode == 'U') { rot.z += multiplier / 2; rotBool = { 0,0,1 }; }
+						if (vkCode == 'O') { rot.z -= multiplier / 2; rotBool = { 0,0,1 }; }
+
+						break;
+					default:
+						break;
+					}
 				}
 
 #pragma endregion
-				clrScr();
-				
+				ClrScr();
+
 				//translate(getMaxX(), getMaxY(), 0, mat, n);
 				//rotationy(30, result, n);
 				//rotationx(30, result, n);
 
+				//My Beautiful Baby
 				Shape3D p1;
-				p1.rotateZ(45);
-				p1.rotateY(30);
-				p1.drawCube();
-				(*i) %= 360;
+				Shape3D p2;
+				Shape3D p3;
+				Shape3D p4;
+
+				//Assignment 1
+				//p1.scale(100);
+
+				//Assignment 2
+				//p1.orthographic_projection(0, 0, 1);
+				//p1.oblique_projection(10, 60);
+				//p1.perspective_projection(-100, 50);
+
+				//Assignment3 - No
+				/*p1.translate(-50, -50, 0);
+				p1.perspective_projection(- 100, 50);
+				p1.translate(getMidX(), getMidY(), 0);*/
+
+				//Assignment4
+			/*	p1.translate({ -50, -50, -50 });
+				p1.perspective_projection(0, 0, 250, 300);
+				p2.translate({ -50, -50, -50 });
+				p2.perspective_projection(0, 0, 0, 200);
+			*/	p3.translate({ -50, -50, -50 });
+				p3.perspective_projection(21, 31, 251, 1);
+				p4.translate({ -50, -50, -50 });
+				p4.perspective_projection(1, 1, 310, 1);
+
+				//Assignment 5
+				/*p1.translate({ -50, -50, -50 });
+				p1.view({ 0, 0, -200 });
+				p1.perspective_projection(x, y, z, p);*/
+				
+				//AntiGimbal Rotation
+				/*if (rotBool.y)
+				{
+					p1.rotateY(rot.y);
+					p1.rotateX(rot.x);
+					p1.rotateZ(rot.z);
+				}
+				else if (rotBool.x) {
+					p1.rotateX(rot.x);
+					p1.rotateY(rot.y);
+					p1.rotateZ(rot.z);
+				}
+				else if (rotBool.z) {
+					p1.rotateZ(rot.z);
+					p1.rotateY(rot.y);
+					p1.rotateX(rot.x);
+				}*/
+
+				//p1.drawCube();
+				p3.drawCubeOrigin(500, 300);
+				p4.drawCubeOrigin(500, 500);
+
+				/*Shape2D pram1(200, angle, 10);
+				pram1.DrawShape();*/
+
+				angle++;
+				angle %= 360;
+				i += flag;
+				if (i >= 200 || i <= 0) flag *= -1;
 				//Transformations();
 #pragma region Initializer
 				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
 					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+				//Sleep(50);
 			}
-			delete i;
 		}
 	}
 	return 0;
