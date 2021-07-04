@@ -61,6 +61,7 @@ int CALLBACK WinMain(
 			int x = 1, y = 1, z = 51, p = 221; 
 			Vect3<int>  rot{ 0,0,0 }, rotBool{ 0,0,0 };
 			int isAltPressed;
+
 			while (globalRunning)
 			{
 				while (PeekMessage(&message, 0, 0, 0, PM_REMOVE))
@@ -158,12 +159,9 @@ int CALLBACK WinMain(
 				p4.drawCubeOrigin(500, 500);*/
 #pragma endregion
 
-				Shape2D pram1;// (200, angle, 10);
-				pram1.DrawShape(0xffffffff);
-
 				//angle++;
 				//angle %= 360;
-				//Transformations();
+				TestCase();
 #pragma region Initializer
 				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
 					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);

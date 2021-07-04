@@ -27,10 +27,10 @@ public:
 			vertSet.push_back({ radius * cos(2 * pi * i / n + angle) + offX, 
 								radius * sin(2 * pi * i / n + angle) + offY });
 	}
-	Shape2D():n(3), radius(100) {
+	Shape2D():n(3), radius(25) {
 		for (int i = 0; i < n; i++)
-			vertSet.push_back({ radius * cos(2 * pi * i / n + pi / n) + getMidX(),
-								radius * sin(2 * pi * i / n + pi / n) + getMidY()});
+			vertSet.push_back({ radius * cos(2 * pi * i / n + pi / n) + getMidX() /4 ,
+								radius * sin(2 * pi * i / n + pi / n) + getMidY() / 4});
 	}
 	void DrawShape(unsigned color = 0) {
 		//Draw Output
@@ -38,6 +38,15 @@ public:
 		for (int i = 0; i < n; i++) {
 			if (colRand) color = 0xffffff*(i+1)/n;
 			DrawBresLine(vertSet[i], vertSet[(i + 1) % n], color);
+		}
+	}
+	void DrawShapeOrigin(unsigned color = 0) {
+		//Draw Output
+		bool colRand = !color;
+		Vect2<float> offset = { float(getMidX()), float(getMidY()) };
+		for (int i = 0; i < n; i++) {
+			if (colRand) color = 0xffffff * (i + 1) / n;
+			DrawBresLine(vertSet[i] + offset, vertSet[(i + 1) % n] + offset, color);
 		}
 	}
 	//everything below needs doing - DankBros 12:30AM signing off
@@ -178,39 +187,50 @@ public:
 	}
 };
 
-void Transformations() {
-	int x1 = 80, x2 = 60, x3 = 55, y1 = 90, y2 = 105, y3 = 90;
-	DrawBresLine( Vect2<int> { 500, 0 },  Vect2<int> { 500, 800 }, 0x90ee90);
-	DrawBresLine( Vect2<int> { 0, 400 },  Vect2<int> { 1000, 400 }, 0x90ee90);
-	float point[3][3] = { {x1,x2,x3},{y1,y2,y3},{1,1,1} };
-	float newPoint[3][3] = {};
-	DrawBresLine( Vect2<int> { x1 + 500, y1 + 400 },  Vect2<int> { x2 + 500, y2 + 400 }, 0x90ee99);
-	DrawBresLine( Vect2<int> { x2 + 500, y2 + 400 },  Vect2<int> { x3 + 500, y3 + 400 }, 0x90ee99);
-	DrawBresLine( Vect2<int> { x3 + 500 , y3 + 400 },  Vect2<int> { x1 + 500, y1 + 400 }, 0x90ee99);
-
-	//1.Translation with specified parameters
-	translation(newPoint, Vect2{ 25,30 }); DrawShape(newPoint, 0xffadad);
+void TestCase() {
+	Shape2D pram[9];
+	pram[0].DrawShapeOrigin(0xffffffff);
+	//DrawBresLine( Vect2<int> { 500, 0 },  Vect2<int> { 500, 800 }, 0x90ee90);
+	//DrawBresLine( Vect2<int> { 0, 400 },  Vect2<int> { 1000, 400 }, 0x90ee90);
+	////float point[3][3] = { {x1,x2,x3},{y1,y2,y3},{1,1,1} };
+	float newPoint[3][max_Vertex] = {};
+	//DrawBresLine( Vect2<int> { x1 + 500, y1 + 400 },  Vect2<int> { x2 + 500, y2 + 400 }, 0x90ee99);
+	//DrawBresLine( Vect2<int> { x2 + 500, y2 + 400 },  Vect2<int> { x3 + 500, y3 + 400 }, 0x90ee99);
+	//DrawBresLine( Vect2<int> { x3 + 500 , y3 + 400 },  Vect2<int> { x1 + 500, y1 + 400 }, 0x90ee99);
+	DrawBresLine(Vect2<int> {0, getMidY()}, Vect2<int>{getMidX() * 2, getMidY()}, 0x90ee99);
+	DrawBresLine(Vect2<int> {getMidX(), 0}, Vect2<int>{getMidX(), getMidY() * 2}, 0x90ee99);
+	////1.Translation with specified parameters
+	pram[0].translation(newPoint, Vect2<float>{ 25,30 }); 
+	pram[0].DrawShapeOrigin(0xffadad);
 	//2.Rotation with specified parameters
-	rotation(newPoint, 150); DrawShape(newPoint, 0xffd6a5);
+	pram[1].rotation(newPoint, 180);
+	pram[1].DrawShapeOrigin(0xffd6a5);
 	//3.Scaling with specified parameters
-	scaling(newPoint, Vect2{ 2.6, 1.3 }); DrawShape(newPoint, 0xfdffb6);
+	pram[2].scaling(newPoint, Vect2<float>{ 2.6, 1.3 });
+	pram[2].DrawShapeOrigin(0xfdffb6);
 	//4.Rotation about a pivot point
-	rotationPivot( newPoint, 45,  Vect2<int> { -100,50 }); DrawShape(newPoint, 0xcaffbf);
+	pram[3].rotationPivot( newPoint, 45,  Vect2<int> { -100,50 });
+	pram[3].DrawShapeOrigin(0xcaffbf);
 	//5.Scaling about a fixed point
-	scalingFixed( newPoint,  Vect2<int> { 35, -80 }, Vect2{ 2.6, 1.3 }); DrawShape(newPoint, 0x9bf6ff);
+	pram[4].scalingFixed( newPoint,  Vect2<int> { 10, -10 }, Vect2<float>{ 2.6, 1.3 });
+	pram[4].DrawShapeOrigin(0x9bf6ff);
 	//6.Scaling with orthogonal axis at certain	angle from x - axis
-	scalingWithAngle( newPoint, 60, Vect2{ 1.6, 2.1 }); DrawShape(newPoint, 0x9bf6ff);
+	pram[5].scalingWithAngle( newPoint, 60, Vect2<float>{ 1.6, 2.1 });
+	pram[5].DrawShapeOrigin(0x9bf6ff);
 	//7.Reflection with specified axis
-	reflection(newPoint, 1); DrawShape(newPoint, 0xa0c4ff);
+	pram[6].reflection(newPoint, 1);
+	pram[6].DrawShapeOrigin(0xa0c4ff);
 	//reflection(point, newPoint,2); DrawShape(newPoint);
 	//reflection(point, newPoint,3); DrawShape(newPoint);
 	//reflection(point, newPoint,4); DrawShape(newPoint);
 
 //8.Shearing with specified parameter
-	shearing(point, newPoint, 3, Vect2{ -1.2, 0.5 }); DrawShape(newPoint, 0xbdb2ff);
+	pram[7].shearing(newPoint, 3, Vect2<float>{ -1.2, 0.5 });
+	pram[7].DrawShapeOrigin(0xbdb2ff);
 	//shearing(point, newPoint, 2, Vect2{ -1.2, 0.5 }); DrawShape(newPoint);
 	//shearing(point, newPoint, 1, Vect2{ -1.2, 0.5 }); DrawShape(newPoint);
 
 //9.Shearing with specified reference line
-	shearigRef(point, newPoint, 1, 2, 2); DrawShape(newPoint, 0xffc6ff);
-//}
+	//shape[8].shearigRef(newPoint, 1, 2, 2); 
+	//shape[8].DrawShapeOrigin(0xffc6ff);
+}
