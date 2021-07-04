@@ -96,16 +96,16 @@ int CALLBACK WinMain(
 
 #pragma endregion
 				ClrScr();
-
+#pragma region Assignemnt_And_The_Baby
 				//translate(getMaxX(), getMaxY(), 0, mat, n);
 				//rotationy(30, result, n);
 				//rotationx(30, result, n);
 
 				//My Beautiful Baby
-				Shape3D p1;
+				/*Shape3D p1;
 				Shape3D p2;
 				Shape3D p3;
-				Shape3D p4;
+				Shape3D p4;*/
 
 				//Assignment 1
 				//p1.scale(100);
@@ -125,10 +125,10 @@ int CALLBACK WinMain(
 				p1.perspective_projection(0, 0, 250, 300);
 				p2.translate({ -50, -50, -50 });
 				p2.perspective_projection(0, 0, 0, 200);
-			*/	p3.translate({ -50, -50, -50 });
+			*/	/*p3.translate({ -50, -50, -50 });
 				p3.perspective_projection(21, 31, 251, 1);
 				p4.translate({ -50, -50, -50 });
-				p4.perspective_projection(1, 1, 310, 1);
+				p4.perspective_projection(1, 1, 310, 1);*/
 
 				//Assignment 5
 				/*p1.translate({ -50, -50, -50 });
@@ -154,21 +154,20 @@ int CALLBACK WinMain(
 				}*/
 
 				//p1.drawCube();
-				p3.drawCubeOrigin(500, 300);
-				p4.drawCubeOrigin(500, 500);
+				/*p3.drawCubeOrigin(500, 300);
+				p4.drawCubeOrigin(500, 500);*/
+#pragma endregion
 
-				/*Shape2D pram1(200, angle, 10);
-				pram1.DrawShape();*/
+				Shape2D pram1;// (200, angle, 10);
+				pram1.DrawShape(0xffffffff);
 
-				angle++;
-				angle %= 360;
-				i += flag;
-				if (i >= 200 || i <= 0) flag *= -1;
+				//angle++;
+				//angle %= 360;
 				//Transformations();
 #pragma region Initializer
 				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
 					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
-				//Sleep(50);
+				Sleep(17);
 			}
 		}
 	}
