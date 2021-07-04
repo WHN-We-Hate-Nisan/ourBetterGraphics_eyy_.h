@@ -5,7 +5,6 @@ class Shape3D {
 public:
 	typedef std::vector<Vect3<float>> VertSet;
 	VertSet vertSet;
-	VertSet tempVector;
 	int n;
 	float tempMatrix[4][max_Vertex] = { 0 };
 	float tempMat[4] = { 0 };
@@ -21,15 +20,14 @@ public:
 				tempMat[i] = (i == 0) ? vect.x : (i == 1) ? vect.y : (i == 2) ? vect.z : 1;
 		return tempMat;
 	}
-	auto vectorify(float matrix[][max_Vertex]) {
+	/*auto vectorify(float matrix[][max_Vertex]) {
 		tempVector.clear();
 		for (int k = 0; k < n; k++)
 			tempVector.push_back(Vect3<float>(matrix[0][k], matrix[1][k], matrix[2][k]));
 		return tempVector;
-	}
-	auto vectorify(float matrix[4]) { //tempVector.clear(); before the first use
-		tempVector.push_back(Vect3<float>(matrix[0], matrix[1], matrix[2]));
-		return tempVector;
+	}*/
+	auto vectorify(float matrix[4], int index) { 
+		vertSet[index]=Vect3<float>(matrix[0], matrix[1], matrix[2]);
 	}
 public:
 	Shape3D(int cubeWidth) {
@@ -81,18 +79,16 @@ public:
 		this->vertSet = vertSet;
 		this->n = vertSet.size();
 	}
-	void transformShape(float matA[][4], float matB[][max_Vertex])
+	void transformShape(float matA[][4])
 	{
-		float result[4][max_Vertex] = { 0 };
-		for (int i = 0; i < 4; i++)
-			for (int j = 0; j < this->n; j++)
-				for (int k = 0; k < 4; k++)
-					result[i][j] += matA[i][k] * matB[k][j];
-		this->vertSet = vectorify(result);
+		float result[4] = { 0 };
+		for (int index = 0; index < n; index++) {
+			transformPoint(matA, result, index);
+			vectorify(result, index);
+		}
 	}
 	void transformPoint(float matA[4][4], float result[4], int index)
 	{
-		//have to tempVector.clear();
 		float* matB = matrixify(vertSet[index]);
 		memset(result, 0, sizeof(float) * 4);
 		for (int i = 0; i < 4; i++)
@@ -113,7 +109,7 @@ public:
 									{0,  0,   1,   e.z },
 									{0,  0,   0,   1   }
 		};
-		transformShape(tranMatrix, matrixify(vertSet));
+		transformShape(tranMatrix);
 	}
 	void scale(int s)
 	{
@@ -121,7 +117,7 @@ public:
 									{0,  s,   0,   0 },
 									{0,  0,   s,   0 },
 									{0,  0,   0,   1 } };
-		transformShape(tranMatrix, matrixify(vertSet));
+		transformShape(tranMatrix);
 	}
 	void rotateZ(float theeta) {
 		theeta *= pi / 180;
@@ -131,7 +127,7 @@ public:
 									0,              0,              1,  0,
 									0,              0,              0,  1
 		};
-		transformShape(tranMatrix, matrixify(vertSet));
+		transformShape(tranMatrix);
 	}
 	void rotateX(float theeta) {
 		theeta *= pi / 180;
@@ -141,7 +137,7 @@ public:
 									0,              sin(theeta),    cos(theeta),    0,
 									0,              0,              0,				1
 		};
-		transformShape(tranMatrix, matrixify(vertSet));
+		transformShape(tranMatrix);
 	}
 	void rotateY(float theeta)
 	{
@@ -152,41 +148,52 @@ public:
 									  -sin(theeta),      0,       cos(theeta),       0,
 									  0,                 0,       0,                 1
 		};
-		transformShape(tranMatrix, matrixify(vertSet));
+		transformShape(tranMatrix);
+	}
+	void viewOld(Vect3<float> e, Vect3<float> v = { 0, 1, 0 })
+	{
+		translate(-e);
+		// u,v,n axes
+		
+		Vect3<float> n = { 0,0,1 }; //find from a-e vector
+		//Normalize v
+		Vect3<float> u = { 1,0,0 }; //Find from VxN
+		// here same as x,y,n
+		float tranMatrix[4][4] = {
+										{u.x,  u.y,   u.z,   0 },
+										{v.x,  v.y,   v.z,   0 },
+										{n.x,  n.y,   n.z,   0 },
+										{0,	   0,     0,     1 }
+		};
+		transformShape(tranMatrix);
 	}
 	void view(Vect3<float> e, Vect3<float> v = { 0, 1, 0 })
 	{
-		translate(-e);
-		// u,v,n axes
-		
+		// u,v,n axes		
 		Vect3<float> n = { 0,0,1 }; //find from a-e vector
-		//Normalize v
 		Vect3<float> u = { 1,0,0 }; //Find from VxN
-		// here same as x,y,n
-		float tranMatrix[4][4] = {
+
+		float result[4] = { 0 };
+		for (int index = 0; index < this->n; index++) {
+			n = this->vertSet[index] - e;
+			n.normalize();
+			//calculate u and v
+			float tranMatrix[4][4] = {
+									{1,  0,   0,   e.x },
+									{0,  1,   0,   e.y },
+									{0,  0,   1,   e.z },
+									{0,  0,   0,   1   }
+			};
+			float rotMatrix[4][4] = {
 										{u.x,  u.y,   u.z,   0 },
 										{v.x,  v.y,   v.z,   0 },
 										{n.x,  n.y,   n.z,   0 },
 										{0,	   0,     0,     1 }
-		};
-		transformShape(tranMatrix, matrixify(this->vertSet));
-	}
-	void view_new(Vect3<float> e, Vect3<float> v = { 0, 1, 0 })
-	{
-		translate(-e);
-		// u,v,n axes
-		
-		Vect3<float> n = { 0,0,1 }; //find from a-e vector
-		//Normalize v
-		Vect3<float> u = { 1,0,0 }; //Find from VxN
-		// here same as x,y,n
-		float tranMatrix[4][4] = {
-										{u.x,  u.y,   u.z,   0 },
-										{v.x,  v.y,   v.z,   0 },
-										{n.x,  n.y,   n.z,   0 },
-										{0,	   0,     0,     1 }
-		};
-		transformShape(tranMatrix, matrixify(this->vertSet));
+			};
+			transformPoint(tranMatrix, result, index);
+			transformPoint(rotMatrix, result, index);
+			vectorify(result, index);
+		}
 	}
 	void orthographic_projection(bool x, bool y, bool z)
 	{
@@ -196,7 +203,7 @@ public:
 									0,      0,          !z,     0,
 									0,      0,          0,      1
 		};
-		transformShape(tranMatrix, matrixify(vertSet));
+		transformShape(tranMatrix);
 	}
 	void oblique_projection(float alpha, float theeta)
 	{
@@ -210,35 +217,7 @@ public:
 									{0, 0, 0,				 0},
 									{0, 0, 0,				 1}
 		};
-		transformShape(tranMatrix, matrixify(vertSet));
-	}
-	void old_perspective_projection(float zprp, float zvp)
-	{
-		float dp = zprp - zvp;
-		if (!dp) {
-			consoleLog("DP is zero");
-			return;
-		}
-		float tranMatrix[4][4] = {
-									  1,         0,       0,            0,
-									  0,         1,       0,            0,
-									  0,         0,       -zvp / dp,    zvp * (zprp / dp),
-									  0,         0,       -1 / dp,      zprp / dp
-		};
-		auto matB=matrixify(vertSet);
-		float result[4][max_Vertex] = { 0 };
-		for (int i = 0; i < 4; i++)
-			for (int j = 0; j < n; j++)
-				for (int k = 0; k < 4; k++)
-					result[i][j] += tranMatrix[i][k] * matB[k][j];
-		for (int i = 0; i < this->n; i++)
-		{
-			result[0][i] /= result[3][i];
-			result[1][i] /= result[3][i];
-			result[2][i] /= result[3][i];
-			result[3][i] = 1;
-		}
-		this->vertSet = vectorify(result);
+		transformShape(tranMatrix);
 	}
 	void perspective_projection(float xprp, float yprp, float zprp, float zvp)
 	{
@@ -257,14 +236,12 @@ public:
 									  0,         0,       -1 / dp,      zprp / dp
 		};
 		float result[4] = { 0 };
-		tempVector.clear();
 		for (int index = 0; index < n; index++) {
 			transformPoint(tranMatrix, result, index);
 			result[0] /= result[3];	result[1] /= result[3];
 			result[2] /= result[3];	result[3] = 1;		
-			vectorify(result);
+			vectorify(result, index);
 		}
-		this->vertSet = tempVector;
 	}
 	void drawCube() {
 		Vect3<float> off(getMidX(), getMidY(), 0);
