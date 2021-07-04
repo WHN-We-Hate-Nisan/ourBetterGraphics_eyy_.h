@@ -158,7 +158,6 @@ int CALLBACK WinMain(
 				/*p3.drawCubeOrigin(500, 300);
 				p4.drawCubeOrigin(500, 500);*/
 #pragma endregion
-
 				//angle++;
 				//angle %= 360;
 				TestCase();
