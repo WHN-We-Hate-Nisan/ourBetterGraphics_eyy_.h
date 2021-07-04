@@ -11,6 +11,15 @@ struct Vect2 {
 	T x, y;
 	Vect2() :x(0), y(0) {}
 	Vect2(T x, T y) : x(x), y(y) {}
+	Vect2 operator-() {
+		return Vect2(-this->x, -this->y);
+	}
+	Vect2 operator+(Vect2& right) {
+		return Vect2(this->x + right.x, this->y + right.y);
+	}
+	Vect2 operator-(Vect2& right) {
+		return Vect2(this->x - right.x, this->y - right.y);
+	}
 };
 template<typename T = int>
 struct Vect3 : public Vect2<T> {

@@ -1,5 +1,4 @@
-
-#include"ourBetterGraphics_eyy_.h"
+#include "ourBetterGraphics_eyy_.h"
 
 LRESULT CALLBACK WindowProc(HWND window_handle, unsigned int message, WPARAM w_param, LPARAM l_param)
 {
@@ -10,7 +9,8 @@ LRESULT CALLBACK WindowProc(HWND window_handle, unsigned int message, WPARAM w_p
 	case WM_QUIT:
 	{
 		globalRunning = false;
-	}break;
+	}
+	break;
 	default:
 		result = DefWindowProc(window_handle, message, w_param, l_param);
 	}
@@ -21,9 +21,8 @@ LRESULT CALLBACK WindowProc(HWND window_handle, unsigned int message, WPARAM w_p
 int CALLBACK WinMain(
 	HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
-	LPSTR     lpCmdLine,
-	int       nShowCmd
-) 
+	LPSTR lpCmdLine,
+	int nShowCmd)
 {
 #pragma region Initializer
 	WNDCLASS wndclass = {};
@@ -46,21 +45,24 @@ int CALLBACK WinMain(
 
 	globalBuffer.memory = VirtualAlloc(0, globalBuffer.width * globalBuffer.height * 4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-	if (RegisterClass(&wndclass)) {
+	if (RegisterClass(&wndclass))
+	{
 		HWND window_handle = CreateWindowEx(0, wndclass.lpszClassName, L"Hello69", WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, globalBuffer.width, globalBuffer.height,
-			0, 0, hInstance, 0);
-		if (window_handle) {
+											0, 0, hInstance, 0);
+		if (window_handle)
+		{
 			globalRunning = true;
 			MSG message;
 			HDC deviceContext = GetDC(window_handle);
 
-			int angle=0;
+			int angle = 0;
 			int i = 0;
 			int flag = 1;
 
-			int x = 1, y = 1, z = 51, p = 221; 
-			Vect3<int>  rot{ 0,0,0 }, rotBool{ 0,0,0 };
+			int x = 1, y = 1, z = 51, p = 221;
+			Vect3<int> rot{0, 0, 0}, rotBool{0, 0, 0};
 			int isAltPressed;
+
 			while (globalRunning)
 			{
 				while (PeekMessage(&message, 0, 0, 0, PM_REMOVE))
@@ -72,21 +74,53 @@ int CALLBACK WinMain(
 					switch (message.message)
 					{
 					case WM_KEYDOWN:
-						if (vkCode == 'W') y -= multiplier;
-						if (vkCode == 'S') y += multiplier;
-						if (vkCode == 'A') x -= multiplier;
-						if (vkCode == 'D') x += multiplier;
-						if (vkCode == 'Q') z -= multiplier;
-						if (vkCode == 'E') z += multiplier;
-						if (vkCode == 'Z') p -= multiplier;
-						if (vkCode == 'C') p += multiplier;
+						if (vkCode == 'W')
+							y -= multiplier;
+						if (vkCode == 'S')
+							y += multiplier;
+						if (vkCode == 'A')
+							x -= multiplier;
+						if (vkCode == 'D')
+							x += multiplier;
+						if (vkCode == 'Q')
+							z -= multiplier;
+						if (vkCode == 'E')
+							z += multiplier;
+						if (vkCode == 'Z')
+							p -= multiplier;
+						if (vkCode == 'C')
+							p += multiplier;
 
-						if (vkCode == 'J') { rot.x += multiplier / 2; rotBool = { 1,0,0 }; }
-						if (vkCode == 'L') { rot.x -= multiplier / 2; rotBool = { 1,0,0 }; }
-						if (vkCode == 'I') { rot.y += multiplier / 2; rotBool = { 0,1,0 }; }
-						if (vkCode == 'K') { rot.y -= multiplier / 2; rotBool = { 0,1,0 }; }
-						if (vkCode == 'U') { rot.z += multiplier / 2; rotBool = { 0,0,1 }; }
-						if (vkCode == 'O') { rot.z -= multiplier / 2; rotBool = { 0,0,1 }; }
+						if (vkCode == 'J')
+						{
+							rot.x += multiplier / 2;
+							rotBool = {1, 0, 0};
+						}
+						if (vkCode == 'L')
+						{
+							rot.x -= multiplier / 2;
+							rotBool = {1, 0, 0};
+						}
+						if (vkCode == 'I')
+						{
+							rot.y += multiplier / 2;
+							rotBool = {0, 1, 0};
+						}
+						if (vkCode == 'K')
+						{
+							rot.y -= multiplier / 2;
+							rotBool = {0, 1, 0};
+						}
+						if (vkCode == 'U')
+						{
+							rot.z += multiplier / 2;
+							rotBool = {0, 0, 1};
+						}
+						if (vkCode == 'O')
+						{
+							rot.z -= multiplier / 2;
+							rotBool = {0, 0, 1};
+						}
 
 						break;
 					default:
@@ -96,16 +130,15 @@ int CALLBACK WinMain(
 
 #pragma endregion
 				ClrScr();
-
 				//translate(getMaxX(), getMaxY(), 0, mat, n);
 				//rotationy(30, result, n);
 				//rotationx(30, result, n);
 
 				//My Beautiful Baby
-				Shape3D p1;
+				/*Shape3D p1;
 				Shape3D p2;
 				Shape3D p3;
-				Shape3D p4;
+				Shape3D p4;*/
 
 				//Assignment 1
 				//p1.scale(100);
@@ -121,20 +154,21 @@ int CALLBACK WinMain(
 				p1.translate(getMidX(), getMidY(), 0);*/
 
 				//Assignment4
-			/*	p1.translate({ -50, -50, -50 });
+				/*	p1.translate({ -50, -50, -50 });
 				p1.perspective_projection(0, 0, 250, 300);
 				p2.translate({ -50, -50, -50 });
 				p2.perspective_projection(0, 0, 0, 200);
-			*/	p3.translate({ -50, -50, -50 });
+			*/
+				/*p3.translate({ -50, -50, -50 });
 				p3.perspective_projection(21, 31, 251, 1);
 				p4.translate({ -50, -50, -50 });
-				p4.perspective_projection(1, 1, 310, 1);
+				p4.perspective_projection(1, 1, 310, 1);*/
 
-				//Assignment 5
-				/*p1.translate({ -50, -50, -50 });
-				p1.view({ 0, 0, -200 });
-				p1.perspective_projection(x, y, z, p);*/
-				
+				// //Assignment 5
+				// p1.translate({-50, -50, -50});
+				// p1.view({0, 0, -200});
+				// p1.perspective_projection(x, y, z, p);
+
 				//AntiGimbal Rotation
 				/*if (rotBool.y)
 				{
@@ -153,22 +187,10 @@ int CALLBACK WinMain(
 					p1.rotateX(rot.x);
 				}*/
 
-				//p1.drawCube();
-				p3.drawCubeOrigin(500, 300);
-				p4.drawCubeOrigin(500, 500);
-
-				/*Shape2D pram1(200, angle, 10);
-				pram1.DrawShape();*/
-
-				angle++;
-				angle %= 360;
-				i += flag;
-				if (i >= 200 || i <= 0) flag *= -1;
-				//Transformations();
 #pragma region Initializer
 				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
-					0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
-				//Sleep(50);
+							  0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+				Sleep(17);
 			}
 		}
 	}
