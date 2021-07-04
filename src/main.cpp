@@ -1,4 +1,3 @@
-
 #include"ourBetterGraphics_eyy_.h"
 
 LRESULT CALLBACK WindowProc(HWND window_handle, unsigned int message, WPARAM w_param, LPARAM l_param)
@@ -125,15 +124,15 @@ int CALLBACK WinMain(
 				p1.perspective_projection(0, 0, 250, 300);
 				p2.translate({ -50, -50, -50 });
 				p2.perspective_projection(0, 0, 0, 200);
-			*/	p3.translate({ -50, -50, -50 });
-				p3.perspective_projection(21, 31, 251, 1);
+				p3.translate({ -50, -50, -50 });
+				p3.perspective_projection(20, 30, 251, 1);
 				p4.translate({ -50, -50, -50 });
-				p4.perspective_projection(1, 1, 310, 1);
-
+				p4.perspective_projection(0, 0, 310, 1);
+				*/
 				//Assignment 5
-				/*p1.translate({ -50, -50, -50 });
+				p1.translate({ -50, -50, -50 });
 				p1.view({ 0, 0, -200 });
-				p1.perspective_projection(x, y, z, p);*/
+				p1.perspective_projection(x, y, z, p);
 				
 				//AntiGimbal Rotation
 				/*if (rotBool.y)
@@ -153,9 +152,9 @@ int CALLBACK WinMain(
 					p1.rotateX(rot.x);
 				}*/
 
-				//p1.drawCube();
-				p3.drawCubeOrigin(500, 300);
-				p4.drawCubeOrigin(500, 500);
+				p1.drawCube();
+				//p3.drawCubeOrigin(500, 300);
+				//p4.drawCubeOrigin(500, 500);
 
 				/*Shape2D pram1(200, angle, 10);
 				pram1.DrawShape();*/
