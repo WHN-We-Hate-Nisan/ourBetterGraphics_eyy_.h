@@ -1,4 +1,3 @@
-
 #include"ourBetterGraphics_eyy_.h"
 
 LRESULT CALLBACK WindowProc(HWND window_handle, unsigned int message, WPARAM w_param, LPARAM l_param)
@@ -132,7 +131,7 @@ int CALLBACK WinMain(
 				*/
 				//Assignment 5
 				p1.translate({ -50, -50, -50 });
-				p1.view_new({ 0, 0, -200 });
+				p1.view({ 0, 0, -200 });
 				p1.perspective_projection(x, y, z, p);
 				
 				//AntiGimbal Rotation

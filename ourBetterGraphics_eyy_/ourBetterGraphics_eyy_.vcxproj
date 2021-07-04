@@ -150,7 +150,9 @@
     <ClCompile Include="..\src\Essentials.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\Shape2D.cpp" />
-    <ClCompile Include="..\src\Shape3D.cpp" />
+    <ClCompile Include="..\src\Shape3D.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\headers\Essentials.h" />
