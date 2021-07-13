@@ -29,8 +29,10 @@ public:
 	void orthographic_projection(bool, bool, bool);
 	void oblique_projection(float, float);
 	void perspective_projection(float, float, float, float);
-	void drawCube();
+	void colorTriangle(Vect3<float>, Vect3<float>, Vect3<float>, unsigned int, Vect3<float>);
+	void colorFace(Vect3<float>, Vect3<float>, Vect3<float>, Vect3<float>, unsigned int, Vect3<float>);
+	void drawCube(bool = false);
 	void drawCubeOrigin(float = 0, float = 0, float = 0,
-		unsigned int = 0xcaffbf, unsigned int = 0xcaffbf, unsigned int = 0xcaffbf);
+		unsigned int = 0xcaffbf, unsigned int = 0xcaffbf, unsigned int = 0xcaffbf, bool=false);
 };
 

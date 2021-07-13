@@ -44,6 +44,7 @@ int CALLBACK WinMain(
 	globalBuffer.info.bmiHeader.biCompression = BI_RGB;
 
 	globalBuffer.memory = VirtualAlloc(0, globalBuffer.width * globalBuffer.height * 4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	globalBuffer.depthBuffer = VirtualAlloc(0, globalBuffer.width * globalBuffer.height * 4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
 	if (RegisterClass(&wndclass))
 	{
@@ -59,7 +60,8 @@ int CALLBACK WinMain(
 			int i = 0;
 			int flag = 1;
 
-			int x = 1, y = 1, z = 51, p = 221;
+			int x = 91, y = 101, z = -239, p = 171;
+			bool textured = false;
 			Vect3<int> rot{0, 0, 0}, rotBool{0, 0, 0};
 			int isAltPressed;
 
@@ -121,7 +123,9 @@ int CALLBACK WinMain(
 							rot.z -= multiplier / 2;
 							rotBool = {0, 0, 1};
 						}
-
+						if (vkCode == 'B') {
+							textured = !textured;
+						}
 						break;
 					default:
 						break;
@@ -135,10 +139,10 @@ int CALLBACK WinMain(
 				//rotationx(30, result, n);
 
 				//My Beautiful Baby
-				/*Shape3D p1;
+				Shape3D p1;
 				Shape3D p2;
 				Shape3D p3;
-				Shape3D p4;*/
+				Shape3D p4;
 
 				//Assignment 1
 				//p1.scale(100);
@@ -165,13 +169,11 @@ int CALLBACK WinMain(
 				p4.perspective_projection(1, 1, 310, 1);*/
 
 				 //Assignment 5
-				/* p1.translate({-50, -50, -50});
-				 p1.view({(float)x, (float)y, (float)z});
-				 p1.perspective_projection(1, 1, 100, p);
-				 p1.drawCube();*/
+				 //p1.translate({-50, -50, -50});
+				 //p1.view({0, 0, 200});
 
 				//AntiGimbal Rotation
-				/*if (rotBool.y)
+				if (rotBool.y)
 				{
 					p1.rotateY(rot.y);
 					p1.rotateX(rot.x);
@@ -186,7 +188,9 @@ int CALLBACK WinMain(
 					p1.rotateZ(rot.z);
 					p1.rotateY(rot.y);
 					p1.rotateX(rot.x);
-				}*/
+				}
+				p1.perspective_projection(x, y, z, p);
+				p1.drawCube(textured);
 
 #pragma region Initializer
 				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,

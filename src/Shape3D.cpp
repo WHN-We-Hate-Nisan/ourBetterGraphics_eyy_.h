@@ -237,17 +237,49 @@ void Shape3D::perspective_projection(float xprp, float yprp, float zprp, float z
 		vectorify(result, index);
 	}
 }
-void Shape3D::drawCube() {
+void Shape3D::colorTriangle(Vect3<float> A, Vect3<float> B, Vect3<float> C, unsigned int color, Vect3<float> off) {
+	float dx1, dx2, dx3;
+	Vect3<float> array[] = { A, B, C};
+	SortByY(array);
+	A = array[0];
+	B = array[1];
+	C = array[2];
+	Vect3<float> Source, End;
+	if (B.y - A.y > 0) dx1 = (B.x - A.x) / (B.y - A.y); else dx1 = 0;
+	if (C.y - A.y > 0) dx2 = (C.x - A.x) / (C.y - A.y); else dx2 = 0;
+	if (C.y - B.y > 0) dx3 = (C.x - B.x) / (C.y - B.y); else dx3 = 0;
+
+	Source = End = A;
+	if (dx1 > dx2) {
+		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx2, End.x += dx1)
+			DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
+		End = B;
+		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx2, End.x += dx3)
+			DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
+	}
+	else {
+		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx1, End.x += dx2)
+			DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
+		Source = B;
+		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx3, End.x += dx2)
+			DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
+	}
+}
+void Shape3D::colorFace(Vect3<float> A, Vect3<float> B, Vect3<float> C, Vect3<float> D, unsigned int color, Vect3<float> off) {		
+	colorTriangle(A, B, C, color, off);
+	colorTriangle(C, D, A, color, off);
+}
+void Shape3D::drawCube(bool colored) {
 	Vect3<float> off(getMidX(), getMidY(), 0);
 	//B,C,H,G,A,D,E,F
 	//0,1,2,3,4,5,6,7
 
 	unsigned int front = 0xcaffbf, middle = 0x9bf6ff, back = 0xffffff;
 	//Back
-	DrawBresLine(vertSet[0], vertSet[3], back, off); //BG
-	DrawBresLine(vertSet[3], vertSet[2], back, off); //GH
-	DrawBresLine(vertSet[2], vertSet[1], back, off); //HC
-	DrawBresLine(vertSet[1], vertSet[0], back, off); //CB
+	DrawBresLine(vertSet[0], vertSet[3], back, off); //BG     A D
+	DrawBresLine(vertSet[3], vertSet[2], back, off); //GH     D C
+	DrawBresLine(vertSet[2], vertSet[1], back, off); //HC     C B
+	DrawBresLine(vertSet[1], vertSet[0], back, off); //CB     B A
 
 	//Middle
 	DrawBresLine(vertSet[4], vertSet[0], middle, off); //AB
@@ -261,14 +293,26 @@ void Shape3D::drawCube() {
 	DrawBresLine(vertSet[6], vertSet[5], front, off); //ED
 	DrawBresLine(vertSet[5], vertSet[4], front, off); //DA
 
+
 	//Axes
 	DrawBresLine(vertSet[8], vertSet[9], 0xff0000, off); //x
 	DrawBresLine(vertSet[10], vertSet[11], 0xff0000, off); //y
 	DrawBresLine(vertSet[12], vertSet[13], 0xff0000, off); //z
 	DrawBresLine(vertSet[14], vertSet[13], 0xff0000, off); //z
+
+	//B,C,H,G,A,D,E,F
+	//0,1,2,3,4,5,6,7
+	if (colored) {
+		colorFace(vertSet[0], vertSet[3], vertSet[2], vertSet[1], 0xffadad, off); //BGCH
+		colorFace(vertSet[4], vertSet[0], vertSet[1], vertSet[5], 0xffd6a5, off); //ABCD
+		colorFace(vertSet[7], vertSet[3], vertSet[2], vertSet[6], 0xfdffb6, off); //FGHE
+		colorFace(vertSet[5], vertSet[1], vertSet[2], vertSet[6], 0xcaffbf, off); //CHED
+		colorFace(vertSet[4], vertSet[0], vertSet[3], vertSet[7], 0x9bf6ff, off); //ABGF
+		colorFace(vertSet[4], vertSet[7], vertSet[6], vertSet[5], 0xbdb2ff, off); //AFED
+	}
 }
 void Shape3D::drawCubeOrigin(float x, float y, float z,
-	unsigned int front, unsigned int middle, unsigned int back) {
+	unsigned int front, unsigned int middle, unsigned int back, bool colored) {
 	Vect3<float> off(x, y, z);
 	//B,C,H,G,A,D,E,F axes: x1,x2,y1,y2,z1,z0,z2
 	//0,1,2,3,4,5,6,7       8,9,10,11,12,13,14
