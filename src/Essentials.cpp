@@ -23,27 +23,39 @@ int Clamp(int current, int min, int max) {
 }
 void ClrScr() {
 	unsigned int* pixel = (unsigned int*)globalBuffer.memory;
-
-	for (int y = 0; y < globalBuffer.height; y++) {
-		for (int x = 0; x < globalBuffer.width; x++) {
+	for (int y = 0; y < globalBuffer.height; y++) 
+		for (int x = 0; x < globalBuffer.width; x++) 
 			*pixel++ = 0;
-		}
-	}
+
+	/*int* zBuffer = (int*)globalBuffer.depthBuffer;
+	for (int y = 0; y < globalBuffer.height; y++) 
+		for (int x = 0; x < globalBuffer.width; x++) 
+			*zBuffer++ = -1000;*/
 }
 
-inline void DrawPixel(int x, int y, unsigned int color) {
+void Swap(Vect3<float>* xp, Vect3<float>* yp)
+{
+	Vect3<float> temp = *xp;
+	*xp = *yp;
+	*yp = temp;
+}
+void SortByY(Vect3<float>arr[max_Vertex], int n)
+{
+	int i, j;
+	for (i = 0; i < n-1; i++)
+		// Last i elements are already in place 
+		for (j = 0; j < n - 1 - i; j++)
+			if (arr[j].y > arr[j + 1].y)
+				Swap(&arr[j], &arr[j + 1]);
+}
+
+inline void DrawPixel(int x, int y, unsigned int color, float depth) {
+
+	/*int* prevDepth = (int*)globalBuffer.memory + (globalBuffer.height + y) * globalBuffer.width + x;
+	if ( *prevDepth < depth) return;
+		else *prevDepth = depth;*/
 	if (x < 0 || x >= globalBuffer.width || y < 0 || y >= globalBuffer.height) return;
 	*((unsigned int*)globalBuffer.memory + y * globalBuffer.width + x) = color;
-}
-void DrawRect(Vect2<int> v1, Vect2<int> v2, unsigned int color) {
-	unsigned int* pixel = (unsigned int*)globalBuffer.memory + v1.y * globalBuffer.height + v1.x;
-
-	for (int y = v1.y; y < v2.y; y++) {
-		for (int x = v1.x; x < v2.x; x++) {
-			*pixel++ = color;
-		}
-		pixel += globalBuffer.width - (v2.x - v1.x);
-	}
 }
 
 void DrawDDALine(Vect2<int> v1, Vect2<int> v2, unsigned int color)
@@ -167,6 +179,11 @@ void DrawBresLine(float x1, float y1, float x2, float y2) {
 }
 void DrawBresLine(float x1, float y1, float x2, float y2, unsigned color) {
 	DrawBresLine(Vect2<int>{ (int)x1, (int)y1 }, Vect2<int>{ (int)x2, (int)y2 }, color);
+}
+
+void DrawHorizLine(int x1, int x2, int y, unsigned int color, float depth) {
+	for (int i = x1; i <= x2; i++)
+		DrawPixel(i, y, color, depth);
 }
 
 int getMidX() {

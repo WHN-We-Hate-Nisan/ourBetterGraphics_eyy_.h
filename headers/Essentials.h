@@ -24,7 +24,7 @@ struct Vect2 {
 template<typename T = int>
 struct Vect3 : public Vect2<T> {
 	T z;
-	Vect3() :Vect2<T>(0, 0), z(z) {}
+	Vect3() :Vect2<T>(0, 0), z(0) {}
 	Vect3(T x, T y, T z) : Vect2<T>(x, y), z(z) {}
 	Vect3 operator-() {
 		return Vect3(-this->x, -this->y, -this->z);
@@ -55,6 +55,7 @@ struct Bitmap {
 	BITMAPINFO info;
 	int width, height;
 	void* memory;
+	//void* depthBuffer;
 };
 extern Bitmap globalBuffer;
 extern bool globalRunning;
@@ -66,7 +67,11 @@ void consoleLogSpace(int);
 int Clamp(int, int, int);
 void ClrScr();
 
-inline void DrawPixel(int, int, unsigned int);
+inline void DrawPixel(int, int, unsigned int, float=0);
+
+void Swap(Vect3<float>* xp, Vect3<float>* yp);
+void SortByY(Vect3<float>arr[max_Vertex], int n=3);
+
 void DrawRect(Vect2<int>, Vect2<int>, unsigned int );
 void DrawDDALine(Vect2<int>, Vect2<int>, unsigned int);
 void DrawDDALine(float, float, float, float);
@@ -78,6 +83,8 @@ void DrawBresLine(Vect2<float>, Vect2<float>, unsigned int);
 void DrawBresLine(Vect3<float>, Vect3<float>, unsigned int, Vect3<float> = Vect3<float>(0, 0, 0));
 void DrawBresLine(float, float, float, float);
 void DrawBresLine(float, float, float, float, unsigned);
+
+void DrawHorizLine(int, int, int, unsigned int, float);
 
 int getMidX();
 int getMidY();
