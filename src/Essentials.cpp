@@ -27,10 +27,10 @@ void ClrScr() {
 		for (int x = 0; x < globalBuffer.width; x++) 
 			*pixel++ = 0;
 
-	float* zBuffer = (float*)globalBuffer.depthBuffer;
+	/*int* zBuffer = (int*)globalBuffer.depthBuffer;
 	for (int y = 0; y < globalBuffer.height; y++) 
 		for (int x = 0; x < globalBuffer.width; x++) 
-			*zBuffer++ = -1000000.0f;
+			*zBuffer++ = -1000;*/
 }
 
 void Swap(Vect3<float>* xp, Vect3<float>* yp)
@@ -50,9 +50,10 @@ void SortByY(Vect3<float>arr[max_Vertex], int n)
 }
 
 inline void DrawPixel(int x, int y, unsigned int color, float depth) {
-	float* prevDepth = (float*)globalBuffer.depthBuffer + y * globalBuffer.width + x;
 
-	if (*prevDepth < depth) return; else *prevDepth = depth;
+	/*int* prevDepth = (int*)globalBuffer.memory + (globalBuffer.height + y) * globalBuffer.width + x;
+	if ( *prevDepth < depth) return;
+		else *prevDepth = depth;*/
 	if (x < 0 || x >= globalBuffer.width || y < 0 || y >= globalBuffer.height) return;
 	*((unsigned int*)globalBuffer.memory + y * globalBuffer.width + x) = color;
 }

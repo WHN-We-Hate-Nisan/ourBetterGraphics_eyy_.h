@@ -55,7 +55,7 @@ struct Bitmap {
 	BITMAPINFO info;
 	int width, height;
 	void* memory;
-	void* depthBuffer;
+	//void* depthBuffer;
 };
 extern Bitmap globalBuffer;
 extern bool globalRunning;

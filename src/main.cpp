@@ -44,7 +44,6 @@ int CALLBACK WinMain(
 	globalBuffer.info.bmiHeader.biCompression = BI_RGB;
 
 	globalBuffer.memory = VirtualAlloc(0, globalBuffer.width * globalBuffer.height * 4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-	globalBuffer.depthBuffer = VirtualAlloc(0, globalBuffer.width * globalBuffer.height * 4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
 	if (RegisterClass(&wndclass))
 	{
@@ -195,7 +194,7 @@ int CALLBACK WinMain(
 #pragma region Initializer
 				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
 							  0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
-				Sleep(17);
+				//Sleep(17);
 			}
 		}
 	}

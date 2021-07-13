@@ -252,17 +252,21 @@ void Shape3D::colorTriangle(Vect3<float> A, Vect3<float> B, Vect3<float> C, unsi
 	Source = End = A;
 	if (dx1 > dx2) {
 		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx2, End.x += dx1)
-			DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
+			DrawBresLine(Source, End, color, off);
+			//DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
 		End = B;
 		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx2, End.x += dx3)
-			DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
+			DrawBresLine(Source, End, color, off);
+		//DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
 	}
 	else {
 		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx1, End.x += dx2)
-			DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
+			DrawBresLine(Source, End, color, off);
+		//DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
 		Source = B;
 		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx3, End.x += dx2)
-			DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
+			DrawBresLine(Source, End, color, off);
+		//DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
 	}
 }
 void Shape3D::colorFace(Vect3<float> A, Vect3<float> B, Vect3<float> C, Vect3<float> D, unsigned int color, Vect3<float> off) {		
