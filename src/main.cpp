@@ -164,10 +164,11 @@ int CALLBACK WinMain(
 				p4.translate({ -50, -50, -50 });
 				p4.perspective_projection(1, 1, 310, 1);*/
 
-				// //Assignment 5
-				// p1.translate({-50, -50, -50});
-				// p1.view({0, 0, -200});
-				// p1.perspective_projection(x, y, z, p);
+				 //Assignment 5
+				/* p1.translate({-50, -50, -50});
+				 p1.view({(float)x, (float)y, (float)z});
+				 p1.perspective_projection(1, 1, 100, p);
+				 p1.drawCube();*/
 
 				//AntiGimbal Rotation
 				/*if (rotBool.y)
