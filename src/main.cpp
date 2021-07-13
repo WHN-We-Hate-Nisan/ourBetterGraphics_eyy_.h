@@ -44,6 +44,7 @@ int CALLBACK WinMain(
 	globalBuffer.info.bmiHeader.biCompression = BI_RGB;
 
 	globalBuffer.memory = VirtualAlloc(0, globalBuffer.width * globalBuffer.height * 4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	globalBuffer.depthBuffer = VirtualAlloc(0, globalBuffer.width * globalBuffer.height * 4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
 	if (RegisterClass(&wndclass))
 	{

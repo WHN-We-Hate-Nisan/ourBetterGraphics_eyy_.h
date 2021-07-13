@@ -55,7 +55,7 @@ struct Bitmap {
 	BITMAPINFO info;
 	int width, height;
 	void* memory;
-	//void* depthBuffer;
+	void* depthBuffer;
 };
 extern Bitmap globalBuffer;
 extern bool globalRunning;
@@ -67,10 +67,11 @@ void consoleLogSpace(int);
 int Clamp(int, int, int);
 void ClrScr();
 
-inline void DrawPixel(int, int, unsigned int, float=0);
+inline void DrawPixel(int, int, unsigned int, float = 1000);
 
 void Swap(Vect3<float>* xp, Vect3<float>* yp);
 void SortByY(Vect3<float>arr[max_Vertex], int n=3);
+float interPolateDepth(float input1, float input2, float position, float val1, float val2);
 
 void DrawRect(Vect2<int>, Vect2<int>, unsigned int );
 void DrawDDALine(Vect2<int>, Vect2<int>, unsigned int);
@@ -84,7 +85,7 @@ void DrawBresLine(Vect3<float>, Vect3<float>, unsigned int, Vect3<float> = Vect3
 void DrawBresLine(float, float, float, float);
 void DrawBresLine(float, float, float, float, unsigned);
 
-void DrawHorizLine(int, int, int, unsigned int, float);
+void DrawHorizLine(int, int, int, unsigned int, float, Vect3<float> = {0, 0, 0});
 
 int getMidX();
 int getMidY();

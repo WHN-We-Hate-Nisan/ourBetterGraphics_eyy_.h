@@ -215,6 +215,9 @@ void Shape3D::oblique_projection(float alpha, float theeta)
 }
 void Shape3D::perspective_projection(float xprp, float yprp, float zprp, float zvp)
 {
+	float depths[max_Vertex];
+	for (int index = 0; index < n; index++)
+		depths[index] = this->vertSet[index].z;
 	float dp = zprp - zvp;
 	if (!dp) {
 		consoleLog("DP is zero\n");
@@ -236,6 +239,8 @@ void Shape3D::perspective_projection(float xprp, float yprp, float zprp, float z
 		result[2] /= result[3];	result[3] = 1;
 		vectorify(result, index);
 	}
+	for (int index = 0; index < n; index++)
+		this->vertSet[index].z = depths[index];
 }
 void Shape3D::colorTriangle(Vect3<float> A, Vect3<float> B, Vect3<float> C, unsigned int color, Vect3<float> off) {
 	float dx1, dx2, dx3;
@@ -250,23 +255,28 @@ void Shape3D::colorTriangle(Vect3<float> A, Vect3<float> B, Vect3<float> C, unsi
 	if (C.y - B.y > 0) dx3 = (C.x - B.x) / (C.y - B.y); else dx3 = 0;
 
 	Source = End = A;
+	float depthh=Source.z;
 	if (dx1 > dx2) {
 		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx2, End.x += dx1)
-			DrawBresLine(Source, End, color, off);
-			//DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
+			//DrawBresLine(Source, End, color, off);
+			depthh = interPolateDepth(A.y, B.y, Source.y, A.z, B.z);
+			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
 		End = B;
 		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx2, End.x += dx3)
-			DrawBresLine(Source, End, color, off);
-		//DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
+			//DrawBresLine(Source, End, color, off);
+			depthh = interPolateDepth(B.y, C.y, Source.y, B.z, C.z);
+			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
 	}
 	else {
 		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx1, End.x += dx2)
-			DrawBresLine(Source, End, color, off);
-		//DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
+			//DrawBresLine(Source, End, color, off);
+			depthh = interPolateDepth(A.y, B.y, Source.y, A.z, B.z);
+			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
 		Source = B;
 		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx3, End.x += dx2)
-			DrawBresLine(Source, End, color, off);
-		//DrawHorizLine(Source.x, End.x, Source.y, color, Source.z);
+			//DrawBresLine(Source, End, color, off);
+			depthh = interPolateDepth(B.y, C.y, Source.y, B.z, C.z);
+			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
 	}
 }
 void Shape3D::colorFace(Vect3<float> A, Vect3<float> B, Vect3<float> C, Vect3<float> D, unsigned int color, Vect3<float> off) {		
