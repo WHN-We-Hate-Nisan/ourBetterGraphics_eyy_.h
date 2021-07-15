@@ -30,11 +30,11 @@ void ClrScr() {
 		for (int x = 0; x < globalBuffer.width; x++) 
 			*zBuffer++ = 1000.0f;	
 }
-
-void Swap(Vect3<float>* xp, Vect3<float>* yp){
-	Vect3<float> temp = *xp;
-	*xp = *yp;
-	*yp = temp;
+template<typename T>
+void Swap(T &xp, T &yp){
+	T temp = xp;
+	xp = yp;
+	yp = temp;
 }
 void SortByY(Vect3<float>arr[max_Vertex], int n){
 	int i, j;
@@ -42,7 +42,7 @@ void SortByY(Vect3<float>arr[max_Vertex], int n){
 		// Last i elements are already in place 
 		for (j = 0; j < n - 1 - i; j++)
 			if (arr[j].y > arr[j + 1].y)
-				Swap(&arr[j], &arr[j + 1]);
+				Swap(arr[j], arr[j + 1]);
 }
 float interPolateDepth(float input1, float input2, float position, float val1, float val2) {
 	if (input1 == input2) return val1;
@@ -52,7 +52,7 @@ float interPolateDepth(float input1, float input2, float position, float val1, f
 inline void DrawPixel(int x, int y, unsigned int color, float depth) {
 	if (x < 0 || x >= globalBuffer.width || y < 0 || y >= globalBuffer.height) return;
 	float* prevDepth = (float*)globalBuffer.depthBuffer + y * globalBuffer.width + x;
-	//if ( *prevDepth < depth) return; else *prevDepth = depth;
+	if ( *prevDepth >= depth) *prevDepth = depth; else return;
 	*((unsigned int*)globalBuffer.memory + y * globalBuffer.width + x) = color;
 }
 
@@ -180,6 +180,7 @@ void DrawBresLine(float x1, float y1, float x2, float y2, unsigned color) {
 }
 
 void DrawHorizLine(int x1, int x2, int y, unsigned int color, float depth, Vect3<float> off) {
+	if (x2 < x1) Swap(x1, x2);
 	for (int i = x1; i <= x2; i++)
 		DrawPixel(i + off.x, y + off.y, color, depth);
 }

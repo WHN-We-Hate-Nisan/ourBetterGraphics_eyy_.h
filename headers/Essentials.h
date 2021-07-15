@@ -68,8 +68,8 @@ int Clamp(int, int, int);
 void ClrScr();
 
 inline void DrawPixel(int, int, unsigned int, float = 1000);
-
-void Swap(Vect3<float>* xp, Vect3<float>* yp);
+template<typename T>
+void Swap(T &xp, T &yp);
 void SortByY(Vect3<float>arr[max_Vertex], int n=3);
 float interPolateDepth(float input1, float input2, float position, float val1, float val2);
 
