@@ -48,8 +48,9 @@ int CALLBACK WinMain(
 
 	if (RegisterClass(&wndclass))
 	{
-		HWND window_handle = CreateWindowEx(0, wndclass.lpszClassName, L"Hello69", WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, globalBuffer.width, globalBuffer.height,
-											0, 0, hInstance, 0);
+		HWND window_handle = CreateWindowEx(0, wndclass.lpszClassName, L"Hello69", WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, 
+								CW_USEDEFAULT, globalBuffer.width, globalBuffer.height,
+								0, 0, hInstance, 0);
 		if (window_handle)
 		{
 			globalRunning = true;

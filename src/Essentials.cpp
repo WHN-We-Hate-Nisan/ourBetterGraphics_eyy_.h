@@ -45,13 +45,14 @@ void SortByY(Vect3<float>arr[max_Vertex], int n){
 				Swap(&arr[j], &arr[j + 1]);
 }
 float interPolateDepth(float input1, float input2, float position, float val1, float val2) {
-	return val1 + (position - input1) / (input2 - input1) * (val2 - val1);
+	if (input1 == input2) return val1;
+	else return val1 + (position - input1) / (input2 - input1) * (val2 - val1);
 }
 
 inline void DrawPixel(int x, int y, unsigned int color, float depth) {
 	if (x < 0 || x >= globalBuffer.width || y < 0 || y >= globalBuffer.height) return;
 	float* prevDepth = (float*)globalBuffer.depthBuffer + y * globalBuffer.width + x;
-	if ( *prevDepth < depth) return; else *prevDepth = depth;
+	//if ( *prevDepth < depth) return; else *prevDepth = depth;
 	*((unsigned int*)globalBuffer.memory + y * globalBuffer.width + x) = color;
 }
 
