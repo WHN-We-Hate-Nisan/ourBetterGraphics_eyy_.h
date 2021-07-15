@@ -44,11 +44,13 @@ int CALLBACK WinMain(
 	globalBuffer.info.bmiHeader.biCompression = BI_RGB;
 
 	globalBuffer.memory = VirtualAlloc(0, globalBuffer.width * globalBuffer.height * 4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	globalBuffer.depthBuffer = VirtualAlloc(0, globalBuffer.width * globalBuffer.height * 4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
 	if (RegisterClass(&wndclass))
 	{
-		HWND window_handle = CreateWindowEx(0, wndclass.lpszClassName, L"Hello69", WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, globalBuffer.width, globalBuffer.height,
-											0, 0, hInstance, 0);
+		HWND window_handle = CreateWindowEx(0, wndclass.lpszClassName, L"Hello69", WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, 
+								CW_USEDEFAULT, globalBuffer.width, globalBuffer.height,
+								0, 0, hInstance, 0);
 		if (window_handle)
 		{
 			globalRunning = true;
@@ -59,7 +61,8 @@ int CALLBACK WinMain(
 			int i = 0;
 			int flag = 1;
 
-			int x = 91, y = 101, z = -239, p = 171;
+			//int x = 91, y = 101, z = -239, p = 171;
+			float x = 1, y = 1, z = 201, p = 171;
 			bool textured = false;
 			Vect3<int> rot{0, 0, 0}, rotBool{0, 0, 0};
 			int isAltPressed;
@@ -169,7 +172,7 @@ int CALLBACK WinMain(
 
 				 //Assignment 5
 				 //p1.translate({-50, -50, -50});
-				 //p1.view({0, 0, 200});
+				 p1.view({x, y, z});
 
 				//AntiGimbal Rotation
 				if (rotBool.y)
@@ -188,7 +191,8 @@ int CALLBACK WinMain(
 					p1.rotateY(rot.y);
 					p1.rotateX(rot.x);
 				}
-				p1.perspective_projection(x, y, z, p);
+				//int x = 91, y = 101, z = -239, p = 171;
+				p1.perspective_projection(0, 0, -200, 250);
 				p1.drawCube(textured);
 
 #pragma region Initializer

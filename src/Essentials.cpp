@@ -17,7 +17,6 @@ void consoleLogSpace(int out) {
 	sprintf_s(output, 100, "%d\n", out);
 	OutputDebugStringA(output);
 }
-
 int Clamp(int current, int min, int max) {
 	return current < min ? min : current > max ? max : current;
 }
@@ -26,35 +25,34 @@ void ClrScr() {
 	for (int y = 0; y < globalBuffer.height; y++) 
 		for (int x = 0; x < globalBuffer.width; x++) 
 			*pixel++ = 0;
-
-	/*int* zBuffer = (int*)globalBuffer.depthBuffer;
+	float* zBuffer = (float*)globalBuffer.depthBuffer;
 	for (int y = 0; y < globalBuffer.height; y++) 
 		for (int x = 0; x < globalBuffer.width; x++) 
-			*zBuffer++ = -1000;*/
+			*zBuffer++ = 1000.0f;	
 }
-
-void Swap(Vect3<float>* xp, Vect3<float>* yp)
-{
-	Vect3<float> temp = *xp;
-	*xp = *yp;
-	*yp = temp;
+template<typename T>
+void Swap(T &xp, T &yp){
+	T temp = xp;
+	xp = yp;
+	yp = temp;
 }
-void SortByY(Vect3<float>arr[max_Vertex], int n)
-{
+void SortByY(Vect3<float>arr[max_Vertex], int n){
 	int i, j;
 	for (i = 0; i < n-1; i++)
 		// Last i elements are already in place 
 		for (j = 0; j < n - 1 - i; j++)
 			if (arr[j].y > arr[j + 1].y)
-				Swap(&arr[j], &arr[j + 1]);
+				Swap(arr[j], arr[j + 1]);
+}
+float interPolateDepth(float input1, float input2, float position, float val1, float val2) {
+	if (input1 == input2) return val1;
+	else return val1 + (position - input1) / (input2 - input1) * (val2 - val1);
 }
 
 inline void DrawPixel(int x, int y, unsigned int color, float depth) {
-
-	/*int* prevDepth = (int*)globalBuffer.memory + (globalBuffer.height + y) * globalBuffer.width + x;
-	if ( *prevDepth < depth) return;
-		else *prevDepth = depth;*/
 	if (x < 0 || x >= globalBuffer.width || y < 0 || y >= globalBuffer.height) return;
+	float* prevDepth = (float*)globalBuffer.depthBuffer + y * globalBuffer.width + x;
+	if ( *prevDepth >= depth) *prevDepth = depth; else return;
 	*((unsigned int*)globalBuffer.memory + y * globalBuffer.width + x) = color;
 }
 
@@ -181,9 +179,10 @@ void DrawBresLine(float x1, float y1, float x2, float y2, unsigned color) {
 	DrawBresLine(Vect2<int>{ (int)x1, (int)y1 }, Vect2<int>{ (int)x2, (int)y2 }, color);
 }
 
-void DrawHorizLine(int x1, int x2, int y, unsigned int color, float depth) {
+void DrawHorizLine(int x1, int x2, int y, unsigned int color, float depth, Vect3<float> off) {
+	if (x2 < x1) Swap(x1, x2);
 	for (int i = x1; i <= x2; i++)
-		DrawPixel(i, y, color, depth);
+		DrawPixel(i + off.x, y + off.y, color, depth);
 }
 
 int getMidX() {
