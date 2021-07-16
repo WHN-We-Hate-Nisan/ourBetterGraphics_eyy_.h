@@ -1,26 +1,24 @@
 #pragma once
-#include "..\headers\Shape3D.h"
+#include"Essentials.h"
+#include "..\headers\Cube3D.h"
 
-auto Shape3D::matrixify(VertSet vect)
+auto Cube3D::matrixify(VertSet vect)
 {
 	for (int i = 0; i < 4; i++)
 		for (int k = 0; k < this->n; k++)
 			tempMatrix[i][k] = (i == 0) ? vect[k].x : (i == 1) ? vect[k].y : (i == 2) ? vect[k].z : 1;
 	return tempMatrix;
 }
-
-auto Shape3D::matrixify(Vect3<float> vect){
+auto Cube3D::matrixify(Vect3<float> vect){
 	for (int i = 0; i < 4; i++)
 		tempMat[i] = (i == 0) ? vect.x : (i == 1) ? vect.y : (i == 2) ? vect.z : 1;
 	return tempMat;
 }
-
-auto Shape3D::vectorify(float matrix[4], int index)
+auto Cube3D::vectorify(float matrix[4], int index)
 {
 	vertSet[index] = Vect3<float>(matrix[0], matrix[1], matrix[2]);
 }
-
-Shape3D::Shape3D(int cubeWidth)
+Cube3D::Cube3D(int cubeWidth)
 {
 	Vect3<float>
 		A(0, 0, 0),
@@ -43,8 +41,7 @@ Shape3D::Shape3D(int cubeWidth)
 	this->vertSet = arr;
 	this->n = vertSet.size();
 }
-
-Shape3D::Shape3D()
+Cube3D::Cube3D()
 {
 	int cubeWidth = 100;
 	Vect3<float>
@@ -68,12 +65,11 @@ Shape3D::Shape3D()
 	this->vertSet = arr;
 	this->n = vertSet.size();
 }
-
-Shape3D::Shape3D(VertSet vertSet) {
+Cube3D::Cube3D(VertSet vertSet) {
 	this->vertSet = vertSet;
 	this->n = vertSet.size();
 }
-void Shape3D::transformShape(float matA[][4])
+void Cube3D::transformShape(float matA[][4])
 {
 	float result[4] = { 0 };
 	for (int index = 0; index < n; index++) {
@@ -81,7 +77,7 @@ void Shape3D::transformShape(float matA[][4])
 		vectorify(result, index);
 	}
 }
-void Shape3D::transformPoint(float matA[4][4], float result[4], int index)
+void Cube3D::transformPoint(float matA[4][4], float result[4], int index)
 {
 	float* matB = matrixify(vertSet[index]);
 	memset(result, 0, sizeof(float) * 4);
@@ -89,13 +85,13 @@ void Shape3D::transformPoint(float matA[4][4], float result[4], int index)
 		for (int k = 0; k < 4; k++)
 			result[i] += matA[i][k] * matB[k];
 }
-void Shape3D::draw() {
+void Cube3D::draw() {
 	int X = getMidX(), Y = getMidY();
 	for (int i = 1; i < vertSet.size(); i++)
 		DrawDDALine(vertSet[i - 1].x + X, vertSet[i - 1].y + Y, vertSet[i].x + X, vertSet[i].y + Y);
 	DrawDDALine(vertSet[vertSet.size() - 1].x + X, vertSet[vertSet.size() - 1].y + Y, vertSet[0].x + X, vertSet[0].y + Y);
 }
-void Shape3D::translate(Vect3<float> e)
+void Cube3D::translate(Vect3<float> e)
 {
 	float tranMatrix[4][4] = {
 								{1,  0,   0,   e.x },
@@ -105,7 +101,7 @@ void Shape3D::translate(Vect3<float> e)
 	};
 	transformShape(tranMatrix);
 }
-void Shape3D::scale(int s)
+void Cube3D::scale(int s)
 {
 	float tranMatrix[4][4] = { {s,  0,   0,   0 },
 								{0,  s,   0,   0 },
@@ -113,7 +109,7 @@ void Shape3D::scale(int s)
 								{0,  0,   0,   1 } };
 	transformShape(tranMatrix);
 }
-void Shape3D::rotateZ(float theeta) {
+void Cube3D::rotateZ(float theeta) {
 	theeta *= pi / 180;
 	float tranMatrix[4][4] = {
 								cos(theeta),    -sin(theeta),   0,  0,
@@ -123,7 +119,7 @@ void Shape3D::rotateZ(float theeta) {
 	};
 	transformShape(tranMatrix);
 }
-void Shape3D::rotateX(float theeta) {
+void Cube3D::rotateX(float theeta) {
 	theeta *= pi / 180;
 	float tranMatrix[4][4] = {
 								1,              0,              0,              0,
@@ -133,7 +129,7 @@ void Shape3D::rotateX(float theeta) {
 	};
 	transformShape(tranMatrix);
 }
-void Shape3D::rotateY(float theeta)
+void Cube3D::rotateY(float theeta)
 {
 	theeta *= pi / 180;
 	float tranMatrix[4][4] = {
@@ -144,7 +140,7 @@ void Shape3D::rotateY(float theeta)
 	};
 	transformShape(tranMatrix);
 }
-void Shape3D::viewOld(Vect3<float> e, Vect3<float> v)
+void Cube3D::viewOld(Vect3<float> e, Vect3<float> v)
 {
 	translate(-e);
 	// u,v,n axes
@@ -161,7 +157,7 @@ void Shape3D::viewOld(Vect3<float> e, Vect3<float> v)
 	};
 	transformShape(tranMatrix);
 }
-void Shape3D::view(Vect3<float> e, Vect3<float> v)
+void Cube3D::view(Vect3<float> e, Vect3<float> v)
 {
 	// u,v,n axes		
 	Vect3<float> n = { 0,0,1 }; //find from a-e vector
@@ -189,7 +185,7 @@ void Shape3D::view(Vect3<float> e, Vect3<float> v)
 		vectorify(result, index);
 	}
 }
-void Shape3D::orthographic_projection(bool x, bool y, bool z)
+void Cube3D::orthographic_projection(bool x, bool y, bool z)
 {
 	float tranMatrix[4][4] = {
 								!x,     0,          0,      0,
@@ -199,7 +195,7 @@ void Shape3D::orthographic_projection(bool x, bool y, bool z)
 	};
 	transformShape(tranMatrix);
 }
-void Shape3D::oblique_projection(float alpha, float theeta)
+void Cube3D::oblique_projection(float alpha, float theeta)
 {
 	if (alpha == 0 || alpha == 90 || alpha == 180 || alpha == 270 || alpha == 360) return;
 	theeta *= pi / 180;
@@ -213,7 +209,7 @@ void Shape3D::oblique_projection(float alpha, float theeta)
 	};
 	transformShape(tranMatrix);
 }
-void Shape3D::perspective_projection(float xprp, float yprp, float zprp, float zvp)
+void Cube3D::perspective_projection(float xprp, float yprp, float zprp, float zvp)
 {
 	float depths[max_Vertex];
 	for (int index = 0; index < n; index++)
@@ -242,7 +238,7 @@ void Shape3D::perspective_projection(float xprp, float yprp, float zprp, float z
 	for (int index = 0; index < n; index++)
 		this->vertSet[index].z = depths[index];
 }
-void Shape3D::colorTriangle(Vect3<float> A, Vect3<float> B, Vect3<float> C, unsigned int color, Vect3<float> off) {
+void Cube3D::colorTriangle(Vect3<float> A, Vect3<float> B, Vect3<float> C, unsigned int color, Vect3<float> off) {
 	float dx1, dx2, dx3;
 	Vect3<float> array[] = { A, B, C};
 	SortByY(array);
@@ -283,11 +279,11 @@ void Shape3D::colorTriangle(Vect3<float> A, Vect3<float> B, Vect3<float> C, unsi
 		}
 	}
 }
-void Shape3D::colorFace(Vect3<float> A, Vect3<float> B, Vect3<float> C, Vect3<float> D, unsigned int color, Vect3<float> off) {		
+void Cube3D::colorFace(Vect3<float> A, Vect3<float> B, Vect3<float> C, Vect3<float> D, unsigned int color, Vect3<float> off) {		
 	colorTriangle(A, B, C, color, off);
 	colorTriangle(C, D, A, color, off);
 }
-void Shape3D::drawCube(bool colored) {
+void Cube3D::drawCube(bool colored) {
 	Vect3<float> off(getMidX(), getMidY(), 0);
 	//B,C,H,G,A,D,E,F
 	//0,1,2,3,4,5,6,7
@@ -329,7 +325,7 @@ void Shape3D::drawCube(bool colored) {
 		colorFace(vertSet[4], vertSet[7], vertSet[6], vertSet[5], 0xbdb2ff, off); //AFED
 	}
 }
-void Shape3D::drawCubeOrigin(float x, float y, float z,
+void Cube3D::drawCubeOrigin(float x, float y, float z,
 	unsigned int front, unsigned int middle, unsigned int back, bool colored) {
 	Vect3<float> off(x, y, z);
 	//B,C,H,G,A,D,E,F axes: x1,x2,y1,y2,z1,z0,z2

@@ -1,3 +1,4 @@
+#pragma once
 #include "ourBetterGraphics_eyy_.h"
 
 LRESULT CALLBACK WindowProc(HWND window_handle, unsigned int message, WPARAM w_param, LPARAM l_param)
@@ -141,11 +142,10 @@ int CALLBACK WinMain(
 				//rotationx(30, result, n);
 
 				//My Beautiful Baby
-				Shape3D p1;
-				Shape3D p2;
-				Shape3D p3;
-				Shape3D p4;
-
+				Cube3D p1;
+				Cube3D p2;
+				Cube3D p3;
+				Cube3D p4;
 				//Assignment 1
 				//p1.scale(100);
 

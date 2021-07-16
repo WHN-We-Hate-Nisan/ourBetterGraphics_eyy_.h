@@ -18,7 +18,7 @@
     <ClCompile Include="..\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Shape3D.cpp">
+    <ClCompile Include="..\src\Cube.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Essentials.cpp">
@@ -27,18 +27,27 @@
     <ClCompile Include="..\src\Shape2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\headers\ourBetterGraphics_eyy_.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Shape3D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\headers\ourBetterGraphics_eyy_.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\headers\Shape3D.h">
+    <ClInclude Include="..\headers\Cube3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\headers\Essentials.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\headers\Shape2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shape3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

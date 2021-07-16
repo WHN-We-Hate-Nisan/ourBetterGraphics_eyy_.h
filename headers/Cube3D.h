@@ -1,7 +1,6 @@
 #pragma once
-#include"Essentials.h"
 
-class Shape3D {
+class Cube3D {
 public:
 	typedef std::vector<Vect3<float>> VertSet;
 	VertSet vertSet;
@@ -13,9 +12,9 @@ public:
 	auto matrixify(Vect3<float>);
 	auto vectorify(float[4], int);
 public:
-	Shape3D(int);
-	Shape3D();
-	Shape3D(VertSet);
+	Cube3D(int);
+	Cube3D();
+	Cube3D(VertSet);
 	void transformShape(float[][4]);
 	void transformPoint(float[4][4], float[4], int);
 	void draw();
