@@ -21,11 +21,11 @@ struct Vect2 {
 		return Vect2(this->x - right.x, this->y - right.y);
 	}
 };
-template<typename T = int>
-struct Vect3 : public Vect2<T> {
-	T z;
-	Vect3() :Vect2<T>(0, 0), z(0) {}
-	Vect3(T x, T y, T z) : Vect2<T>(x, y), z(z) {}
+template<typename T = float>
+struct Vect3{
+	T x, y, z;
+	//Vect3() :x(0), y(0), z(0) {}
+	//Vect3(T x, T y, T z) : x(x), y(y), z(z) {}
 	Vect3 operator-() {
 		return Vect3(-this->x, -this->y, -this->z);
 	}
@@ -77,11 +77,11 @@ void DrawRect(Vect2<int>, Vect2<int>, unsigned int );
 void DrawDDALine(Vect2<int>, Vect2<int>, unsigned int);
 void DrawDDALine(float, float, float, float);
 void DrawDDALine(float, float, float, float, unsigned);
-void DrawDDALine(Vect3<float>, Vect3<float>, unsigned int, Vect3<float> = Vect3<float>(0, 0, 0));
+void DrawDDALine(Vect3<float>, Vect3<float>, unsigned int, Vect3<float> = { 0, 0, 0 });
 
 void DrawBresLine(Vect2<int>, Vect2<int>, unsigned int);
 void DrawBresLine(Vect2<float>, Vect2<float>, unsigned int);
-void DrawBresLine(Vect3<float>, Vect3<float>, unsigned int, Vect3<float> = Vect3<float>(0, 0, 0));
+void DrawBresLine(Vect3<float>, Vect3<float>, unsigned int, Vect3<float> = { 0, 0, 0 });
 void DrawBresLine(float, float, float, float);
 void DrawBresLine(float, float, float, float, unsigned);
 

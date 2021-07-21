@@ -14,7 +14,7 @@ auto Shape2D::vectorify(float matrix[3][max_Vertex])
 {
 	tempVector.clear();
 	for (int k = 0; k < n; k++)
-		tempVector.push_back(Vect3<float>(matrix[0][k], matrix[1][k], matrix[2][k]));
+		tempVector.push_back(Vect2<float>(matrix[0][k], matrix[1][k]));
 	return tempVector;
 }
 Shape2D::Shape2D(float rad, float angle, int side, float offX = getMidX(), float offY = getMidY()) : radius(rad), n(side)
