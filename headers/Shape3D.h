@@ -4,9 +4,8 @@ struct Mesh {
 	std::vector<Triangle> triangles;
 };
 struct Mat4x4 {
-	float m[4][4] = { 0 };
-	static void Multiply(Vect3<float>& i, Vect3<float>& o, Mat4x4& m)
-	{
+	float m[4][4] = { 0 };	
+	static void Multiply(Vect3<float>& i, Vect3<float>& o, Mat4x4& m) {
 		o.x = i.x * m.m[0][0] + i.y * m.m[1][0] + i.z * m.m[2][0] + m.m[3][0];
 		o.y = i.x * m.m[0][1] + i.y * m.m[1][1] + i.z * m.m[2][1] + m.m[3][1];
 		o.z = i.x * m.m[0][2] + i.y * m.m[1][2] + i.z * m.m[2][2] + m.m[3][2];
@@ -16,6 +15,7 @@ struct Mat4x4 {
 			o.x /= w; o.y /= w; o.z /= w;
 	}
 };
+
 class Shape3D {
 	Mesh meshCube;
 	Mat4x4 matProj;
@@ -67,23 +67,29 @@ public:
 	void draw() {
 		//Draw Triangles
 		for (auto tri : meshCube.triangles) {
-			/*Triangle triProjected;
+			Triangle triProjected, triTranslated;
+
+			triTranslated = tri;
+			triTranslated.vertex[0].z = tri.vertex[0].z + 3.0f;
+			triTranslated.vertex[1].z = tri.vertex[1].z + 3.0f;
+			triTranslated.vertex[2].z = tri.vertex[2].z + 3.0f;
+
 			for (int i = 0; i < 3; i++)
-				Mat4x4::Multiply(tri.vertex[i], triProjected.vertex[i], matProj);*/
+				Mat4x4::Multiply(triTranslated.vertex[i], triProjected.vertex[i], matProj);
 
-			////Scale Triangles into view
-			//triProjected.vertex[0].x += 1.0f; triProjected.vertex[0].y += 1.0f;
-			//triProjected.vertex[1].x += 1.0f; triProjected.vertex[1].y += 1.0f;
-			//triProjected.vertex[2].x += 1.0f; triProjected.vertex[2].y += 1.0f;
-			//
-			//triProjected.vertex[0].x *= 0.5f * (float)globalBuffer.width; 
-			//triProjected.vertex[0].y *= 0.5f * (float)globalBuffer.height;
-			//triProjected.vertex[1].x *= 0.5f * (float)globalBuffer.width; 
-			//triProjected.vertex[1].y *= 0.5f * (float)globalBuffer.height;
-			//triProjected.vertex[2].x *= 0.5f * (float)globalBuffer.width; 
-			//triProjected.vertex[2].y *= 0.5f * (float)globalBuffer.height;
+			//Scale Triangles into view
+			triProjected.vertex[0].x += 1.0f; triProjected.vertex[0].y += 1.0f;
+			triProjected.vertex[1].x += 1.0f; triProjected.vertex[1].y += 1.0f;
+			triProjected.vertex[2].x += 1.0f; triProjected.vertex[2].y += 1.0f;
+			
+			triProjected.vertex[0].x *= 0.5f * (float)globalBuffer.width; 
+			triProjected.vertex[0].y *= 0.5f * (float)globalBuffer.height;
+			triProjected.vertex[1].x *= 0.5f * (float)globalBuffer.width; 
+			triProjected.vertex[1].y *= 0.5f * (float)globalBuffer.height;
+			triProjected.vertex[2].x *= 0.5f * (float)globalBuffer.width; 
+			triProjected.vertex[2].y *= 0.5f * (float)globalBuffer.height;
 
-			DrawTriangle(tri);
+			DrawTriangle(triProjected);
 		}
 	}
 };
