@@ -16,26 +16,26 @@ auto Cube3D::matrixify(Vect3<float> vect){
 }
 auto Cube3D::vectorify(float matrix[4], int index)
 {
-	vertSet[index] = Vect3<float>(matrix[0], matrix[1], matrix[2]);
+	vertSet[index] = { matrix[0], matrix[1], matrix[2] };
 }
 Cube3D::Cube3D(int cubeWidth)
 {
 	Vect3<float>
-		A(0, 0, 0),
-		B(0, 0, cubeWidth),
-		C(0, cubeWidth, cubeWidth),
-		D(0, cubeWidth, 0),
-		E(cubeWidth, cubeWidth, 0),
-		F(cubeWidth, 0, 0),
-		G(cubeWidth, 0, cubeWidth),
-		H(cubeWidth, cubeWidth, cubeWidth),
-		x1(-getMidX() + 1, cubeWidth / 2, cubeWidth / 2),
-		x2(getMidX() - 1, cubeWidth / 2, cubeWidth / 2),
-		y1(cubeWidth / 2, -getMidY() + 1, cubeWidth / 2),
-		y2(cubeWidth / 2, getMidY() - 1, cubeWidth / 2),
-		z1(cubeWidth / 2, cubeWidth / 2, -300),
-		z0(cubeWidth / 2, cubeWidth / 2, 0),
-		z2(cubeWidth / 2, cubeWidth / 2, 300);
+		A{ 0, 0, 0 },
+		B{0, 0, cubeWidth},
+		C{0, cubeWidth, cubeWidth},
+		D{ 0, cubeWidth, 0 },
+		E{ cubeWidth, cubeWidth, 0 },
+		F{ cubeWidth, 0, 0 },
+		G{ cubeWidth, 0, cubeWidth },
+		H{ cubeWidth, cubeWidth, cubeWidth },
+		x1{ -getMidX() + 1, cubeWidth / 2, cubeWidth / 2 },
+		x2{ getMidX() - 1, cubeWidth / 2, cubeWidth / 2 },
+		y1{ cubeWidth / 2, -getMidY() + 1, cubeWidth / 2 },
+		y2{ cubeWidth / 2, getMidY() - 1, cubeWidth / 2 },
+		z1{ cubeWidth / 2, cubeWidth / 2, -300 },
+		z0{ cubeWidth / 2, cubeWidth / 2, 0 },
+		z2{ cubeWidth / 2, cubeWidth / 2, 300 };
 
 	std::vector <Vect3<float>> arr = { B,C,H,G,A,D,E,F,x1,x2,y1,y2,z1,z0,z2 };
 	this->vertSet = arr;
@@ -45,21 +45,21 @@ Cube3D::Cube3D()
 {
 	int cubeWidth = 100;
 	Vect3<float>
-		A(0, 0, 0),
-		B(0, 0, cubeWidth),
-		C(0, cubeWidth, cubeWidth),
-		D(0, cubeWidth, 0),
-		E(cubeWidth, cubeWidth, 0),
-		F(cubeWidth, 0, 0),
-		G(cubeWidth, 0, cubeWidth),
-		H(cubeWidth, cubeWidth, cubeWidth),
-		x1(-getMidX() + 1, cubeWidth / 2, cubeWidth / 2),
-		x2(getMidX() - 1, cubeWidth / 2, cubeWidth / 2),
-		y1(cubeWidth / 2, -getMidY() + 1, cubeWidth / 2),
-		y2(cubeWidth / 2, getMidY() - 1, cubeWidth / 2),
-		z1(cubeWidth / 2, cubeWidth / 2, -300),
-		z0(cubeWidth / 2, cubeWidth / 2, 0),
-		z2(cubeWidth / 2, cubeWidth / 2, 300);
+		A{ 0, 0, 0 },
+		B{ 0, 0, cubeWidth },
+		C{ 0, cubeWidth, cubeWidth },
+		D{ 0, cubeWidth, 0 },
+		E{ cubeWidth, cubeWidth, 0 },
+		F{ cubeWidth, 0, 0 },
+		G{ cubeWidth, 0, cubeWidth },
+		H{ cubeWidth, cubeWidth, cubeWidth },
+		x1{ -getMidX() + 1, cubeWidth / 2, cubeWidth / 2 },
+		x2{ getMidX() - 1, cubeWidth / 2, cubeWidth / 2 },
+		y1{ cubeWidth / 2, -getMidY() + 1, cubeWidth / 2 },
+		y2{ cubeWidth / 2, getMidY() - 1, cubeWidth / 2 },
+		z1{ cubeWidth / 2, cubeWidth / 2, -300 },
+		z0{ cubeWidth / 2, cubeWidth / 2, 0 },
+		z2{ cubeWidth / 2, cubeWidth / 2, 300 };
 
 	std::vector <Vect3<float>> arr = { B,C,H,G,A,D,E,F,x1,x2,y1,y2,z1,z0,z2 };
 	this->vertSet = arr;
@@ -284,7 +284,7 @@ void Cube3D::colorFace(Vect3<float> A, Vect3<float> B, Vect3<float> C, Vect3<flo
 	colorTriangle(C, D, A, color, off);
 }
 void Cube3D::drawCube(bool colored) {
-	Vect3<float> off(getMidX(), getMidY(), 0);
+	Vect3<float> off{ getMidX(), getMidY(), 0 };
 	//B,C,H,G,A,D,E,F
 	//0,1,2,3,4,5,6,7
 
@@ -327,7 +327,7 @@ void Cube3D::drawCube(bool colored) {
 }
 void Cube3D::drawCubeOrigin(float x, float y, float z,
 	unsigned int front, unsigned int middle, unsigned int back, bool colored) {
-	Vect3<float> off(x, y, z);
+	Vect3<float> off{ x, y, z };
 	//B,C,H,G,A,D,E,F axes: x1,x2,y1,y2,z1,z0,z2
 	//0,1,2,3,4,5,6,7       8,9,10,11,12,13,14
 

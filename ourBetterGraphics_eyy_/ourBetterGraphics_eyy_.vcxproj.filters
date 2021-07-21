@@ -30,7 +30,7 @@
     <ClCompile Include="..\headers\ourBetterGraphics_eyy_.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Shape3D.cpp">
+    <ClCompile Include="..\src\Shape3D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,7 +47,7 @@
     <ClInclude Include="..\headers\Shape2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Shape3D.h">
+    <ClInclude Include="..\headers\Shape3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -137,10 +137,9 @@ int CALLBACK WinMain(
 
 #pragma endregion
 				ClrScr();			
-				Lab5(x, y, z, p, textured, rot, rotBool);
-				
-				//Shape3D s;
-
+				//Lab5(x, y, z, p, textured, rot, rotBool);				
+				Shape3D s;
+				s.draw();
 
 #pragma region Initializer
 				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,

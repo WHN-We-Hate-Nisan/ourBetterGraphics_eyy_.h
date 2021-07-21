@@ -189,14 +189,14 @@
     <ClCompile Include="..\src\Cube.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Shape3D.cpp" />
+    <ClCompile Include="..\src\Shape3D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\headers\Essentials.h" />
     <ClInclude Include="..\headers\ourBetterGraphics_eyy_.h" />
     <ClInclude Include="..\headers\Shape2D.h" />
     <ClInclude Include="..\headers\Cube3D.h" />
-    <ClInclude Include="Shape3D.h" />
+    <ClInclude Include="..\headers\Shape3D.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -185,6 +185,12 @@ void DrawHorizLine(int x1, int x2, int y, unsigned int color, float depth, Vect3
 		DrawPixel(i + off.x, y + off.y, color, depth);
 }
 
+void DrawTriangle(Triangle t, unsigned int color) {
+	DrawBresLine(t.vertex[0], t.vertex[1], color);
+	DrawBresLine(t.vertex[1], t.vertex[2], color);
+	DrawBresLine(t.vertex[2], t.vertex[0], color);
+}
+
 int getMidX() {
 	return globalBuffer.width / 2;
 }

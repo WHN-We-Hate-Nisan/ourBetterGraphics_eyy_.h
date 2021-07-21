@@ -27,28 +27,44 @@ struct Vect3{
 	//Vect3() :x(0), y(0), z(0) {}
 	//Vect3(T x, T y, T z) : x(x), y(y), z(z) {}
 	Vect3 operator-() {
-		return Vect3(-this->x, -this->y, -this->z);
+		return { -this->x, -this->y, -this->z };
 	}
-	Vect3 operator+(Vect3 &right) {
-		return Vect3(this->x+right.x, this->y + right.y, this->z + right.z);
+	Vect3 operator+(const Vect3 &right) {
+		return { this->x + right.x, this->y + right.y, this->z + right.z };
 	}
-	Vect3 operator-(Vect3 &right) {
-		return Vect3(this->x - right.x, this->y - right.y, this->z - right.z);
+	Vect3& operator+=(const Vect3& right) {
+		this->x += right.x; this->y += right.y; this->z += right.z;
+		return *this;
 	}
-	Vect3 operator*(Vect3 &right) {
+	Vect3 operator-(const Vect3 &right) {
+		return { this->x - right.x, this->y - right.y, this->z - right.z };
+	}
+	Vect3 operator*(const Vect3 &right) {
 		//i  j  k 
 		//x  y  z
 		//rx ry rz
 		
-		return Vect3(this->y * right.z - right.y * this->z,
+		return { this->y * right.z - right.y * this->z,
 					 this->z * right.x - right.y * this->x,
-					 this->x * right.y - right.x * this->y);
+					 this->x * right.y - right.x * this->y };
 	}
 	void normalize() {
 		float mag = sqrtf(this->x * this->x + this->y * this->y + this->z * this->z);
 		this-> x /= mag;
 		this-> y /= mag;
 		this-> z /= mag;
+	}
+}; 
+struct Triangle {
+	Vect3<float> vertex[3];
+	Triangle operator+(const Vect3<float> &right) {
+		return { vertex[0] + right,	vertex[1] + right, vertex[2] + right };
+	}
+	Triangle& operator+=(const Vect3<float> &right) {
+		vertex[0] += right;
+		vertex[1] += right;
+		vertex[2] += right;
+		return *this;
 	}
 };
 struct Bitmap {
@@ -86,6 +102,8 @@ void DrawBresLine(float, float, float, float);
 void DrawBresLine(float, float, float, float, unsigned);
 
 void DrawHorizLine(int, int, int, unsigned int, float, Vect3<float> = {0, 0, 0});
+
+void DrawTriangle(Triangle, unsigned int = 0xffffff);
 
 int getMidX();
 int getMidY();
