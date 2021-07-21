@@ -9,7 +9,7 @@ auto Cube3D::matrixify(VertSet vect)
 			tempMatrix[i][k] = (i == 0) ? vect[k].x : (i == 1) ? vect[k].y : (i == 2) ? vect[k].z : 1;
 	return tempMatrix;
 }
-auto Cube3D::matrixify(Vect3<float> vect){
+auto Cube3D::matrixify(Vec3 vect){
 	for (int i = 0; i < 4; i++)
 		tempMat[i] = (i == 0) ? vect.x : (i == 1) ? vect.y : (i == 2) ? vect.z : 1;
 	return tempMat;
@@ -20,7 +20,7 @@ auto Cube3D::vectorify(float matrix[4], int index)
 }
 Cube3D::Cube3D(int cubeWidth)
 {
-	Vect3<float>
+	Vec3
 		A{ 0, 0, 0 },
 		B{0, 0, cubeWidth},
 		C{0, cubeWidth, cubeWidth},
@@ -37,14 +37,14 @@ Cube3D::Cube3D(int cubeWidth)
 		z0{ cubeWidth / 2, cubeWidth / 2, 0 },
 		z2{ cubeWidth / 2, cubeWidth / 2, 300 };
 
-	std::vector <Vect3<float>> arr = { B,C,H,G,A,D,E,F,x1,x2,y1,y2,z1,z0,z2 };
+	std::vector <Vec3> arr = { B,C,H,G,A,D,E,F,x1,x2,y1,y2,z1,z0,z2 };
 	this->vertSet = arr;
 	this->n = vertSet.size();
 }
 Cube3D::Cube3D()
 {
 	int cubeWidth = 100;
-	Vect3<float>
+	Vec3
 		A{ 0, 0, 0 },
 		B{ 0, 0, cubeWidth },
 		C{ 0, cubeWidth, cubeWidth },
@@ -61,7 +61,7 @@ Cube3D::Cube3D()
 		z0{ cubeWidth / 2, cubeWidth / 2, 0 },
 		z2{ cubeWidth / 2, cubeWidth / 2, 300 };
 
-	std::vector <Vect3<float>> arr = { B,C,H,G,A,D,E,F,x1,x2,y1,y2,z1,z0,z2 };
+	std::vector <Vec3> arr = { B,C,H,G,A,D,E,F,x1,x2,y1,y2,z1,z0,z2 };
 	this->vertSet = arr;
 	this->n = vertSet.size();
 }
@@ -91,7 +91,7 @@ void Cube3D::draw() {
 		DrawDDALine(vertSet[i - 1].x + X, vertSet[i - 1].y + Y, vertSet[i].x + X, vertSet[i].y + Y);
 	DrawDDALine(vertSet[vertSet.size() - 1].x + X, vertSet[vertSet.size() - 1].y + Y, vertSet[0].x + X, vertSet[0].y + Y);
 }
-void Cube3D::translate(Vect3<float> e)
+void Cube3D::translate(Vec3 e)
 {
 	float tranMatrix[4][4] = {
 								{1,  0,   0,   e.x },
@@ -140,14 +140,14 @@ void Cube3D::rotateY(float theeta)
 	};
 	transformShape(tranMatrix);
 }
-void Cube3D::viewOld(Vect3<float> e, Vect3<float> v)
+void Cube3D::viewOld(Vec3 e, Vec3 v)
 {
 	translate(-e);
 	// u,v,n axes
 
-	Vect3<float> n = { 0,0,1 }; //find from a-e vector
+	Vec3 n = { 0,0,1 }; //find from a-e vector
 	//Normalize v
-	Vect3<float> u = { 1,0,0 }; //Find from VxN
+	Vec3 u = { 1,0,0 }; //Find from VxN
 	// here same as x,y,n
 	float tranMatrix[4][4] = {
 									{u.x,  u.y,   u.z,   0 },
@@ -157,11 +157,11 @@ void Cube3D::viewOld(Vect3<float> e, Vect3<float> v)
 	};
 	transformShape(tranMatrix);
 }
-void Cube3D::view(Vect3<float> e, Vect3<float> v)
+void Cube3D::view(Vec3 e, Vec3 v)
 {
 	// u,v,n axes		
-	Vect3<float> n = { 0,0,1 }; //find from a-e vector
-	Vect3<float> u = { 1,0,0 }; //Find from VxN
+	Vec3 n = { 0,0,1 }; //find from a-e vector
+	Vec3 u = { 1,0,0 }; //Find from VxN
 
 	float result[4] = { 0 };
 	for (int index = 0; index < this->n; index++) {
@@ -238,14 +238,14 @@ void Cube3D::perspective_projection(float xprp, float yprp, float zprp, float zv
 	for (int index = 0; index < n; index++)
 		this->vertSet[index].z = depths[index];
 }
-void Cube3D::colorTriangle(Vect3<float> A, Vect3<float> B, Vect3<float> C, unsigned int color, Vect3<float> off) {
+void Cube3D::colorTriangle(Vec3 A, Vec3 B, Vec3 C, unsigned int color, Vec3 off) {
 	float dx1, dx2, dx3;
-	Vect3<float> array[] = { A, B, C};
+	Vec3 array[] = { A, B, C};
 	SortByY(array);
 	A = array[0];
 	B = array[1];
 	C = array[2];
-	Vect3<float> Source, End;
+	Vec3 Source, End;
 	if (B.y - A.y > 0) dx1 = (B.x - A.x) / (B.y - A.y); else dx1 = 0;
 	if (C.y - A.y > 0) dx2 = (C.x - A.x) / (C.y - A.y); else dx2 = 0;
 	if (C.y - B.y > 0) dx3 = (C.x - B.x) / (C.y - B.y); else dx3 = 0;
@@ -255,36 +255,36 @@ void Cube3D::colorTriangle(Vect3<float> A, Vect3<float> B, Vect3<float> C, unsig
 	if (dx1 > dx2) {
 		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx2, End.x += dx1)
 		{		//DrawBresLine(Source, End, color, off);
-			depthh = interPolateDepth(A.y, B.y, Source.y, A.z, B.z);
+			depthh = interPolate(A.y, B.y, Source.y, A.z, B.z);
 			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
 		}
 		End = B;
 		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx2, End.x += dx3)
 		{	//DrawBresLine(Source, End, color, off);
-			depthh = interPolateDepth(B.y, C.y, Source.y, B.z, C.z);
+			depthh = interPolate(B.y, C.y, Source.y, B.z, C.z);
 			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
 		}
 	}
 	else {
 		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx1, End.x += dx2)
 		{	//DrawBresLine(Source, End, color, off);
-			depthh = interPolateDepth(A.y, B.y, Source.y, A.z, B.z);
+			depthh = interPolate(A.y, B.y, Source.y, A.z, B.z);
 			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
 		}
 		Source = B;
 		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx3, End.x += dx2)
 		{	//DrawBresLine(Source, End, color, off);
-			depthh = interPolateDepth(B.y, C.y, Source.y, B.z, C.z);
+			depthh = interPolate(B.y, C.y, Source.y, B.z, C.z);
 			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
 		}
 	}
 }
-void Cube3D::colorFace(Vect3<float> A, Vect3<float> B, Vect3<float> C, Vect3<float> D, unsigned int color, Vect3<float> off) {		
+void Cube3D::colorFace(Vec3 A, Vec3 B, Vec3 C, Vec3 D, unsigned int color, Vec3 off) {		
 	colorTriangle(A, B, C, color, off);
 	colorTriangle(C, D, A, color, off);
 }
 void Cube3D::drawCube(bool colored) {
-	Vect3<float> off{ getMidX(), getMidY(), 0 };
+	Vec3 off{ getMidX(), getMidY(), 0 };
 	//B,C,H,G,A,D,E,F
 	//0,1,2,3,4,5,6,7
 
@@ -327,7 +327,7 @@ void Cube3D::drawCube(bool colored) {
 }
 void Cube3D::drawCubeOrigin(float x, float y, float z,
 	unsigned int front, unsigned int middle, unsigned int back, bool colored) {
-	Vect3<float> off{ x, y, z };
+	Vec3 off{ x, y, z };
 	//B,C,H,G,A,D,E,F axes: x1,x2,y1,y2,z1,z0,z2
 	//0,1,2,3,4,5,6,7       8,9,10,11,12,13,14
 
