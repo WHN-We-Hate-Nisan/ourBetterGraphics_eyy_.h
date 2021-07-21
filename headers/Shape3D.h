@@ -20,6 +20,7 @@ class Shape3D {
 	Mesh meshCube;
 	Mat4x4 matProj;
 	float fNear, fFar, fFov, fAspectRatio, fFovRad;
+	float fTheta;
 
 public:
 	Shape3D() {
@@ -51,6 +52,7 @@ public:
 		};
 		
 		//Projection Matrix
+		fTheta = 0;
 		fNear = 0.1f;
 		fFar = 1000.0f;
 		fFov = 90.0f;
@@ -64,13 +66,38 @@ public:
 		matProj.m[2][3] = 1.0f;
 		matProj.m[3][3] = 0.0f;
 	}
-	void draw() {
+	void draw(float fElapsedTime=0) {
+		Mat4x4 matRotZ, matRotX;
+		//fTheta = 10;
+		fTheta += fElapsedTime * 0.01f;
+
+		// Rotation Z
+		matRotZ.m[0][0] = cosf(fTheta);
+		matRotZ.m[0][1] = sinf(fTheta);
+		matRotZ.m[1][0] = -sinf(fTheta);
+		matRotZ.m[1][1] = cosf(fTheta);
+		matRotZ.m[2][2] = 1;
+		matRotZ.m[3][3] = 1;
+
+		// Rotation X
+		matRotX.m[0][0] = 1;
+		matRotX.m[1][1] = cosf(fTheta * 0.5f);
+		matRotX.m[1][2] = sinf(fTheta * 0.5f);
+		matRotX.m[2][1] = -sinf(fTheta * 0.5f);
+		matRotX.m[2][2] = cosf(fTheta * 0.5f);
+		matRotX.m[3][3] = 1;
+
 		//Draw Triangles
 		for (auto tri : meshCube.triangles) {
-			Triangle triProjected, triTranslated;
+			Triangle triProjected, triTranslated, triRotatedZ, triRotatedZX;
 
-			triTranslated = tri+ Vect3<float>{ 0.0f, 0.0f, 3.0f };
+			for (int i = 0; i < 3; i++)
+				Mat4x4::Multiply(tri.vertex[i], triRotatedZ.vertex[i], matRotZ);
+			for (int i = 0; i < 3; i++)
+				Mat4x4::Multiply(triRotatedZ.vertex[i], triRotatedZX.vertex[i], matRotX);
 
+			triTranslated = triRotatedZX + Vect3<float>{ 0.0f, 0.0f, 3.0f };
+	
 			for (int i = 0; i < 3; i++)
 				Mat4x4::Multiply(triTranslated.vertex[i], triProjected.vertex[i], matProj);
 

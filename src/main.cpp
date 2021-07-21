@@ -61,6 +61,7 @@ int CALLBACK WinMain(
 			int angle = 0;
 			int i = 0;
 			int flag = 1;
+			int frameCounter = 0;
 
 			//int x = 91, y = 101, z = -239, p = 171;
 			float x = 1, y = 1, z = 201, p = 171;
@@ -139,11 +140,12 @@ int CALLBACK WinMain(
 				ClrScr();			
 				//Lab5(x, y, z, p, textured, rot, rotBool);				
 				Shape3D s;
-				s.draw();
+				s.draw(frameCounter);
 
 #pragma region Initializer
 				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
 							  0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
+				frameCounter++;
 				//Sleep(17);
 			}
 		}
@@ -159,6 +161,25 @@ void Lab5(float x, float y, float z, float p,
 	Cube3D p2;
 	Cube3D p3;
 	Cube3D p4;
+
+	//AntiGimbal Rotation
+/*if (rotBool.y)
+{
+	p1.rotateY(rot.y);
+	p1.rotateX(rot.x);
+	p1.rotateZ(rot.z);
+}
+else if (rotBool.x) {
+	p1.rotateX(rot.x);
+	p1.rotateY(rot.y);
+	p1.rotateZ(rot.z);
+}
+else if (rotBool.z) {
+	p1.rotateZ(rot.z);
+	p1.rotateY(rot.y);
+	p1.rotateX(rot.x);
+}*/
+
 	//Assignment 1
 	//p1.scale(100);
 	p1.rotateX(40);
@@ -188,23 +209,7 @@ p4.perspective_projection(1, 1, 310, 1);*/
 //p1.translate({-50, -50, -50});
 //p1.view({x, y, z});
 
-//AntiGimbal Rotation
-/*if (rotBool.y)
-{
-	p1.rotateY(rot.y);
-	p1.rotateX(rot.x);
-	p1.rotateZ(rot.z);
-}
-else if (rotBool.x) {
-	p1.rotateX(rot.x);
-	p1.rotateY(rot.y);
-	p1.rotateZ(rot.z);
-}
-else if (rotBool.z) {
-	p1.rotateZ(rot.z);
-	p1.rotateY(rot.y);
-	p1.rotateX(rot.x);
-}*/
+
 //int x = 91, y = 101, z = -239, p = 171;
 //p1.perspective_projection(0, 0, -200, 250);
 	p1.drawCube(textured);
