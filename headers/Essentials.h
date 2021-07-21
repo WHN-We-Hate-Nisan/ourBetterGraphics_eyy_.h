@@ -48,6 +48,10 @@ struct Vect3{
 					 this->z * right.x - right.y * this->x,
 					 this->x * right.y - right.x * this->y };
 	}
+	Vect3& multiplyEach(const Vect3& right) {
+		this->x *= right.x; this->y *= right.y; this->z *= right.z;
+		return *this;
+	}
 	void normalize() {
 		float mag = sqrtf(this->x * this->x + this->y * this->y + this->z * this->z);
 		this-> x /= mag;
@@ -64,6 +68,12 @@ struct Triangle {
 		vertex[0] += right;
 		vertex[1] += right;
 		vertex[2] += right;
+		return *this;
+	}
+	Triangle& multiply(const Vect3<float> &right){
+		vertex[0].multiplyEach(right);
+		vertex[1].multiplyEach(right);
+		vertex[2].multiplyEach(right);
 		return *this;
 	}
 };

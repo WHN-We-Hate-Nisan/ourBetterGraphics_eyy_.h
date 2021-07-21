@@ -69,26 +69,15 @@ public:
 		for (auto tri : meshCube.triangles) {
 			Triangle triProjected, triTranslated;
 
-			triTranslated = tri;
-			triTranslated.vertex[0].z = tri.vertex[0].z + 3.0f;
-			triTranslated.vertex[1].z = tri.vertex[1].z + 3.0f;
-			triTranslated.vertex[2].z = tri.vertex[2].z + 3.0f;
+			triTranslated = tri+ Vect3<float>{ 0.0f, 0.0f, 3.0f };
 
 			for (int i = 0; i < 3; i++)
 				Mat4x4::Multiply(triTranslated.vertex[i], triProjected.vertex[i], matProj);
 
 			//Scale Triangles into view
-			triProjected.vertex[0].x += 1.0f; triProjected.vertex[0].y += 1.0f;
-			triProjected.vertex[1].x += 1.0f; triProjected.vertex[1].y += 1.0f;
-			triProjected.vertex[2].x += 1.0f; triProjected.vertex[2].y += 1.0f;
-			
-			triProjected.vertex[0].x *= 0.5f * (float)globalBuffer.width; 
-			triProjected.vertex[0].y *= 0.5f * (float)globalBuffer.height;
-			triProjected.vertex[1].x *= 0.5f * (float)globalBuffer.width; 
-			triProjected.vertex[1].y *= 0.5f * (float)globalBuffer.height;
-			triProjected.vertex[2].x *= 0.5f * (float)globalBuffer.width; 
-			triProjected.vertex[2].y *= 0.5f * (float)globalBuffer.height;
-
+			triProjected += { 1.0f, 1.0f, 0.0f };			
+			triProjected.multiply({ 0.5f * (float)globalBuffer.width, 0.5f * (float)globalBuffer.height, 1.0f });
+						
 			DrawTriangle(triProjected);
 		}
 	}
