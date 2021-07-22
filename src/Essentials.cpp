@@ -36,11 +36,11 @@ float interPolate(float input1, float input2, float position, float val1, float 
 Bitmap globalBuffer;
 bool globalRunning = true;
 
-void ClrScr() {
+void ClrScr(unsigned int color) {
 	unsigned int* pixel = (unsigned int*)globalBuffer.memory;
 	for (int y = 0; y < globalBuffer.height; y++)
 		for (int x = 0; x < globalBuffer.width; x++)
-			*pixel++ = 0;
+			*pixel++ = color;
 	float* zBuffer = (float*)globalBuffer.depthBuffer;
 	for (int y = 0; y < globalBuffer.height; y++)
 		for (int x = 0; x < globalBuffer.width; x++)
@@ -193,6 +193,35 @@ void DrawTriangle(Triangle t, unsigned int color) {
 	DrawBresLine(t.vertex[0], t.vertex[1], color);
 	DrawBresLine(t.vertex[1], t.vertex[2], color);
 	DrawBresLine(t.vertex[2], t.vertex[0], color);
+}
+void ColorTriangle(Triangle tri, unsigned int color, Vec3 off) {
+	float dx1, dx2, dx3;
+	Vec3 array[] = { tri.vertex[0], tri.vertex[1], tri.vertex[2] };
+	SortByY(array);
+	Vec3 A = array[0];
+	Vec3 B = array[1];
+	Vec3 C = array[2];
+	Vec3 Source, End;
+	if (B.y - A.y > 0) dx1 = (B.x - A.x) / (B.y - A.y); else dx1 = 0;
+	if (C.y - A.y > 0) dx2 = (C.x - A.x) / (C.y - A.y); else dx2 = 0;
+	if (C.y - B.y > 0) dx3 = (C.x - B.x) / (C.y - B.y); else dx3 = 0;
+
+	Source = End = A;
+	float depthh = 1000;
+	if (dx1 > dx2) {
+		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx2, End.x += dx1)
+			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
+		End = B;
+		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx2, End.x += dx3)
+			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
+	}
+	else {
+		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx1, End.x += dx2)
+			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
+		Source = B;
+		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx3, End.x += dx2)
+			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
+	}
 }
 
 int getMidX() {
