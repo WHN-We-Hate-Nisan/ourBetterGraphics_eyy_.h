@@ -80,7 +80,6 @@ public:
 		matRotZ.m[1][1] = cosf(fTheta);
 		matRotZ.m[2][2] = 1;
 		matRotZ.m[3][3] = 1;
-
 		// Rotation X
 		matRotX.m[0][0] = 1;
 		matRotX.m[1][1] = cosf(fTheta * 0.5f);
@@ -128,7 +127,7 @@ public:
 				triProjected.color = triTranslated.color;
 
 				colorTriangle(triProjected, triProjected.color);
-				//DrawTriangle(triProjected);
+				DrawTriangle(triProjected, 0);
 			}
 		}
 	}
