@@ -7,6 +7,7 @@
 #include <strstream>
 #include <string>
 #include <algorithm>
+#include <list>
 
 constexpr float pi = 3.14159f;
 constexpr int max_Vertex = 15;
@@ -55,6 +56,10 @@ struct Vect3 {
 	Vect3 operator-(const Vect3& right) {
 		return { this->x - right.x, this->y - right.y, this->z - right.z, this->w };
 	}
+	Vect3& operator-=(const Vect3& right) {
+		this->x -= right.x; this->y -= right.y; this->z -= right.z;
+		return *this;
+	}
 	Vect3 operator*(const Vect3& right) {
 		//i  j  k 
 		//x  y  z
@@ -79,6 +84,9 @@ struct Vect3 {
 		this->x *= right.x; this->y *= right.y; this->z *= right.z;
 		return *this;
 	}
+	static Vect3 multiplyEach(const Vect3& left, const Vect3& right) {		
+		return { left.x * right.x, left.y* right.y, left.z* right.z, 1};
+	}
 	unsigned int toUnsigned() {
 		Vect3<int> Col = { this->x * 256, this->y * 256, this->z * 256 };
 		return interPolate(
@@ -95,17 +103,33 @@ struct Vect3 {
 	T dot(const Vect3& right) {
 		return this->x * right.x + this->y * right.y + this->z * right.z;
 	}
+	static T dot(const Vect3& left, const Vect3& right) {
+		return left.x * right.x + left.y * right.y + left.z * right.z;
+	}
 	T length() {
 		return sqrtf(this->x * this->x + this->y * this->y + this->z * this->z);
 	}
-	Vect3 normalize() {
+	Vect3& normalize() {
 		float mag = length();
 		this->x /= mag;
 		this->y /= mag;
 		this->z /= mag;
 		return *this;
 	}
-	
+	static Vect3 normalize(Vect3 v) {
+		return v.normalize();
+	}
+	static Vect3 intersectPlane(Vect3& planeP, Vect3& planeN, Vect3& lineStart, Vect3& lineEnd) {
+		planeN.normalize();
+		float planeD = -planeN.dot(planeP);
+		float ad = lineStart.dot(planeN);
+		float bd = lineEnd.dot(planeN);
+		float t = (planeD + ad) / (ad - bd);
+
+		Vect3 lineStartToEnd = lineEnd - lineStart;
+		Vect3 lineToIntersect = lineStartToEnd * t;
+		return lineStart + lineToIntersect;
+	}
 };
 typedef Vect3<float> Vec3;
 struct Triangle {
@@ -154,6 +178,88 @@ struct Triangle {
 		for (int i = 0; i < 3; i++)
 			vertex[i] /= vertex[i].w;
 		return *this;
+	}
+	static int ClipAgainstPlane(Vec3 planeP, Vec3 planeN, Triangle& in, Triangle& out1, Triangle& out2) {
+		//Make plane Normal normal
+		planeN.normalize();
+
+		//Return signed shortest distance from point to plane
+		auto d = [&](Vec3& p) {
+			Vec3 n = Vec3::normalize(p);
+			return Vec3::dot(planeN, p) - Vec3::dot(planeN, planeP);
+		};
+
+		//Create two storages to classify points on either side of the plane
+		//+ve sign = inside
+		Vec3* insides[3]; int nInsidePointCount = 0;
+		Vec3* outsides[3]; int nOutsidePointCount = 0;
+		//Get signed distance of each point in triangle to plane
+		float dis[3];
+		for (int i = 0; i < 3; i++)
+			dis[i] = d(in.vertex[i]);
+		for (int i = 0; i < 3; i++) {
+			if (dis[i] >= 0) insides[nInsidePointCount++] = &in.vertex[i];
+			else outsides[nOutsidePointCount++] = &in.vertex[i];
+		}
+
+		//Classify triangle points and change input into
+		//smaller triangles if needed
+
+		switch (nInsidePointCount) {
+		case 0:
+			//All points lie on the outside of the plane
+			//Clip whole triangle
+			//return nothing
+			return 0;
+			break;
+		case 3:
+			//All points lie on the inside of the plane
+			//No clipping
+			out1 = in;
+			return 1;
+			break;
+		case 1:
+			if (nOutsidePointCount == 2) {
+				//2 points lie outside
+				//triangle becomes smaller triangle
+				
+				//Set Output
+				out1.color = in.color;
+				
+				out1.vertex[0] = *insides[0];
+				//Two new points, at the location where
+				//original sides of the triangle intersect the plane
+				out1.vertex[1] = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0]);
+				out1.vertex[2] = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[1]);
+				return 1;
+			}
+			break;
+		case 2:
+			if (nOutsidePointCount == 1) {
+				//1 point lies outside
+				//triangle becomes a quad
+
+				//Set Output
+				out1.color = in.color;
+				out2.color = in.color;
+
+				//First triangle consists of 2 inside points and
+				//location where one side intersects the plane
+				out1.vertex[0] = *insides[0];
+				out1.vertex[1] = *insides[1];
+				out1.vertex[2] = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0]);
+
+				//Second triangle consists of 1 inside point and
+				//location where other side intersects the plane
+				//and the newly created point;
+				out2.vertex[0] = *insides[1];
+				out2.vertex[1] = out1.vertex[2];
+				out2.vertex[2] = Vec3::intersectPlane(planeP, planeN, *insides[1], *outsides[0]);
+				return 2;
+			}
+			break;
+		}
+		return 0;
 	}
 };
 struct Bitmap {

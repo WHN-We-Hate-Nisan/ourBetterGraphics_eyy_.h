@@ -66,6 +66,7 @@ struct Mat4x4 {
 		return *this;
 	}
 	Triangle& MultiplyTriangle(Triangle& result, Triangle& in) {
+		result.color = in.color;
 		for (int i = 0; i < 3; i++)
 			result.vertex[i] = this->MultiplyVector(in.vertex[i]);
 		return result;
@@ -281,8 +282,8 @@ class Shape3D {
 	Mat4x4 matProj;
 
 	Vec3 camera{ 0.0f, 0.0f, 0.0f };
-	float speed = 1.0f;
-	Vec3 lookDir;
+	float speed = -1.0f;
+	Vec3 lookDir= { 0,0,1 };
 	float yaw=0;
 
 	float fTheta=0;
@@ -290,11 +291,15 @@ class Shape3D {
 public:
 	Shape3D() {
 		//Loading obj
-		mesh.LoadFromObjectFile("../Assets/Church.obj");
+		//mesh.LoadFromObjectFile("../Assets/Church.obj");
 		//mesh.LoadFromObjectFile("../Assets/Cube.obj");
 		//mesh.LoadFromObjectFile("../Assets/Teapot.obj");
 		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
 		//Projection Matrix
+
+		//For Release
+		mesh.LoadFromObjectFile("Object.obj");
+
 		matProj = Mat4x4::MakeProjection();		
 	}
 	void checkInput(Controller& c, float elapsedFrames = 0) {
@@ -306,13 +311,20 @@ public:
 		if (c.down) 
 			camera.y -= speed;
 		if (c.left) 
-			camera.x += speed;
-		if (c.right) 
 			camera.x -= speed;
+		if (c.right) 
+			camera.x += speed;
+
+		Vec3 forward = lookDir * speed;
+
 		if (c.forward)
-			camera.z += speed;
+			camera -= forward;		;
 		if (c.backward)
-			camera.z -= speed;
+			camera += forward;
+		if (c.yawL)
+			yaw -= speed;
+		if (c.yawR)
+			yaw += speed;
 	}
 	void draw() {			
 		Mesh toRaster;
@@ -337,9 +349,11 @@ public:
 		matWorld.MultiplyMatrix(matTrans);
 
 		//camera
-		lookDir = { 0,0,1 };
 		Vec3 up = { 0,1,0 };
-		Vec3 target = camera + lookDir;
+		Vec3 target = { 0,0,1 };
+		Mat4x4 matCamRotate = Mat4x4::MakeRotationY(yaw);
+		lookDir = matCamRotate.MultiplyVector(target);
+		target = camera + lookDir;
 
 		Mat4x4 matCamera = Mat4x4::PointAt(camera, target, up);
 
@@ -372,20 +386,24 @@ public:
 
 				//Convert World Space to View Space
 				matView.MultiplyTriangle(triViewed, triTransformed);
+				
+				//Clip viewed triangle against near plane
+				//Forms upto 2 additional triangles
+				int nClippedTriangles = 0;
+				Triangle clipped[2];
+				nClippedTriangles = Triangle::ClipAgainstPlane({ 0.0f,0.0f, 0.1f }, { 0.0f,0.0f, 0.1f }, triViewed, clipped[0], clipped[1]);
 
-				//Projection
-				matProj.MultiplyTriangle(triProjected, triViewed);
+				for(int n=0; n<nClippedTriangles;n++) {
+					//Projection
+					matProj.MultiplyTriangle(triProjected, clipped[n]);
 
-				//Normalise Projected matrix
-				triProjected.normalise();
-
-				if(triProjected.normal().z<0.0f){
+					//Normalise Projected matrix
+					triProjected.normalise();
 
 					//Scale Triangles into view
 					Vec3 offSetView = { 1.0f, 1.0f, 0.0f };
 					triProjected += offSetView;
 					triProjected *= { 0.5f * (float)globalBuffer.width, 0.5f * (float)globalBuffer.height, 1.0f };
-					triProjected.color = triTransformed.color;
 
 					//Store Triangles
 					toRaster.triangles.push_back(triProjected);
@@ -401,13 +419,48 @@ public:
 		});
 
 		//Rasterize Triangle
-		for (auto& triProjected : toRaster.triangles) {
-			for (int i = 0; i < 3; i++) {
-				triProjected.vertex[i].y = (float)globalBuffer.height - triProjected.vertex[i].y;
-				triProjected.vertex[i].x = (float)globalBuffer.width - triProjected.vertex[i].x;
+		for (auto& triToRasterize : toRaster.triangles) {
+			
+			//Clip triangles against all four screen edges
+			Triangle clipped[2];
+			std::list<Triangle> triangleList;
+			triangleList.push_back(triToRasterize);
+			int nNewTriangles = 1;
+
+			for (int p = 0; p < 4; p++) {
+				int nTrisToAdd = 0;
+				while (nNewTriangles > 0) {
+					Triangle test = triangleList.front();
+					triangleList.pop_front();
+					nNewTriangles--;
+
+					switch (p) {
+					//bottom
+					case 0: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, test, clipped[0], clipped[1]); 
+						break;
+					//top
+					case 1: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, (float)globalBuffer.height-1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]);
+						break;
+					//left
+					case 2: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]);
+						break;
+					//right
+					case 3: nTrisToAdd = Triangle::ClipAgainstPlane({(float)globalBuffer.width-1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]);
+						break;
+					}
+					for (int w = 0; w < nTrisToAdd; w++)
+						triangleList.push_back(clipped[w]);
+				}
+				nNewTriangles = triangleList.size();
 			}
-			ColorTriangle(triProjected, triProjected.color);
-			//DrawTriangle(triProjected, 0);
+			for (auto& tri : triangleList) {
+				for (int i = 0; i < 3; i++) {
+					tri.vertex[i].y = (float)globalBuffer.height - tri.vertex[i].y;
+					tri.vertex[i].x = (float)globalBuffer.width - tri.vertex[i].x;
+				}
+				ColorTriangle(tri, tri.color);
+				//DrawTriangle(tri, 0);
+			}
 		}
 	}		
 };
