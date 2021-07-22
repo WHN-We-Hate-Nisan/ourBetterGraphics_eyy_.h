@@ -3,6 +3,8 @@
 
 #Debug Folder
 ourBetterGraphics_eyy_/Debug/
+src/junk.cpp
+Assets/Results/
 
 # Compiled Object files
 *.slo
@@ -279,4 +281,3 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
-src/junk.cpp
