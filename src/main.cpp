@@ -58,6 +58,7 @@ int CALLBACK WinMain(
 			MSG message;
 			HDC deviceContext = GetDC(window_handle);
 
+#pragma endregion
 			int angle = 0;
 			int i = 0;
 			int flag = 1;
@@ -67,10 +68,13 @@ int CALLBACK WinMain(
 			float x = 1, y = 1, z = 201, p = 171;
 			bool textured = false;
 			Vect3<int> rot{0, 0, 0}, rotBool{0, 0, 0};
-			int isAltPressed;
+			Controller controller;
+			Shape3D s;
+#pragma region Loop
 
 			while (globalRunning)
 			{
+				controller.reset();
 				while (PeekMessage(&message, 0, 0, 0, PM_REMOVE))
 				{
 					int multiplier = 10;
@@ -81,41 +85,65 @@ int CALLBACK WinMain(
 					{
 					case WM_KEYDOWN:
 						if (vkCode == 'W')
+						{
 							y -= multiplier;
+							controller.up = true;
+						}
 						if (vkCode == 'S')
+						{
 							y += multiplier;
+							controller.down = true;
+						}
 						if (vkCode == 'A')
+						{
 							x -= multiplier;
+							controller.left = true;
+						}
 						if (vkCode == 'D')
+						{
 							x += multiplier;
+							controller.right = true;
+						}
 						if (vkCode == 'Q')
+						{
 							z -= multiplier;
+						}
 						if (vkCode == 'E')
+						{
 							z += multiplier;
+						}
 						if (vkCode == 'Z')
+						{
 							p -= multiplier;
+						}
 						if (vkCode == 'C')
+						{
 							p += multiplier;
+						}
 
 						if (vkCode == 'J')
 						{
 							rot.x += multiplier / 2;
 							rotBool = {1, 0, 0};
+							controller.yawL = true;
 						}
 						if (vkCode == 'L')
 						{
 							rot.x -= multiplier / 2;
 							rotBool = {1, 0, 0};
+							controller.yawR = true;
 						}
 						if (vkCode == 'I')
 						{
 							rot.y += multiplier / 2;
 							rotBool = {0, 1, 0};
+							controller.forward = true;
 						}
 						if (vkCode == 'K')
 						{
 							rot.y -= multiplier / 2;
 							rotBool = {0, 1, 0};
+							controller.backward = true;
 						}
 						if (vkCode == 'U')
 						{
@@ -139,8 +167,8 @@ int CALLBACK WinMain(
 #pragma endregion
 				ClrScr();			
 				//Lab5(x, y, z, p, textured, rot, rotBool);				
-				Shape3D s;
-				s.draw(frameCounter);
+				s.checkInput(controller, frameCounter);
+				s.draw();
 
 #pragma region Initializer
 				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,

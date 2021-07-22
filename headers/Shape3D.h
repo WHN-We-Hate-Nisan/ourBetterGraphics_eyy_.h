@@ -39,15 +39,6 @@ struct Mesh {
 };
 struct Mat4x4 {
 	float m[4][4] = { 0 };
-	static void Multiply(Vec3& i, Vec3& o, Mat4x4& m) {
-		o.x = i.x * m.m[0][0] + i.y * m.m[1][0] + i.z * m.m[2][0] + m.m[3][0];
-		o.y = i.x * m.m[0][1] + i.y * m.m[1][1] + i.z * m.m[2][1] + m.m[3][1];
-		o.z = i.x * m.m[0][2] + i.y * m.m[1][2] + i.z * m.m[2][2] + m.m[3][2];
-		float w = i.x * m.m[0][3] + i.y * m.m[1][3] + i.z * m.m[2][3] + m.m[3][3];
-
-		if (w != 0.0f)
-			o.x /= w; o.y /= w; o.z /= w;
-	}
 	Vec3 MultiplyVector(Vec3& i) {
 		Vec3 o;
 		o.x = i.x * m[0][0] + i.y * m[1][0] + i.z * m[2][0] + i.w * m[3][0];
@@ -74,6 +65,11 @@ struct Mat4x4 {
 		*this = mat;
 		return *this;
 	}
+	Triangle& MultiplyTriangle(Triangle& result, Triangle& in) {
+		for (int i = 0; i < 3; i++)
+			result.vertex[i] = this->MultiplyVector(in.vertex[i]);
+		return result;
+	}
 	static Mat4x4 MakeIdentity() {
 		Mat4x4 mat;
 		mat.m[0][0] = 1.0f;
@@ -82,7 +78,8 @@ struct Mat4x4 {
 		mat.m[3][3] = 1.0f;
 		return mat;
 	}
-	static Mat4x4 MakeRotationZ(float rad) {
+	static Mat4x4 MakeRotationZ(float deg) {
+		float rad = deg * pi / 180.0f;
 		Mat4x4 mat;
 		mat.m[0][0] = cosf(rad);
 		mat.m[0][1] = sinf(rad);
@@ -98,7 +95,8 @@ struct Mat4x4 {
 		0,				0,				0, 1
 		*/
 	}
-	static Mat4x4 MakeRotationY(float rad) {
+	static Mat4x4 MakeRotationY(float deg) {
+		float rad = -deg * pi / 180.0f;
 		Mat4x4 mat;
 		mat.m[0][0] = cosf(rad);
 		mat.m[0][2] = -sinf(rad);
@@ -114,7 +112,8 @@ struct Mat4x4 {
 		0,                 0,       0,                 1
 		*/
 	}
-	static Mat4x4 MakeRotationX(float rad) {
+	static Mat4x4 MakeRotationX(float deg) {
+		float rad = -deg * pi / 180.0f;
 		Mat4x4 mat;
 		mat.m[0][0] = 1;
 		mat.m[1][1] = cosf(rad);
@@ -227,54 +226,138 @@ struct Mat4x4 {
 		mat.m[3][3] = 0.0f;
 		return mat;
 	}
-};
+	static Mat4x4 PointAt(Vec3& position, Vec3& target, Vec3& up) {
+		//Calculate new Forward (n)
+		Vec3 n = (target - position).normalize();
 
+		//Calculate new Up (u)
+		Vec3 u = up - (n * up.dot(n));
+
+		//New right direction (v)
+		Vec3 v = u * n;
+
+		//Dimensioning and Translation Matrix
+		Mat4x4 mat;
+		mat.m[0][0] = v.x;			mat.m[0][1] = v.y;			mat.m[0][2] = v.z;
+		mat.m[1][0] = u.x;			mat.m[1][1] = u.y;			mat.m[1][2] = u.z;
+		mat.m[2][0] = n.x;			mat.m[2][1] = n.y;			mat.m[2][2] = n.z;
+		mat.m[3][0] = position.x;	mat.m[3][1] = position.y;	mat.m[3][2] = position.z; mat.m[3][3] = 1.0f;
+		return mat;
+	}
+	//Inverse Rotation or Translation Matrix
+	static Mat4x4 LookAtInverse(Mat4x4& i) {
+		Mat4x4 mat;
+		mat.m[0][0] = i.m[0][0];	mat.m[0][1] = i.m[1][0];	mat.m[0][2] = i.m[2][0]; // v.x, u.x, n.x, 0
+		mat.m[1][0] = i.m[0][1];	mat.m[1][1] = i.m[1][1];	mat.m[1][2] = i.m[2][1]; // v.y, u.y, n.y, 0
+		mat.m[2][0] = i.m[0][2];	mat.m[2][1] = i.m[1][2];	mat.m[2][2] = i.m[2][2]; // v.z, u.z, n.z, 0
+
+		for (int j = 0; j < 3; j++) {
+			mat.m[3][j] = 0.0f;
+			for (int k = 0; k < 3; k++)
+				mat.m[3][j] -= i.m[3][k] * mat.m[k][j];
+		}
+		mat.m[3][3] = 1.0f; // (v x p) (u x p) (n x p) 1
+		return mat;
+		/*
+		v.x u.x, n.x, 0
+		v.y u.y, n.y, 0
+		v.z u.z, n.z, 0
+		(v x p) (u x p) (n x p) 1
+		*/
+	}
+};
+struct Controller {
+	bool up = 0, down = 0, left = 0, right = 0,
+		forward = 0, backward = 0,
+		yawL = 0, yawR = 0;
+	void reset() {
+		up = 0; down = 0; left = 0; right = 0;
+		forward = 0; backward = 0;
+		yawL = 0; yawR = 0;
+	}
+};
 class Shape3D {
-	Mesh meshCube;
+	Mesh mesh;
 	Mat4x4 matProj;
-	Vec3 Camera{ 0.0f, 0.0f, 0.0f };
+
+	Vec3 camera{ 0.0f, 0.0f, 0.0f };
+	float speed = 1.0f;
+	Vec3 lookDir;
+	float yaw=0;
+
 	float fTheta=0;
 
 public:
 	Shape3D() {
 		//Loading obj
-		//meshCube.LoadFromObjectFile("../Assets/Church.obj");
-		meshCube.LoadFromObjectFile("../Assets/Cube.obj");
+		mesh.LoadFromObjectFile("../Assets/Church.obj");
+		//mesh.LoadFromObjectFile("../Assets/Cube.obj");
+		//mesh.LoadFromObjectFile("../Assets/Teapot.obj");
+		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
 		//Projection Matrix
 		matProj = Mat4x4::MakeProjection();		
 	}
-	void draw(float fElapsedTime = 0) {
-		fTheta += fElapsedTime * 0.01f;
+	void checkInput(Controller& c, float elapsedFrames = 0) {
+		elapsedFrames *= 0.1f;
+		fTheta += elapsedFrames;
+
+		if (c.up) 
+			camera.y += speed;
+		if (c.down) 
+			camera.y -= speed;
+		if (c.left) 
+			camera.x += speed;
+		if (c.right) 
+			camera.x -= speed;
+		if (c.forward)
+			camera.z += speed;
+		if (c.backward)
+			camera.z -= speed;
+	}
+	void draw() {			
+		Mesh toRaster;
 
 		// Rotation Z
 		Mat4x4 matRotZ;
-		matRotZ = Mat4x4::MakeRotationZ(fTheta);
+		matRotZ = Mat4x4::MakeRotationZ(5.0f);
+		// Rotation Y
+		Mat4x4 matRotY;
+		matRotY = Mat4x4::MakeRotationY(fTheta);
 		// Rotation X
 		Mat4x4  matRotX;
-		matRotX = Mat4x4::MakeRotationX(fTheta * 0.5f);
+		matRotX = Mat4x4::MakeRotationX(0);
 		//Tranlation
 		Mat4x4 matTrans;
-		matTrans = Mat4x4::MakeTranslate(0.0f, 0.0f, 3.0f);
+		matTrans = Mat4x4::MakeTranslate(0.0f, 0.0f, 20.0f);
 		//World Transformations
 		Mat4x4 matWorld;
 		matWorld = Mat4x4::MakeIdentity();
-		matWorld.MultiplyMatrix(matRotZ, matRotX);
+		/*matWorld.MultiplyMatrix(matRotZ);
+		matWorld.MultiplyMatrix(matRotY);*/
 		matWorld.MultiplyMatrix(matTrans);
 
-		Mesh toRaster;
+		//camera
+		lookDir = { 0,0,1 };
+		Vec3 up = { 0,1,0 };
+		Vec3 target = camera + lookDir;
+
+		Mat4x4 matCamera = Mat4x4::PointAt(camera, target, up);
+
+		//View Matrix from camera
+		Mat4x4 matView = Mat4x4::LookAtInverse(matCamera);
+
 		//Draw Triangles
-		for (auto tri : meshCube.triangles) {
-			Triangle triProjected, triTransformed;
+		for (auto tri : mesh.triangles) {
+			Triangle triProjected, triTransformed, triViewed;
 
 			//Apply Transformations
-			for (int i = 0; i < 3; i++)
-				triTransformed.vertex[i]= matWorld.MultiplyVector(tri.vertex[i]);
+			matWorld.MultiplyTriangle(triTransformed, tri);
 
 			//Find Normal
 			Vec3 normal = triTransformed.normal();
-			Vec3 CameraRay = triTransformed.vertex[0] - Camera;
+			Vec3 CameraRay = triTransformed.vertex[0] - camera;
 
-			if(normal.dot(CameraRay) < 0.0f){
+			if(normal.dot(CameraRay.normalize()) < 0.0f){
 				//Illumination
 				Vec3 lightDirection = { 0.0f, 1.0f, -1.0f };
 				lightDirection.normalize();
@@ -287,22 +370,26 @@ public:
 					  col * 0x100 +
 					  col;
 
+				//Convert World Space to View Space
+				matView.MultiplyTriangle(triViewed, triTransformed);
+
 				//Projection
-				for (int i = 0; i < 3; i++)
-					triProjected.vertex[i] = matProj.MultiplyVector(triTransformed.vertex[i]);
-				
+				matProj.MultiplyTriangle(triProjected, triViewed);
+
 				//Normalise Projected matrix
-				for (int i = 0; i < 3; i++)
-					triProjected.vertex[i] = triProjected.vertex[i] / triProjected.vertex[i].w;
+				triProjected.normalise();
 
-				//Scale Triangles into view
-				Vec3 offSetView = { 1.0f, 1.0f, 0.0f };
-				triProjected += offSetView;
-				triProjected.multiply({ 0.5f * (float)globalBuffer.width, 0.5f * (float)globalBuffer.height, 1.0f });
-				triProjected.color = triTransformed.color;
+				if(triProjected.normal().z<0.0f){
 
-				//Store Triangles
-				toRaster.triangles.push_back(triProjected);				
+					//Scale Triangles into view
+					Vec3 offSetView = { 1.0f, 1.0f, 0.0f };
+					triProjected += offSetView;
+					triProjected *= { 0.5f * (float)globalBuffer.width, 0.5f * (float)globalBuffer.height, 1.0f };
+					triProjected.color = triTransformed.color;
+
+					//Store Triangles
+					toRaster.triangles.push_back(triProjected);
+				}
 			}
 		}
 		
@@ -315,9 +402,13 @@ public:
 
 		//Rasterize Triangle
 		for (auto& triProjected : toRaster.triangles) {
+			for (int i = 0; i < 3; i++) {
+				triProjected.vertex[i].y = (float)globalBuffer.height - triProjected.vertex[i].y;
+				triProjected.vertex[i].x = (float)globalBuffer.width - triProjected.vertex[i].x;
+			}
 			ColorTriangle(triProjected, triProjected.color);
 			//DrawTriangle(triProjected, 0);
 		}
-	}	
+	}		
 };
 
