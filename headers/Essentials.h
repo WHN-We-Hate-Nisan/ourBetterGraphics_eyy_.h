@@ -3,6 +3,11 @@
 #include <cmath>
 #include <cstdlib>
 #include <vector>
+#include <fstream>
+#include <strstream>
+#include <string>
+#include <algorithm>
+
 constexpr float pi = 3.14159f;
 constexpr int max_Vertex = 15;
 
@@ -34,21 +39,21 @@ struct Vect2 {
 };
 template<typename T = float>
 struct Vect3 {
-	T x, y, z;
+	T x=0, y=0, z=0, w=1;
 	//Vect3() :x(0), y(0), z(0) {}
 	//Vect3(T x, T y, T z) : x(x), y(y), z(z) {}
 	Vect3 operator-() {
-		return { -this->x, -this->y, -this->z };
+		return { -this->x, -this->y, -this->z, this->w };
 	}
 	Vect3 operator+(const Vect3& right) {
-		return { this->x + right.x, this->y + right.y, this->z + right.z };
+		return { this->x + right.x, this->y + right.y, this->z + right.z, this->w };
 	}
 	Vect3& operator+=(const Vect3& right) {
 		this->x += right.x; this->y += right.y; this->z += right.z;
 		return *this;
 	}
 	Vect3 operator-(const Vect3& right) {
-		return { this->x - right.x, this->y - right.y, this->z - right.z };
+		return { this->x - right.x, this->y - right.y, this->z - right.z, this->w };
 	}
 	Vect3 operator*(const Vect3& right) {
 		//i  j  k 
@@ -56,11 +61,19 @@ struct Vect3 {
 		//rx ry rz
 
 		return { this->y * right.z - right.y * this->z,
-					 this->z * right.x - right.y * this->x,
-					 this->x * right.y - right.x * this->y };
+				 this->z * right.x - right.y * this->x,
+				 this->x * right.y - right.x * this->y,
+				 this->w };
 	}
 	Vect3 operator*(const float& right) {
-		return { this->x * right,this->y * right,this->z * right };
+		return { this->x * right, this->y * right, this->z * right, this->w };
+	}
+	Vect3 operator/(const float& right) {
+		return { this->x / right, this->y / right, this->z / right, this->w };
+	}
+	Vect3& operator/=(const float& right) {
+		this->x /= right; this->y /= right; this->z /= right;
+		return *this;
 	}
 	Vect3& multiplyEach(const Vect3& right) {
 		this->x *= right.x; this->y *= right.y; this->z *= right.z;
@@ -82,13 +95,17 @@ struct Vect3 {
 	T dot(const Vect3& right) {
 		return this->x * right.x + this->y * right.y + this->z * right.z;
 	}
+	T length() {
+		return sqrtf(this->x * this->x + this->y * this->y + this->z * this->z);
+	}
 	Vect3 normalize() {
-		float mag = sqrtf(this->x * this->x + this->y * this->y + this->z * this->z);
+		float mag = length();
 		this->x /= mag;
 		this->y /= mag;
 		this->z /= mag;
 		return *this;
 	}
+	
 };
 typedef Vect3<float> Vec3;
 struct Triangle {
@@ -104,14 +121,39 @@ struct Triangle {
 		vertex[2] += right;
 		return *this;
 	}
-	Triangle& multiply(const Vec3& right) {
+	Triangle operator*(const Vec3& right) {
+		return { 
+			vertex[0].multiplyEach(right),
+			vertex[1].multiplyEach(right),
+			vertex[2].multiplyEach(right)
+		};
+	}
+	Triangle& operator*=(const Vec3& right) {
 		vertex[0].multiplyEach(right);
 		vertex[1].multiplyEach(right);
 		vertex[2].multiplyEach(right);
 		return *this;
 	}
+	Triangle operator/(const float& right) {
+		return {
+			vertex[0]/right,
+			vertex[1]/right,
+			vertex[2]/right
+		};
+	}
+	Triangle& operator/=(const float& right) {
+		vertex[0] /= right;
+		vertex[1] /= right;
+		vertex[2] /= right;
+		return *this;
+	}
 	Vec3 normal() {
-		return ((vertex[1] - vertex[0]) * (vertex[2] - vertex[0])).normalize();
+		return ( (vertex[1] - vertex[0]) * (vertex[2] - vertex[0]) ).normalize();
+	}
+	Triangle& normalise() {
+		for (int i = 0; i < 3; i++)
+			vertex[i] /= vertex[i].w;
+		return *this;
 	}
 };
 struct Bitmap {
@@ -123,7 +165,7 @@ struct Bitmap {
 extern Bitmap globalBuffer;
 extern bool globalRunning;
 
-void ClrScr();
+void ClrScr(unsigned int = 0);
 inline void DrawPixel(int, int, unsigned int, float = 1000);
 void SortByY(Vec3 arr[max_Vertex], int n = 3);
 void DrawDDALine(Vect2<int>, Vect2<int>, unsigned int);
@@ -140,6 +182,7 @@ void DrawBresLine(float, float, float, float, unsigned);
 void DrawHorizLine(int, int, int, unsigned int, float = 1000, Vec3 = { 0, 0, 0 });
 
 void DrawTriangle(Triangle, unsigned int = 0xffffff);
+void ColorTriangle(Triangle, unsigned int, Vec3 = { 0.0f,0.0f,0.0f });
 
 int getMidX();
 int getMidY();
