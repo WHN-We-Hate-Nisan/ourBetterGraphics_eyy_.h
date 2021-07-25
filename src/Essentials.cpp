@@ -229,6 +229,9 @@ void ColorTriangle(Triangle tri, unsigned int color, Vec3 off) {
 			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
 	}
 }
+void TextureTriangle(Triangle tri, Texture* texture) {
+
+}
 
 int getMidX() {
 	return globalBuffer.width / 2;

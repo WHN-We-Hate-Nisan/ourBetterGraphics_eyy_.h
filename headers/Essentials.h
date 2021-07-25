@@ -202,7 +202,7 @@ typedef Vect2<float> Vec2;
 typedef Vect3<float> Vec3;
 struct Triangle {
 	Vec3 vertex[3];
-	Vec2 texture[3];
+	Vec2 texCood[3];
 	unsigned int color;
 
 	Triangle operator+(const Vec3& right) {
@@ -272,11 +272,11 @@ struct Triangle {
 		for (int i = 0; i < 3; i++) {
 			if (dis[i] >= 0) {
 				insides[nInsidePointCount++] = &in.vertex[i];
-				insideTextures[nInsideTextureCount++] = &in.texture[i];
+				insideTextures[nInsideTextureCount++] = &in.texCood[i];
 			}
 			else {
 				outsides[nOutsidePointCount++] = &in.vertex[i];
-				outsideTextures[nOutsideTextureCount++] = &in.texture[i];
+				outsideTextures[nOutsideTextureCount++] = &in.texCood[i];
 			}
 		}
 
@@ -305,18 +305,19 @@ struct Triangle {
 				out1.color = in.color;
 				
 				out1.vertex[0] = *insides[0];
-				out1.texture[0] = *insideTextures[0];
+				out1.texCood[0] = *insideTextures[0];
 
 				//Two new points, at the location where
 				//original sides of the triangle intersect the plane
 				float t;
 				out1.vertex[1] = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0], t);
-				out1.texture[1].u = interPolate(t, insideTextures[0]->u, outsideTextures[0]->u);
-				out1.texture[1].v = interPolate(t, insideTextures[0]->v, outsideTextures[0]->v);
+				//out1.texCood[1]=Vec2::interpolate(t, *insideTextures[0], *outsideTextures[0]);
+				out1.texCood[1].u = interPolate(t, insideTextures[0]->u, outsideTextures[0]->u);
+				out1.texCood[1].v = interPolate(t, insideTextures[0]->v, outsideTextures[0]->v);
 
 				out1.vertex[2] = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[1], t);
-				out1.texture[2].u = interPolate(t, insideTextures[0]->u, outsideTextures[1]->u);
-				out1.texture[2].v = interPolate(t, insideTextures[0]->v, outsideTextures[1]->v);
+				out1.texCood[2].u = interPolate(t, insideTextures[0]->u, outsideTextures[1]->u);
+				out1.texCood[2].v = interPolate(t, insideTextures[0]->v, outsideTextures[1]->v);
 
 				return 1;
 			}
@@ -334,26 +335,26 @@ struct Triangle {
 				//location where one side intersects the plane
 				out1.vertex[0] = *insides[0];
 				out1.vertex[1] = *insides[1];
-				out1.texture[0] = *insideTextures[0];
-				out1.texture[1] = *insideTextures[1];
+				out1.texCood[0] = *insideTextures[0];
+				out1.texCood[1] = *insideTextures[1];
 				
 				float t;
 				out1.vertex[2] = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0],t);
-				out1.texture[2].u = interPolate(t, insideTextures[0]->u, outsideTextures[0]->u);
-				out1.texture[2].v = interPolate(t, insideTextures[0]->v, outsideTextures[0]->v);
+				out1.texCood[2].u = interPolate(t, insideTextures[0]->u, outsideTextures[0]->u);
+				out1.texCood[2].v = interPolate(t, insideTextures[0]->v, outsideTextures[0]->v);
 
 				//Second triangle consists of 1 inside point and
 				//location where other side intersects the plane
 				//and the newly created point;
 				out2.vertex[0] = *insides[1];
-				out2.texture[0] = *insideTextures[1];
+				out2.texCood[0] = *insideTextures[1];
 
 				out2.vertex[1] = out1.vertex[2];
-				out2.texture[1] = out1.texture[2];
+				out2.texCood[1] = out1.texCood[2];
 
 				out2.vertex[2] = Vec3::intersectPlane(planeP, planeN, *insides[1], *outsides[0],t);
-				out2.texture[2].u = interPolate(t, insideTextures[1]->u, outsideTextures[0]->u);
-				out2.texture[2].v = interPolate(t, insideTextures[1]->v, outsideTextures[0]->v);
+				out2.texCood[2].u = interPolate(t, insideTextures[1]->u, outsideTextures[0]->u);
+				out2.texCood[2].v = interPolate(t, insideTextures[1]->v, outsideTextures[0]->v);
 
 				return 2;
 			}
@@ -370,7 +371,83 @@ struct Bitmap {
 };
 extern Bitmap globalBuffer;
 extern bool globalRunning;
+class Texture
+{
+public:
+	Texture(){}
+	Texture(int w, int h)	{
+		Create(w, h);
+	}
+	Texture(std::wstring sFile)	{
+		if (!Load(sFile))
+			Create(8, 8);
+	}
 
+	int nWidth = 0;
+	int nHeight = 0;
+
+private:
+	unsigned int* m_Colours = nullptr;
+
+	void Create(int w, int h)	{
+		nWidth = w;
+		nHeight = h;
+		m_Colours = new unsigned int[w * h];
+		for (int i = 0; i < w * h; i++)
+			m_Colours[i] = 0;
+	}
+
+public:
+	void SetColour(int x, int y, unsigned int c) {
+		if (x < 0 || x >= nWidth || y < 0 || y >= nHeight) return;
+		else m_Colours[y * nWidth + x] = c;
+	}
+	unsigned int GetColour(int x, int y) {
+		if (x < 0 || x >= nWidth || y < 0 || y >= nHeight) return 0;
+		else return m_Colours[y * nWidth + x];
+	}
+	unsigned int SampleColour(float x, float y) {
+		int sx = (int)(x * (float)nWidth);
+		int sy = (int)(y * (float)nHeight - 1.0f);
+		if (sx < 0 || sx >= nWidth || sy < 0 || sy >= nHeight) return 0;
+		else return m_Colours[sy * nWidth + sx];
+	}
+	bool Save(std::wstring sFile)
+	{
+		FILE* f = nullptr;
+		_wfopen_s(&f, sFile.c_str(), L"wb");
+		if (f == nullptr)
+			return false;
+
+		fwrite(&nWidth, sizeof(int), 1, f);
+		fwrite(&nHeight, sizeof(int), 1, f);
+		fwrite(m_Colours, sizeof(unsigned int), nWidth * nHeight, f);
+		fclose(f);
+
+		return true;
+	}
+	bool Load(std::wstring sFile)
+	{
+		delete[] m_Colours;
+		nWidth = 0;
+		nHeight = 0;
+
+		FILE* f = nullptr;
+		_wfopen_s(&f, sFile.c_str(), L"rb");
+		if (f == nullptr)
+			return false;
+
+		std::fread(&nWidth, sizeof(int), 1, f);
+		std::fread(&nHeight, sizeof(int), 1, f);
+
+		Create(nWidth, nHeight);
+
+		std::fread(m_Colours, sizeof(unsigned int), nWidth * nHeight, f);
+
+		std::fclose(f);
+		return true;
+	}
+};
 void ClrScr(unsigned int = 0);
 inline void DrawPixel(int, int, unsigned int, float = 1000);
 void SortByY(Vec3 arr[max_Vertex], int n = 3);
