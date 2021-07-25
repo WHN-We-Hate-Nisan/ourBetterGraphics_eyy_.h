@@ -68,6 +68,8 @@ struct Mat4x4 {
 	Triangle& MultiplyTriangle(Triangle& result, Triangle& in) {
 		result.color = in.color;
 		for (int i = 0; i < 3; i++)
+			result.texture[i] = in.texture[i];
+		for (int i = 0; i < 3; i++)
 			result.vertex[i] = this->MultiplyVector(in.vertex[i]);
 		return result;
 	}
@@ -290,6 +292,33 @@ class Shape3D {
 
 public:
 	Shape3D() {
+		//The Cube
+		mesh.triangles = {
+			// SOUTH
+			{ 0.0f, 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f,		0.0f, 0.0f,		1.0f, 0.0f},
+			{ 0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f,		1.0f, 0.0f,		1.0f, 1.0f},
+
+			// EAST           																	   
+			{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f,		0.0f, 0.0f,		1.0f, 0.0f},
+			{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f,		1.0f, 0.0f,		1.0f, 1.0f},
+																						  
+			// NORTH           																		   
+			{ 1.0f, 0.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f,		0.0f, 0.0f,		1.0f, 0.0f},
+			{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f,		1.0f, 0.0f,		1.0f, 1.0f},
+																						  
+			// WEST            																		   
+			{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f,		0.0f, 0.0f,		1.0f, 0.0f},
+			{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f,		1.0f, 0.0f,		1.0f, 1.0f},
+																						  
+			// TOP             																		   
+			{ 0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f,		0.0f, 0.0f,		1.0f, 0.0f},
+			{ 0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f,		1.0f, 0.0f,		1.0f, 1.0f},
+																						  
+			// BOTTOM          																	  
+			{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f,		0.0f, 0.0f,		1.0f, 0.0f},
+			{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f,		1.0f, 0.0f,		1.0f, 1.0f},
+		};
+
 		//Loading obj
 		//mesh.LoadFromObjectFile("../Assets/Church.obj");
 		//mesh.LoadFromObjectFile("../Assets/Cube.obj");
@@ -298,7 +327,7 @@ public:
 		//Projection Matrix
 
 		//For Release
-		mesh.LoadFromObjectFile("Object.obj");
+		//mesh.LoadFromObjectFile("Object.obj");
 
 		matProj = Mat4x4::MakeProjection();		
 	}
@@ -458,8 +487,8 @@ public:
 					tri.vertex[i].y = (float)globalBuffer.height - tri.vertex[i].y;
 					tri.vertex[i].x = (float)globalBuffer.width - tri.vertex[i].x;
 				}
-				ColorTriangle(tri, tri.color);
-				//DrawTriangle(tri, 0);
+				//ColorTriangle(tri, tri.color);
+				DrawTriangle(tri, 0xffffff-tri.color);
 			}
 		}
 	}		
