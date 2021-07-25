@@ -68,7 +68,7 @@ struct Mat4x4 {
 	Triangle& MultiplyTriangle(Triangle& result, Triangle& in) {
 		result.color = in.color;
 		for (int i = 0; i < 3; i++)
-			result.texture[i] = in.texture[i];
+			result.texCood[i] = in.texCood[i];
 		for (int i = 0; i < 3; i++)
 			result.vertex[i] = this->MultiplyVector(in.vertex[i]);
 		return result;
@@ -282,6 +282,7 @@ struct Controller {
 class Shape3D {
 	Mesh mesh;
 	Mat4x4 matProj;
+	Texture* texture;
 
 	Vec3 camera{ 0.0f, 0.0f, 0.0f };
 	float speed = -1.0f;
@@ -324,10 +325,12 @@ public:
 		//mesh.LoadFromObjectFile("../Assets/Cube.obj");
 		//mesh.LoadFromObjectFile("../Assets/Teapot.obj");
 		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
-		//Projection Matrix
-
+		
 		//For Release
 		//mesh.LoadFromObjectFile("Object.obj");
+
+		//Load Texture
+		texture = new Texture(L"../Assets/Textures/Jario.spr");
 
 		matProj = Mat4x4::MakeProjection();		
 	}
@@ -426,8 +429,13 @@ public:
 					//Projection
 					matProj.MultiplyTriangle(triProjected, clipped[n]);
 
+					//Project Textures
+					for (int i = 0; i < 3; i++) {
+						triProjected.texCood[i] /= triProjected.vertex[i].w;
+						triProjected.texCood[i].w = 1.0f / triProjected.vertex[i].w;
+					}
 					//Normalise Projected matrix
-					triProjected.normalise();
+					triProjected.normalize();
 
 					//Scale Triangles into view
 					Vec3 offSetView = { 1.0f, 1.0f, 0.0f };
@@ -487,6 +495,7 @@ public:
 					tri.vertex[i].y = (float)globalBuffer.height - tri.vertex[i].y;
 					tri.vertex[i].x = (float)globalBuffer.width - tri.vertex[i].x;
 				}
+				TextureTriangle(tri, texture);
 				//ColorTriangle(tri, tri.color);
 				DrawTriangle(tri, 0xffffff-tri.color);
 			}

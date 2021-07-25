@@ -23,36 +23,37 @@ void Swap(T &xp, T &yp);
 unsigned int interPolate(const float& input1, const float& input2, const float& position, const unsigned int& val1, const unsigned int& val2);
 float interPolate(const float& input1, const float& input2, const float& position, const float& val1, const float& val2);
 float interPolate(const float& fraction, const float& val1, const float& val2);
+float interPolate(const float& fraction, const float& val1, const float& input1, const float& input2);
 
 template<typename T = int>
 struct Vect2 {
 	union {
 		struct {
-			T x, y;
+			T x, y, w; //3rd term for normalizing
 		};
 		struct {
-			T u, v;
+			T u, v, w;
 		};
 	};
 	Vect2 operator-() {
-		return { -this->x, -this->y };
+		return { -this->x, -this->y, this->w };
 	}
 	Vect2 operator+(const Vect2& right) {
-		return { this->x + right.x, this->y + right.y };
+		return { this->x + right.x, this->y + right.y, 1 };
 	}
 	Vect2& operator+=(const Vect2& right) {
 		this->x += right.x; this->y += right.y;
 		return *this;
 	}
 	Vect2 operator-(const Vect2& right) {
-		return { this->x - right.x, this->y - right.y };
+		return { this->x - right.x, this->y - right.y, 1 };
 	}
 	Vect2& operator-=(const Vect2& right) {
 		this->x -= right.x; this->y -= right.y;
 		return *this;
 	}
 	Vect2 operator*(const Vect2& right) {
-		return { this->x * right.x, this->y * right.y };
+		return { this->x * right.x, this->y * right.y, 1 };
 	}
 	Vect2& operator*=(const Vect2& right) {
 		this->x *= right.x; this->y *= right.y;
@@ -63,17 +64,17 @@ struct Vect2 {
 		return *this;
 	}
 	static Vect2 multiplyEach(const Vect2& left, const Vect2& right) {
-		return { left.x * right.x, left.y * right.y};
+		return { left.x * right.x, left.y * right.y, 1 };
 	}
 	Vect2 operator*(const T& right) {
-		return { this->x * right, this->y * right };
+		return { this->x * right, this->y * right, this->w };
 	}
 	Vect2& operator*=(const T& right) {
 		this->x *= right; this->y *= right; 
 		return *this;
 	}
 	Vect2 operator/(const T& right) {
-		return { this->x / right, this->y / right };
+		return { this->x / right, this->y / right, this->w };
 	}
 	Vect2& operator/=(const T& right) {
 		this->x /= right; this->y /= right;
@@ -243,7 +244,7 @@ struct Triangle {
 	Vec3 normal() {
 		return ( (vertex[1] - vertex[0]) * (vertex[2] - vertex[0]) ).normalize();
 	}
-	Triangle& normalise() {
+	Triangle& normalize() {
 		for (int i = 0; i < 3; i++)
 			vertex[i] /= vertex[i].w;
 		return *this;
@@ -450,7 +451,8 @@ public:
 };
 void ClrScr(unsigned int = 0);
 inline void DrawPixel(int, int, unsigned int, float = 1000);
-void SortByY(Vec3 arr[max_Vertex], int n = 3);
+void SortByY(Vec3[max_Vertex], int = 3);
+void SortByYTextures(Vec3[max_Vertex], Vec2[max_Vertex], int = 3);
 void DrawDDALine(Vect2<int>, Vect2<int>, unsigned int);
 void DrawDDALine(float, float, float, float);
 void DrawDDALine(float, float, float, float, unsigned);
@@ -463,9 +465,11 @@ void DrawBresLine(float, float, float, float);
 void DrawBresLine(float, float, float, float, unsigned);
 
 void DrawHorizLine(int, int, int, unsigned int, float = 1000, Vec3 = { 0, 0, 0 });
+void DrawHorizTexture(float, float, float, float&, float&, float, float, float, float, Texture*);
 
-void DrawTriangle(Triangle, unsigned int = 0xffffff);
-void ColorTriangle(Triangle, unsigned int, Vec3 = { 0.0f,0.0f,0.0f });
+void DrawTriangle(Triangle&, unsigned int = 0xffffff);
+void ColorTriangle(Triangle&, unsigned int, Vec3 = { 0.0f,0.0f,0.0f });
+void TextureTriangle(Triangle&, Texture*);
 
 int getMidX();
 int getMidY();

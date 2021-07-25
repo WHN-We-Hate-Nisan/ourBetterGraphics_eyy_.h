@@ -36,6 +36,9 @@ float interPolate(const float& input1, const float& input2, const float& positio
 float interPolate(const float& fraction, const float& val1, const float& val2) {
 	return val1 + fraction * (val2 - val1);
 }
+float interPolate(const float& fraction, const float& val1, const float& input1, const float& input2) {
+	return val1 + fraction * (input2 - input1);
+}
 //auto interPolate = [](float fraction, float val1, float val2) {
 //	return val1 + fraction * (val2 - val1);
 //};
@@ -65,6 +68,16 @@ void SortByY(Vec3 arr[max_Vertex], int n) {
 		for (j = 0; j < n - 1 - i; j++)
 			if (arr[j].y > arr[j + 1].y)
 				Swap(arr[j], arr[j + 1]);
+}
+void SortByYTextures(Vec3 arr[max_Vertex], Vec2 tex[max_Vertex], int n) {
+	int i, j;
+	for (i = 0; i < n - 1; i++)
+		// Last i elements are already in place 
+		for (j = 0; j < n - 1 - i; j++)
+			if (arr[j].y > arr[j + 1].y) {
+				Swap(arr[j], arr[j + 1]);
+				Swap(tex[j], tex[j + 1]);
+			}
 }
 void DrawDDALine(Vect2<int> v1, Vect2<int> v2, unsigned int color)
 {
@@ -194,13 +207,28 @@ void DrawHorizLine(int x1, int x2, int y, unsigned int color, float depth, Vec3 
 	for (int i = x1; i <= x2; i++)
 		DrawPixel(i + off.x, y + off.y, color, depth);
 }
+void DrawHorizTexture(float ax, float bx, float y, float& texU, float& texV, float texStartU, float texEndU, float texStartV, float texEndV, Texture* texture) {
+	float tStep = 1.0f / ((float)(bx - ax));
+	float t = 0.0f;
+	for (int j = ax; j < bx; j++) {
+		//interpolate in tex-el space
+		texU = (1.0f - t) * texStartU + t * texEndU;
+		texV = (1.0f - t) * texStartV + t * texEndV;
+		DrawPixel(j, (int)y, texture->SampleColour(texU, texV));
+		t += tStep;
+	}
+}
 
-void DrawTriangle(Triangle t, unsigned int color) {
+void ColorTriangle(Triangle, unsigned int, Vec3)
+{
+}
+
+void DrawTriangle(Triangle& t, unsigned int color) {
 	DrawBresLine(t.vertex[0], t.vertex[1], color);
 	DrawBresLine(t.vertex[1], t.vertex[2], color);
 	DrawBresLine(t.vertex[2], t.vertex[0], color);
 }
-void ColorTriangle(Triangle tri, unsigned int color, Vec3 off) {
+void ColorTriangle(Triangle& tri, unsigned int color, Vec3 off) {
 	float dx1, dx2, dx3;
 	Vec3 array[] = { tri.vertex[0], tri.vertex[1], tri.vertex[2] };
 	SortByY(array);
@@ -229,8 +257,121 @@ void ColorTriangle(Triangle tri, unsigned int color, Vec3 off) {
 			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
 	}
 }
-void TextureTriangle(Triangle tri, Texture* texture) {
+void TextureTriangle(Triangle& tri, Texture* texture) {
+	//Sort  Vertices by y value
+	Vec3 array[] = { tri.vertex[0], tri.vertex[1], tri.vertex[2] };
+	Vec2 textureArray[] = { tri.texCood[0], tri.texCood[1], tri.texCood[2] };
+	SortByYTextures(array, textureArray);
+	Vec3 A = array[0];
+	Vec3 B = array[1];
+	Vec3 C = array[2];
+	Vec2 ATex = textureArray[0];
+	Vec2 BTex = textureArray[1];
+	Vec2 CTex = textureArray[2];
 
+	//Setup variables to find gradients
+	float dx1, dx2;
+	float dy1, dy2;
+	float du1, du2;
+	float dv1, dv2;
+	float dw1, dw2;
+
+	float texU, texV;
+
+	//Left top line of triangle
+	dy1 = B.y - A.y;
+	dx1 = B.x - A.x;
+	dv1 = BTex.y - ATex.y;
+	du1 = BTex.x - ATex.x;
+
+	//Right top line of triangle
+	dy2 = C.y - A.y;
+	dx2 = C.x - A.x;
+	dv2 = CTex.y - ATex.y;
+	du2 = CTex.x - ATex.x;
+
+	//Amount to move in each step
+	float dAxStep = 0, dBxStep = 0,
+		  dU1Step = 0, dV1Step = 0,
+		  dU2Step = 0, dV2Step = 0;
+
+	if (dy1) dAxStep = dx1 / (float)abs(dy1);
+	if (dy2) dBxStep = dx2 / (float)abs(dy2);
+
+	if (dy1) dU1Step = du1 / (float)abs(dy1);
+	if (dy1) dV1Step = dv1 / (float)abs(dy1);
+
+	if (dy2) dU2Step = du2 / (float)abs(dy2);
+	if (dy2) dV2Step = dv2 / (float)abs(dy2);
+
+	//Draw top half
+	if (dy1) {
+		for (float i = A.y; i < B.y; i++) {
+			int ax = interPolate(dAxStep, A.x, A.y, i);
+			int bx = interPolate(dBxStep, A.x, A.y, i);
+
+			//Calculate texture start point
+			float texStartU = interPolate(dU1Step, ATex.u, A.y, i);
+			float texStartV = interPolate(dV1Step, ATex.v, A.y, i);
+			
+			//Calculate texture end point
+			float texEndU = interPolate(dU2Step, ATex.u, A.y, i);
+			float texEndV = interPolate(dV2Step, ATex.v, A.y, i);
+
+			if (ax > bx) {
+				Swap(ax, bx);
+				Swap(texStartU, texEndU);
+				Swap(texStartV, texEndV);
+			}
+
+			//Final texture point
+			texU = texStartU;
+			texV = texStartV;
+
+			//Draw Line
+			DrawHorizTexture(ax, bx, i, texU, texV, texStartU, texEndU, texStartV, texEndV, texture);
+		}
+		
+		//Left bottom line of triangle
+		dy1 = C.y - A.y;
+		dx1 = C.x - A.x;
+		dv1 = CTex.y - ATex.y;
+		du1 = CTex.x - ATex.x;
+
+		//Amount to move in each step
+		if (dy1) dAxStep = dx1 / (float)abs(dy1);
+		if (dy2) dBxStep = dx2 / (float)abs(dy2);
+
+		dU1Step = 0; dU2Step = 0;
+		if (dy1) dU1Step = du1 / (float)abs(dy1);
+		if (dy1) dV1Step = dv1 / (float)abs(dy1);
+
+		for (float i = B.y; i < C.y; i++) {
+			int ax = interPolate(dAxStep, B.x, B.y, i);
+			int bx = interPolate(dBxStep, A.x, A.y, i);
+
+			//Calculate texture start point
+			float texStartU = interPolate(dU1Step, BTex.u, B.y, i);
+			float texStartV = interPolate(dV1Step, BTex.v, B.y, i);
+
+			//Calculate texture end point
+			float texEndU = interPolate(dU2Step, ATex.u, A.y, i);
+			float texEndV = interPolate(dV2Step, ATex.v, A.y, i);
+
+			if (ax > bx) {
+				Swap(ax, bx);
+				Swap(texStartU, texEndU);
+				Swap(texStartV, texEndV);
+			}
+
+			//Final texture point
+			texU = texStartU;
+			texV = texStartV;
+
+			//Draw Line
+			DrawHorizTexture(ax, bx, i, texU, texV, texStartU, texEndU, texStartV, texEndV, texture);
+		}
+	}
 }
 
 int getMidX() {
