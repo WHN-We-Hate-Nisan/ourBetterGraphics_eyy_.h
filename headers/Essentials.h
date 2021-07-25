@@ -20,22 +20,85 @@ int Clamp(int, int, int);
 
 template<typename T>
 void Swap(T &xp, T &yp);
-unsigned int interPolate(float input1, float input2, float position, unsigned int val1, unsigned int val2);
-float interPolate(float input1, float input2, float position, float val1, float val2);
+unsigned int interPolate(const float& input1, const float& input2, const float& position, const unsigned int& val1, const unsigned int& val2);
+float interPolate(const float& input1, const float& input2, const float& position, const float& val1, const float& val2);
+float interPolate(const float& fraction, const float& val1, const float& val2);
 
 template<typename T = int>
 struct Vect2 {
-	T x, y;
-	Vect2() :x(0), y(0) {}
-	Vect2(T x, T y) : x(x), y(y) {}
+	union {
+		struct {
+			T x, y;
+		};
+		struct {
+			T u, v;
+		};
+	};
 	Vect2 operator-() {
-		return Vect2(-this->x, -this->y);
+		return { -this->x, -this->y };
 	}
-	Vect2 operator+(Vect2& right) {
-		return Vect2(this->x + right.x, this->y + right.y);
+	Vect2 operator+(const Vect2& right) {
+		return { this->x + right.x, this->y + right.y };
 	}
-	Vect2 operator-(Vect2& right) {
-		return Vect2(this->x - right.x, this->y - right.y);
+	Vect2& operator+=(const Vect2& right) {
+		this->x += right.x; this->y += right.y;
+		return *this;
+	}
+	Vect2 operator-(const Vect2& right) {
+		return { this->x - right.x, this->y - right.y };
+	}
+	Vect2& operator-=(const Vect2& right) {
+		this->x -= right.x; this->y -= right.y;
+		return *this;
+	}
+	Vect2 operator*(const Vect2& right) {
+		return { this->x * right.x, this->y * right.y };
+	}
+	Vect2& operator*=(const Vect2& right) {
+		this->x *= right.x; this->y *= right.y;
+		return *this;
+	}
+	Vect2& multiplyEach(const Vect2& right) {
+		this->x *= right.x; this->y *= right.y;
+		return *this;
+	}
+	static Vect2 multiplyEach(const Vect2& left, const Vect2& right) {
+		return { left.x * right.x, left.y * right.y};
+	}
+	Vect2 operator*(const T& right) {
+		return { this->x * right, this->y * right };
+	}
+	Vect2& operator*=(const T& right) {
+		this->x *= right; this->y *= right; 
+		return *this;
+	}
+	Vect2 operator/(const T& right) {
+		return { this->x / right, this->y / right };
+	}
+	Vect2& operator/=(const T& right) {
+		this->x /= right; this->y /= right;
+		return *this;
+	}
+	T dot(const Vect2& right) {
+		return this->x * right.x + this->y * right.y;
+	}
+	static T dot(const Vect2& left, const Vect2& right) {
+		return left.x * right.x + left.y * right.y;
+	}
+	T length() {
+		return sqrtf(this->x * this->x + this->y * this->y);
+	}
+	Vect2& normalize() {
+		float mag = length();
+		this->x /= mag;
+		this->y /= mag;
+		return *this;
+	}
+	static Vect2 normalize(Vect2 v) {
+		return v.normalize();
+	}
+	static Vect2 interpolate(const float& fraction,const Vect2& left, const Vect2& right) {
+		return { interPolate(fraction, left.u, right.u), interPolate(fraction, left.v, right.v) };
 	}
 };
 template<typename T = float>
@@ -70,13 +133,17 @@ struct Vect3 {
 				 this->x * right.y - right.x * this->y,
 				 this->w };
 	}
-	Vect3 operator*(const float& right) {
+	Vect3 operator*(const T& right) {
 		return { this->x * right, this->y * right, this->z * right, this->w };
 	}
-	Vect3 operator/(const float& right) {
+	Vect3& operator*=(const T& right) {
+		this->x *= right; this->y *= right; this->z *= right;
+		return *this;
+	}
+	Vect3 operator/(const T& right) {
 		return { this->x / right, this->y / right, this->z / right, this->w };
 	}
-	Vect3& operator/=(const float& right) {
+	Vect3& operator/=(const T& right) {
 		this->x /= right; this->y /= right; this->z /= right;
 		return *this;
 	}
@@ -119,21 +186,23 @@ struct Vect3 {
 	static Vect3 normalize(Vect3 v) {
 		return v.normalize();
 	}
-	static Vect3 intersectPlane(Vect3& planeP, Vect3& planeN, Vect3& lineStart, Vect3& lineEnd) {
+	static Vect3 intersectPlane(Vect3& planeP, Vect3& planeN, Vect3& lineStart, Vect3& lineEnd, float &t) {
 		planeN.normalize();
 		float planeD = -planeN.dot(planeP);
 		float ad = lineStart.dot(planeN);
 		float bd = lineEnd.dot(planeN);
-		float t = (planeD + ad) / (ad - bd);
+		t = (planeD + ad) / (ad - bd);
 
 		Vect3 lineStartToEnd = lineEnd - lineStart;
 		Vect3 lineToIntersect = lineStartToEnd * t;
 		return lineStart + lineToIntersect;
 	}
 };
+typedef Vect2<float> Vec2;
 typedef Vect3<float> Vec3;
 struct Triangle {
 	Vec3 vertex[3];
+	Vec2 texture[3];
 	unsigned int color;
 
 	Triangle operator+(const Vec3& right) {
@@ -188,18 +257,27 @@ struct Triangle {
 			Vec3 n = Vec3::normalize(p);
 			return Vec3::dot(planeN, p) - Vec3::dot(planeN, planeP);
 		};
-
 		//Create two storages to classify points on either side of the plane
 		//+ve sign = inside
 		Vec3* insides[3]; int nInsidePointCount = 0;
 		Vec3* outsides[3]; int nOutsidePointCount = 0;
+		Vec2* insideTextures[3]; int nInsideTextureCount = 0;
+		Vec2* outsideTextures[3]; int nOutsideTextureCount = 0;
+
+
 		//Get signed distance of each point in triangle to plane
 		float dis[3];
 		for (int i = 0; i < 3; i++)
 			dis[i] = d(in.vertex[i]);
 		for (int i = 0; i < 3; i++) {
-			if (dis[i] >= 0) insides[nInsidePointCount++] = &in.vertex[i];
-			else outsides[nOutsidePointCount++] = &in.vertex[i];
+			if (dis[i] >= 0) {
+				insides[nInsidePointCount++] = &in.vertex[i];
+				insideTextures[nInsideTextureCount++] = &in.texture[i];
+			}
+			else {
+				outsides[nOutsidePointCount++] = &in.vertex[i];
+				outsideTextures[nOutsideTextureCount++] = &in.texture[i];
+			}
 		}
 
 		//Classify triangle points and change input into
@@ -227,10 +305,19 @@ struct Triangle {
 				out1.color = in.color;
 				
 				out1.vertex[0] = *insides[0];
+				out1.texture[0] = *insideTextures[0];
+
 				//Two new points, at the location where
 				//original sides of the triangle intersect the plane
-				out1.vertex[1] = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0]);
-				out1.vertex[2] = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[1]);
+				float t;
+				out1.vertex[1] = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0], t);
+				out1.texture[1].u = interPolate(t, insideTextures[0]->u, outsideTextures[0]->u);
+				out1.texture[1].v = interPolate(t, insideTextures[0]->v, outsideTextures[0]->v);
+
+				out1.vertex[2] = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[1], t);
+				out1.texture[2].u = interPolate(t, insideTextures[0]->u, outsideTextures[1]->u);
+				out1.texture[2].v = interPolate(t, insideTextures[0]->v, outsideTextures[1]->v);
+
 				return 1;
 			}
 			break;
@@ -247,14 +334,27 @@ struct Triangle {
 				//location where one side intersects the plane
 				out1.vertex[0] = *insides[0];
 				out1.vertex[1] = *insides[1];
-				out1.vertex[2] = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0]);
+				out1.texture[0] = *insideTextures[0];
+				out1.texture[1] = *insideTextures[1];
+				
+				float t;
+				out1.vertex[2] = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0],t);
+				out1.texture[2].u = interPolate(t, insideTextures[0]->u, outsideTextures[0]->u);
+				out1.texture[2].v = interPolate(t, insideTextures[0]->v, outsideTextures[0]->v);
 
 				//Second triangle consists of 1 inside point and
 				//location where other side intersects the plane
 				//and the newly created point;
 				out2.vertex[0] = *insides[1];
+				out2.texture[0] = *insideTextures[1];
+
 				out2.vertex[1] = out1.vertex[2];
-				out2.vertex[2] = Vec3::intersectPlane(planeP, planeN, *insides[1], *outsides[0]);
+				out2.texture[1] = out1.texture[2];
+
+				out2.vertex[2] = Vec3::intersectPlane(planeP, planeN, *insides[1], *outsides[0],t);
+				out2.texture[2].u = interPolate(t, insideTextures[1]->u, outsideTextures[0]->u);
+				out2.texture[2].v = interPolate(t, insideTextures[1]->v, outsideTextures[0]->v);
+
 				return 2;
 			}
 			break;
