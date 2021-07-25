@@ -173,6 +173,10 @@
       </PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\src\Image.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Image.h</PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="..\src\junk.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -205,10 +209,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\headers\Essentials.h" />
+    <ClInclude Include="..\headers\Image.h" />
     <ClInclude Include="..\headers\ourBetterGraphics_eyy_.h" />
     <ClInclude Include="..\headers\Shape2D.h" />
     <ClInclude Include="..\headers\Cube3D.h" />
     <ClInclude Include="..\headers\Shape3D.h" />
+    <ClInclude Include="..\headers\stb_image.h" />
+    <ClInclude Include="..\headers\stb_image_write.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

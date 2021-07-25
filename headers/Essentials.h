@@ -8,6 +8,7 @@
 #include <string>
 #include <algorithm>
 #include <list>
+#include "Image.h"
 
 constexpr float pi = 3.14159f;
 constexpr int max_Vertex = 15;
@@ -372,6 +373,8 @@ struct Bitmap {
 };
 extern Bitmap globalBuffer;
 extern bool globalRunning;
+
+template<typename T>
 class Texture
 {
 public:
@@ -388,26 +391,26 @@ public:
 	int nHeight = 0;
 
 private:
-	unsigned int* m_Colours = nullptr;
+	T* m_Colours = nullptr;
 
 	void Create(int w, int h)	{
 		nWidth = w;
 		nHeight = h;
-		m_Colours = new unsigned int[w * h];
+		m_Colours = new T[w * h];
 		for (int i = 0; i < w * h; i++)
 			m_Colours[i] = 0;
 	}
 
 public:
-	void SetColour(int x, int y, unsigned int c) {
+	void SetColour(int x, int y, T c) {
 		if (x < 0 || x >= nWidth || y < 0 || y >= nHeight) return;
 		else m_Colours[y * nWidth + x] = c;
 	}
-	unsigned int GetColour(int x, int y) {
+	T GetColour(int x, int y) {
 		if (x < 0 || x >= nWidth || y < 0 || y >= nHeight) return 0;
 		else return m_Colours[y * nWidth + x];
 	}
-	unsigned int SampleColour(float x, float y) {
+	T SampleColour(float x, float y) {
 		int sx = (int)(x * (float)nWidth);
 		int sy = (int)(y * (float)nHeight - 1.0f);
 		if (sx < 0 || sx >= nWidth || sy < 0 || sy >= nHeight) return 0;
@@ -422,7 +425,7 @@ public:
 
 		fwrite(&nWidth, sizeof(int), 1, f);
 		fwrite(&nHeight, sizeof(int), 1, f);
-		fwrite(m_Colours, sizeof(unsigned int), nWidth * nHeight, f);
+		fwrite(m_Colours, sizeof(T), nWidth * nHeight, f);
 		fclose(f);
 
 		return true;
@@ -443,7 +446,7 @@ public:
 
 		Create(nWidth, nHeight);
 
-		std::fread(m_Colours, sizeof(unsigned int), nWidth * nHeight, f);
+		std::fread(m_Colours, sizeof(T), nWidth * nHeight, f);
 
 		std::fclose(f);
 		return true;
@@ -465,11 +468,11 @@ void DrawBresLine(float, float, float, float);
 void DrawBresLine(float, float, float, float, unsigned);
 
 void DrawHorizLine(int, int, int, unsigned int, float = 1000, Vec3 = { 0, 0, 0 });
-void DrawHorizTexture(float, float, float, float&, float&, float, float, float, float, Texture*);
+void DrawHorizTexture(float, float, float, float&, float&, float, float, float, float, Texture<short>*);
 
 void DrawTriangle(Triangle&, unsigned int = 0xffffff);
 void ColorTriangle(Triangle&, unsigned int, Vec3 = { 0.0f,0.0f,0.0f });
-void TextureTriangle(Triangle&, Texture*);
+void TextureTriangle(Triangle&, Texture<short>*);
 
 int getMidX();
 int getMidY();

@@ -207,14 +207,17 @@ void DrawHorizLine(int x1, int x2, int y, unsigned int color, float depth, Vec3 
 	for (int i = x1; i <= x2; i++)
 		DrawPixel(i + off.x, y + off.y, color, depth);
 }
-void DrawHorizTexture(float ax, float bx, float y, float& texU, float& texV, float texStartU, float texEndU, float texStartV, float texEndV, Texture* texture) {
+void DrawHorizTexture(float ax, float bx, float y, float& texU, float& texV, float& texW, 
+						float texStartU, float texEndU, float texStartV, float texEndV, 
+						float texStartW, float texEndW, Texture<short>* texture) {
 	float tStep = 1.0f / ((float)(bx - ax));
 	float t = 0.0f;
 	for (int j = ax; j < bx; j++) {
 		//interpolate in tex-el space
 		texU = (1.0f - t) * texStartU + t * texEndU;
 		texV = (1.0f - t) * texStartV + t * texEndV;
-		DrawPixel(j, (int)y, texture->SampleColour(texU, texV));
+		texW = (1.0f - t) * texStartW + t * texEndW;
+		DrawPixel(j, (int)y, (unsigned int)texture->SampleColour(texU/ texW, texV/ texW));
 		t += tStep;
 	}
 }
@@ -257,7 +260,7 @@ void ColorTriangle(Triangle& tri, unsigned int color, Vec3 off) {
 			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
 	}
 }
-void TextureTriangle(Triangle& tri, Texture* texture) {
+void TextureTriangle(Triangle& tri, Texture<short>* texture) {
 	//Sort  Vertices by y value
 	Vec3 array[] = { tri.vertex[0], tri.vertex[1], tri.vertex[2] };
 	Vec2 textureArray[] = { tri.texCood[0], tri.texCood[1], tri.texCood[2] };
@@ -276,33 +279,38 @@ void TextureTriangle(Triangle& tri, Texture* texture) {
 	float dv1, dv2;
 	float dw1, dw2;
 
-	float texU, texV;
+	float texU, texV, texW;
 
 	//Left top line of triangle
 	dy1 = B.y - A.y;
 	dx1 = B.x - A.x;
-	dv1 = BTex.y - ATex.y;
-	du1 = BTex.x - ATex.x;
+	dv1 = BTex.v - ATex.v;
+	du1 = BTex.u - ATex.u;
+	dw1 = BTex.w - ATex.w;
 
 	//Right top line of triangle
 	dy2 = C.y - A.y;
 	dx2 = C.x - A.x;
-	dv2 = CTex.y - ATex.y;
-	du2 = CTex.x - ATex.x;
+	dv2 = CTex.v - ATex.v;
+	du2 = CTex.u - ATex.u;
+	dw2 = CTex.w - ATex.w;
 
 	//Amount to move in each step
 	float dAxStep = 0, dBxStep = 0,
 		  dU1Step = 0, dV1Step = 0,
-		  dU2Step = 0, dV2Step = 0;
+		  dU2Step = 0, dV2Step = 0,
+		  dW1Step = 0, dW2Step = 0;
 
 	if (dy1) dAxStep = dx1 / (float)abs(dy1);
 	if (dy2) dBxStep = dx2 / (float)abs(dy2);
 
 	if (dy1) dU1Step = du1 / (float)abs(dy1);
 	if (dy1) dV1Step = dv1 / (float)abs(dy1);
+	if (dy1) dW1Step = dw1 / (float)abs(dy1);
 
 	if (dy2) dU2Step = du2 / (float)abs(dy2);
 	if (dy2) dV2Step = dv2 / (float)abs(dy2);
+	if (dy2) dW2Step = dw2 / (float)abs(dy2);
 
 	//Draw top half
 	if (dy1) {
@@ -313,30 +321,35 @@ void TextureTriangle(Triangle& tri, Texture* texture) {
 			//Calculate texture start point
 			float texStartU = interPolate(dU1Step, ATex.u, A.y, i);
 			float texStartV = interPolate(dV1Step, ATex.v, A.y, i);
-			
+			float texStartW = interPolate(dW1Step, ATex.w, B.y, i);
+
 			//Calculate texture end point
 			float texEndU = interPolate(dU2Step, ATex.u, A.y, i);
 			float texEndV = interPolate(dV2Step, ATex.v, A.y, i);
+			float texEndW = interPolate(dW2Step, ATex.w, B.y, i);
 
 			if (ax > bx) {
 				Swap(ax, bx);
 				Swap(texStartU, texEndU);
 				Swap(texStartV, texEndV);
+				Swap(texStartW, texEndW);
 			}
 
 			//Final texture point
 			texU = texStartU;
 			texV = texStartV;
+			texW = texStartW;
 
 			//Draw Line
-			DrawHorizTexture(ax, bx, i, texU, texV, texStartU, texEndU, texStartV, texEndV, texture);
+			DrawHorizTexture(ax, bx, i, texU, texV, texW, texStartU, texEndU, texStartV, texEndV, texStartW, texEndW, texture);
 		}
 		
 		//Left bottom line of triangle
 		dy1 = C.y - A.y;
 		dx1 = C.x - A.x;
-		dv1 = CTex.y - ATex.y;
-		du1 = CTex.x - ATex.x;
+		dv1 = CTex.v - ATex.v;
+		du1 = CTex.u - ATex.u;
+		dw1 = CTex.w - ATex.w;
 
 		//Amount to move in each step
 		if (dy1) dAxStep = dx1 / (float)abs(dy1);
@@ -345,6 +358,7 @@ void TextureTriangle(Triangle& tri, Texture* texture) {
 		dU1Step = 0; dU2Step = 0;
 		if (dy1) dU1Step = du1 / (float)abs(dy1);
 		if (dy1) dV1Step = dv1 / (float)abs(dy1);
+		if (dy1) dW1Step = dw1 / (float)abs(dy1);
 
 		for (float i = B.y; i < C.y; i++) {
 			int ax = interPolate(dAxStep, B.x, B.y, i);
@@ -353,23 +367,27 @@ void TextureTriangle(Triangle& tri, Texture* texture) {
 			//Calculate texture start point
 			float texStartU = interPolate(dU1Step, BTex.u, B.y, i);
 			float texStartV = interPolate(dV1Step, BTex.v, B.y, i);
+			float texStartW = interPolate(dW1Step, BTex.w, B.y, i);
 
 			//Calculate texture end point
 			float texEndU = interPolate(dU2Step, ATex.u, A.y, i);
 			float texEndV = interPolate(dV2Step, ATex.v, A.y, i);
+			float texEndW = interPolate(dW2Step, ATex.w, A.y, i);
 
 			if (ax > bx) {
 				Swap(ax, bx);
 				Swap(texStartU, texEndU);
 				Swap(texStartV, texEndV);
+				Swap(texStartW, texEndW);
 			}
 
 			//Final texture point
 			texU = texStartU;
 			texV = texStartV;
+			texW = texStartW;
 
 			//Draw Line
-			DrawHorizTexture(ax, bx, i, texU, texV, texStartU, texEndU, texStartV, texEndV, texture);
+			DrawHorizTexture(ax, bx, i, texU, texV, texW, texStartU, texEndU, texStartV, texEndV,texStartW, texEndW, texture);
 		}
 	}
 }
