@@ -6,15 +6,14 @@ auto Shape2D::matrixify(std::vector<Vect2<float>> vect)
 {
 	for (int i = 0; i < 3; i++)
 		for (int k = 0; k < vect.size(); k++)
-			tempMatrix[i][k] = (i == 0) ? vect[k].x : (i == 1) ? vect[k].y
-															   : 1;
+			tempMatrix[i][k] = (i == 0) ? vect[k].x : (i == 1) ? vect[k].y : 1;
 	return tempMatrix;
 }
 auto Shape2D::vectorify(float matrix[3][max_Vertex])
 {
 	tempVector.clear();
 	for (int k = 0; k < n; k++)
-		tempVector.push_back(Vect2<float>(matrix[0][k], matrix[1][k]));
+		tempVector.push_back(Vect2<float>{matrix[0][k], matrix[1][k]});
 	return tempVector;
 }
 Shape2D::Shape2D(float rad, float angle, int side, float offX = getMidX(), float offY = getMidY()) : radius(rad), n(side)
