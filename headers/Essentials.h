@@ -155,20 +155,7 @@ struct Vect3 {
 	}
 	static Vect3 multiplyEach(const Vect3& left, const Vect3& right) {		
 		return { left.x * right.x, left.y* right.y, left.z* right.z, 1};
-	}
-	unsigned int toUnsigned() {
-		Vect3<int> Col = { this->x * 256, this->y * 256, this->z * 256 };
-		return interPolate(
-			(unsigned int)0,
-			0xff * 0x100 * 0x100 +
-			0xff * 0x100 +
-			0xff,
-			(unsigned int)Col.x * 0x100 * 0x100 +
-			(unsigned int)Col.y * 0x100 +
-			(unsigned int)Col.z,
-			(unsigned int)0x000000,
-			(unsigned int)0xffffff);
-	}
+	}	
 	T dot(const Vect3& right) {
 		return this->x * right.x + this->y * right.y + this->z * right.z;
 	}
@@ -205,7 +192,7 @@ typedef Vect3<float> Vec3;
 struct Triangle {
 	Vec3 vertex[3];
 	Vec2 texCood[3];
-	unsigned int color;
+	Color color;
 
 	Triangle operator+(const Vec3& right) {
 		return { vertex[0] + right,	vertex[1] + right, vertex[2] + right };
@@ -369,110 +356,54 @@ struct Bitmap {
 	BITMAPINFO info;
 	int width, height;
 	void* memory;
-	void* depthBuffer;
 };
 extern Bitmap globalBuffer;
 extern bool globalRunning;
 
-template<typename T>
 class Texture
 {
-public:
-	Texture(){}
-	Texture(int w, int h)	{
-		Create(w, h);
-	}
-	Texture(std::wstring sFile)	{
-		if (!Load(sFile))
-			Create(8, 8);
-	}
+private:
+	Color* m_Colours = nullptr;
 
+public:
 	int nWidth = 0;
 	int nHeight = 0;
 
 private:
-	T* m_Colours = nullptr;
-
-	void Create(int w, int h)	{
-		nWidth = w;
-		nHeight = h;
-		m_Colours = new T[w * h];
-		for (int i = 0; i < w * h; i++)
-			m_Colours[i] = 0;
-	}
+	void Create(int width, int height);
 
 public:
-	void SetColour(int x, int y, T c) {
-		if (x < 0 || x >= nWidth || y < 0 || y >= nHeight) return;
-		else m_Colours[y * nWidth + x] = c;
-	}
-	T GetColour(int x, int y) {
-		if (x < 0 || x >= nWidth || y < 0 || y >= nHeight) return 0;
-		else return m_Colours[y * nWidth + x];
-	}
-	T SampleColour(float x, float y) {
-		int sx = (int)(x * (float)nWidth);
-		int sy = (int)(y * (float)nHeight - 1.0f);
-		if (sx < 0 || sx >= nWidth || sy < 0 || sy >= nHeight) return 0;
-		else return m_Colours[sy * nWidth + sx];
-	}
-	bool Save(std::wstring sFile)
-	{
-		FILE* f = nullptr;
-		_wfopen_s(&f, sFile.c_str(), L"wb");
-		if (f == nullptr)
-			return false;
-
-		fwrite(&nWidth, sizeof(int), 1, f);
-		fwrite(&nHeight, sizeof(int), 1, f);
-		fwrite(m_Colours, sizeof(T), nWidth * nHeight, f);
-		fclose(f);
-
-		return true;
-	}
-	bool Load(std::wstring sFile)
-	{
-		delete[] m_Colours;
-		nWidth = 0;
-		nHeight = 0;
-
-		FILE* f = nullptr;
-		_wfopen_s(&f, sFile.c_str(), L"rb");
-		if (f == nullptr)
-			return false;
-
-		std::fread(&nWidth, sizeof(int), 1, f);
-		std::fread(&nHeight, sizeof(int), 1, f);
-
-		Create(nWidth, nHeight);
-
-		std::fread(m_Colours, sizeof(T), nWidth * nHeight, f);
-
-		std::fclose(f);
-		return true;
-	}
+	Texture() {}
+	Texture(int width, int height);
+	Texture(const char* sFile);
+	void SetColour(int x, int y, Color c);
+	Color GetColour(int x, int y);
+	Color SampleColour(float x, float y);
+	bool Save(const char* sFile);
+	bool Load(const char* sFile);
 };
-void ClrScr(unsigned int = 0);
-inline void DrawPixel(int, int, unsigned int, float = 1000);
+void ClrScr(Color = 0);
+inline void DrawPixel(int x, int y, Color color);
+void DrawImage(Image, Vect2<int> = { 0,0,1 });
 void SortByY(Vec3[max_Vertex], int = 3);
 void SortByYTextures(Vec3[max_Vertex], Vec2[max_Vertex], int = 3);
-void DrawDDALine(Vect2<int>, Vect2<int>, unsigned int);
+void DrawDDALine(Vect2<int>, Vect2<int>, Color);
 void DrawDDALine(float, float, float, float);
-void DrawDDALine(float, float, float, float, unsigned);
-void DrawDDALine(Vec3, Vec3, unsigned int, Vec3 = { 0, 0, 0 });
+void DrawDDALine(float, float, float, float, Color);
+void DrawDDALine(Vec3, Vec3, Color, Vec3 = { 0, 0, 0 });
 
-void DrawBresLine(Vect2<int>, Vect2<int>, unsigned int);
-void DrawBresLine(Vect2<float>, Vect2<float>, unsigned int);
-void DrawBresLine(Vec3, Vec3, unsigned int, Vec3 = { 0, 0, 0 });
+void DrawBresLine(Vect2<int>, Vect2<int>, Color);
+void DrawBresLine(Vect2<float>, Vect2<float>, Color);
+void DrawBresLine(Vec3, Vec3, Color, Vec3 = { 0, 0, 0 });
 void DrawBresLine(float, float, float, float);
 void DrawBresLine(float, float, float, float, unsigned);
 
-void DrawHorizLine(int, int, int, unsigned int, float = 1000, Vec3 = { 0, 0, 0 });
-void DrawHorizTexture(float, float, float, float&, float&, float, float, float, float, Texture<short>*);
+void DrawHorizLine(int, int, int, Color, Vec3 = { 0, 0, 0 });
+void DrawHorizTexture(float, float, float, float&, float&, float, float, float, float, Texture*);
 
-void DrawTriangle(Triangle&, unsigned int = 0xffffff);
-void ColorTriangle(Triangle&, unsigned int, Vec3 = { 0.0f,0.0f,0.0f });
-void TextureTriangle(Triangle&, Texture<short>*);
+void DrawTriangle(Triangle&, Color = 0xffffff);
+void ColorTriangle(Triangle&, Color, Vec3 = { 0.0f,0.0f,0.0f });
+void TextureTriangle(Triangle&, Texture*);
 
 int getMidX();
 int getMidY();

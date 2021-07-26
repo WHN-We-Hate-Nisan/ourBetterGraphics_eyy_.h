@@ -1,5 +1,4 @@
 #pragma once
-
 struct Mesh {
 	std::vector<Triangle> triangles;
 
@@ -282,7 +281,8 @@ struct Controller {
 class Shape3D {
 	Mesh mesh;
 	Mat4x4 matProj;
-	Texture<short>* texture;
+	Texture* texture;
+	int ij = 0;
 
 	Vec3 camera{ 0.0f, 0.0f, 0.0f };
 	float speed = -1.0f;
@@ -325,27 +325,28 @@ public:
 		//mesh.LoadFromObjectFile("../Assets/Cube.obj");
 		//mesh.LoadFromObjectFile("../Assets/Teapot.obj");
 		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
+		//mesh.LoadFromObjectFile("../Assets/Mountain.obj");
 		
 		//For Release
 		//mesh.LoadFromObjectFile("Object.obj");
 
 		//Load Texture
-		texture = new Texture<short>(L"../Assets/Textures/Jario.spr");
+		texture = new Texture("../Assets/Textures/house.png");
 
 		matProj = Mat4x4::MakeProjection();		
 	}
 	void checkInput(Controller& c, float elapsedFrames = 0) {
 		elapsedFrames *= 0.1f;
-		fTheta += elapsedFrames;
+		//fTheta += elapsedFrames;
 
 		if (c.up) 
 			camera.y += speed;
 		if (c.down) 
 			camera.y -= speed;
 		if (c.left) 
-			camera.x -= speed;
+			ij--; //camera.x -= speed; 
 		if (c.right) 
-			camera.x += speed;
+			ij++; //camera.x += speed;
 
 		Vec3 forward = lookDir * speed;
 
@@ -354,16 +355,16 @@ public:
 		if (c.backward)
 			camera += forward;
 		if (c.yawL)
-			yaw -= speed;
-		if (c.yawR)
 			yaw += speed;
+		if (c.yawR)
+			yaw -= speed;
 	}
 	void draw() {			
 		Mesh toRaster;
 
 		// Rotation Z
 		Mat4x4 matRotZ;
-		matRotZ = Mat4x4::MakeRotationZ(5.0f);
+		matRotZ = Mat4x4::MakeRotationZ(fTheta*0.5f);
 		// Rotation Y
 		Mat4x4 matRotY;
 		matRotY = Mat4x4::MakeRotationY(fTheta);
@@ -372,12 +373,12 @@ public:
 		matRotX = Mat4x4::MakeRotationX(0);
 		//Tranlation
 		Mat4x4 matTrans;
-		matTrans = Mat4x4::MakeTranslate(0.0f, 0.0f, 20.0f);
+		matTrans = Mat4x4::MakeTranslate(0.0f, 0.0f, 3.0f);
 		//World Transformations
 		Mat4x4 matWorld;
 		matWorld = Mat4x4::MakeIdentity();
-		/*matWorld.MultiplyMatrix(matRotZ);
-		matWorld.MultiplyMatrix(matRotY);*/
+		matWorld.MultiplyMatrix(matRotZ);
+		matWorld.MultiplyMatrix(matRotY);
 		matWorld.MultiplyMatrix(matTrans);
 
 		//camera
@@ -393,7 +394,12 @@ public:
 		Mat4x4 matView = Mat4x4::LookAtInverse(matCamera);
 
 		//Draw Triangles
-		for (auto tri : mesh.triangles) {
+		//for (auto tri : mesh.triangles) {
+		{
+		//for (int ij = 0; ij < 1; ij++) {
+			ij %= mesh.triangles.size();
+			consoleLogSpace(ij);
+			Triangle tri = mesh.triangles[ij];
 			Triangle triProjected, triTransformed, triViewed;
 
 			//Apply Transformations
@@ -403,19 +409,21 @@ public:
 			Vec3 normal = triTransformed.normal();
 			Vec3 CameraRay = triTransformed.vertex[0] - camera;
 
-			if(normal.dot(CameraRay.normalize()) < 0.0f){
+			//if(normal.dot(CameraRay.normalize()) < 0.0f){
 				//Illumination
+			if (normal.dot(CameraRay.normalize()) < 0.0f) {
 				Vec3 lightDirection = { 0.0f, 1.0f, -1.0f };
 				lightDirection.normalize();
 
 				float light = normal.dot(lightDirection);
 
-				unsigned col = interPolate(-1.0f, 1.0f, light, (unsigned int)0, (unsigned int)0xff);
-				triTransformed.color 
-					= col * 0x100 * 0x100 +
-					  col * 0x100 +
-					  col;
-
+				unsigned char col = interPolate(-1.0f, 1.0f, light, (unsigned int)0, (unsigned int)0xff);
+				triTransformed.color
+					= Color(col, col * 0.9, col * 0.8, 0xff);
+			}
+			else {
+				triTransformed.color = Color(0xff, 0, 0, 0xff);
+			}
 				//Convert World Space to View Space
 				matView.MultiplyTriangle(triViewed, triTransformed);
 				
@@ -445,15 +453,15 @@ public:
 					//Store Triangles
 					toRaster.triangles.push_back(triProjected);
 				}
-			}
+			//}
 		}
 		
 		//Sort Triangles - Painter's Algorithm
-		std::sort(toRaster.triangles.begin(), toRaster.triangles.end(), [](Triangle& t1, Triangle& t2) {
+		/*std::sort(toRaster.triangles.begin(), toRaster.triangles.end(), [](Triangle& t1, Triangle& t2) {
 			float midZ1 = (t1.vertex[0].z + t1.vertex[1].z + t1.vertex[2].z) / 3.0f;
 			float midZ2 = (t2.vertex[0].z + t2.vertex[1].z + t2.vertex[2].z) / 3.0f;
 			return midZ1 > midZ2;
-		});
+		});*/
 
 		//Rasterize Triangle
 		for (auto& triToRasterize : toRaster.triangles) {
@@ -495,9 +503,9 @@ public:
 					tri.vertex[i].y = (float)globalBuffer.height - tri.vertex[i].y;
 					tri.vertex[i].x = (float)globalBuffer.width - tri.vertex[i].x;
 				}
-				TextureTriangle(tri, texture);
-				//ColorTriangle(tri, tri.color);
-				DrawTriangle(tri, 0xffffff-tri.color);
+				//TextureTriangle(tri, texture);
+				ColorTriangle(tri, tri.color);
+				DrawTriangle(tri, 0xffffffff-tri.color.color);
 			}
 		}
 	}		
