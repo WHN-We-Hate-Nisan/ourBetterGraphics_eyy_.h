@@ -1,5 +1,9 @@
+#pragma once
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STBI_MALLOC(sz)           malloc(sz)
+#define STBI_REALLOC(p,newsz)     realloc(p,newsz)
+#define STBI_FREE(p)              free(p)
 #include "Image.h"
 #include "stb_image.h"
 #include "stb_image_write.h"
@@ -8,7 +12,7 @@ Image::Image(const char* filename) {
 	if(read(filename)) {
 		consoleLog("Read %s\n");
 		consoleLog(filename);
-		size = w*h*channels;
+		size = width*height;
 	}
 	else {
 		consoleLog("Failed to read %s\n");
@@ -16,22 +20,23 @@ Image::Image(const char* filename) {
 	}
 }
 
-Image::Image(int w, int h, int channels) : w(w), h(h), channels(channels) {
-	size = w*h*channels;
-	data = new uint8_t[size];
+Image::Image(int width, int height, int channels) : width(width), height(height), channels(channels) {
+	size = width*height;
+	pixels = (Color*)malloc(sizeof(Color) * size);
+	memset(pixels, 0, sizeof(Color) * size);
 }
 
-Image::Image(const Image& img) : Image(img.w, img.h, img.channels) {
-	memcpy(data, img.data, size);
+Image::Image(const Image& img) : Image(img.width, img.height, img.channels) {
+	memcpy(pixels, img.pixels, size*sizeof(Color));
 }
 
 Image::~Image() {
-	stbi_image_free(data);
+	stbi_image_free(pixels);
 }
 
 bool Image::read(const char* filename) {
-	data = stbi_load(filename, &w, &h, &channels, 0);
-	return data != NULL;
+	pixels = (Color*)stbi_load(filename, &width, &height, &channels, 4);
+	return pixels != NULL;
 }
 
 bool Image::write(const char* filename) {
@@ -39,16 +44,16 @@ bool Image::write(const char* filename) {
 	int success;
   switch (type) {
     case PNG:
-      success = stbi_write_png(filename, w, h, channels, data, w*channels);
+      success = stbi_write_png(filename, width, height, channels, (uint8_t*)pixels, width*channels);
       break;
     case BMP:
-      success = stbi_write_bmp(filename, w, h, channels, data);
+      success = stbi_write_bmp(filename, width, height, channels, (uint8_t*)pixels);
       break;
     case JPG:
-      success = stbi_write_jpg(filename, w, h, channels, data, 100);
+      success = stbi_write_jpg(filename, width, height, channels, (uint8_t*)pixels, 100);
       break;
     case TGA:
-      success = stbi_write_tga(filename, w, h, channels, data);
+      success = stbi_write_tga(filename, width, height, channels, (uint8_t*)pixels);
       break;
   }
   return success != 0;
@@ -72,4 +77,3 @@ ImageType Image::getFileType(const char* filename) {
 	}
 	return PNG;
 }
-

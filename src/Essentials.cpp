@@ -45,21 +45,72 @@ float interPolate(const float& fraction, const float& val1, const float& input1,
 Bitmap globalBuffer;
 bool globalRunning = true;
 
-void ClrScr(unsigned int color) {
-	unsigned int* pixel = (unsigned int*)globalBuffer.memory;
-	for (int y = 0; y < globalBuffer.height; y++)
-		for (int x = 0; x < globalBuffer.width; x++)
-			*pixel++ = color;
-	float* zBuffer = (float*)globalBuffer.depthBuffer;
-	for (int y = 0; y < globalBuffer.height; y++)
-		for (int x = 0; x < globalBuffer.width; x++)
-			*zBuffer++ = 1000.0f;
+Texture::Texture(int width, int height) {
+	Create(width, height);
 }
-inline void DrawPixel(int x, int y, unsigned int color, float depth) {
+Texture::Texture(const char* sFile) {
+	if (!Load(sFile))
+		Create(8, 8);
+}
+void Texture::Create(int width, int height) {
+	nWidth = width;
+	nHeight = height;
+	m_Colours = new Color[width * height];
+	for (int i = 0; i < width * height; i++)
+		m_Colours[i] = rand() % 0xffffffff;
+}
+void Texture::SetColour(int x, int y, Color c) {
+	if (x < 0 || x >= nWidth || y < 0 || y >= nHeight) return;
+	else m_Colours[y * nWidth + x] = c;
+}
+Color Texture::GetColour(int x, int y) {
+	if (x < 0 || x >= nWidth || y < 0 || y >= nHeight) return 0;
+	else return m_Colours[y * nWidth + x];
+}
+Color Texture::SampleColour(float x, float y) {
+	int sx = (int)(x * (float)nWidth);
+	int sy = (int)(y * (float)nHeight - 1.0f);
+	if (sx < 0 || sx >= nWidth || sy < 0 || sy >= nHeight) return 0;
+	else return m_Colours[sy * nWidth + sx];
+}
+bool Texture::Save(const char* sFile)
+{
+	Image texture(nWidth, nHeight, 4);
+	memcpy(texture.pixels, m_Colours, sizeof(Color) * texture.size);
+	return texture.write(sFile);
+}
+bool Texture::Load(const char* sFile)
+{
+	delete[] m_Colours;
+
+	Image texture(sFile);
+
+	nWidth = texture.width;
+	nHeight = texture.height;
+
+	Create(nWidth, nHeight);
+
+	m_Colours = (Color*)malloc(sizeof(Color) * texture.size);
+	memcpy(m_Colours, texture.pixels, sizeof(Color) * texture.size);
+	//m_Colours = texture.pixels;	
+
+	return true;
+}
+
+void ClrScr(Color color) {
+	Color* pixel = (Color*)globalBuffer.memory;
+	for (int y = 0; y < globalBuffer.height; y++)
+		for (int x = 0; x < globalBuffer.width; x++)
+			*pixel++ = gibColorInt(color.r, color.g, color.b, color.a);
+}
+inline void DrawPixel(int x, int y, Color color) {
 	if (x < 0 || x >= globalBuffer.width || y < 0 || y >= globalBuffer.height) return;
-	float* prevDepth = (float*)globalBuffer.depthBuffer + y * globalBuffer.width + x;
-	if ( *prevDepth >= depth) *prevDepth = depth; else return;
-	*((unsigned int*)globalBuffer.memory + y * globalBuffer.width + x) = color;
+	*((Color*)globalBuffer.memory + y * globalBuffer.width + x) = gibColorInt(color.r, color.g, color.b, color.a);
+}
+void DrawImage(Image image, Vect2<int> offset) {
+	for (int i = 0; i < image.height; i++)
+		for (int j = 0; j < image.width; j++)
+			DrawPixel(j + offset.x, i + offset.y, image.pixels[i * image.width + j].color);
 }
 void SortByY(Vec3 arr[max_Vertex], int n) {
 	int i, j;
@@ -79,7 +130,7 @@ void SortByYTextures(Vec3 arr[max_Vertex], Vec2 tex[max_Vertex], int n) {
 				Swap(tex[j], tex[j + 1]);
 			}
 }
-void DrawDDALine(Vect2<int> v1, Vect2<int> v2, unsigned int color)
+void DrawDDALine(Vect2<int> v1, Vect2<int> v2, Color color)
 {
 	if (v1.x < 0 || v1.x >= globalBuffer.width || v1.y < 0 || v1.y >= globalBuffer.height) {
 		consoleLog("\nOut OF Bounds: \t");
@@ -123,11 +174,11 @@ void DrawDDALine(float x1, float y1, float x2, float y2) {
 void DrawDDALine(float x1, float y1, float x2, float y2, unsigned color) {
 	DrawDDALine(Vect2<int>{ (int)x1, (int)y1 }, Vect2<int>{ (int)x2, (int)y2 }, color);
 }
-void DrawDDALine(Vec3 v1, Vec3 v2, unsigned int color, Vec3 offset) {
+void DrawDDALine(Vec3 v1, Vec3 v2, Color color, Vec3 offset) {
 	DrawDDALine(Vect2<int>{(int)(v1.x + offset.x), (int)(v1.y + offset.y)}, Vect2<int>{(int)(v2.x + offset.x), (int)(v2.y + offset.y)}, color);
 }
 
-void DrawBresLine(Vect2<int> v1, Vect2<int> v2, unsigned int color) {
+void DrawBresLine(Vect2<int> v1, Vect2<int> v2, Color color) {
 	/*if (v1.x < 0 || v1.x >= globalBuffer.width || v1.y < 0 || v1.y >= globalBuffer.height) {
 		consoleLog("\nOut OF Bounds: \t");
 		consoleLog("x:"); consoleLogSpace(v1.x);
@@ -189,27 +240,27 @@ void DrawBresLine(Vect2<int> v1, Vect2<int> v2, unsigned int color) {
 		}
 	}
 }
-void DrawBresLine(Vect2<float> v1, Vect2<float> v2, unsigned int color) {
+void DrawBresLine(Vect2<float> v1, Vect2<float> v2, Color color) {
 	DrawBresLine(Vect2<int>{(int)v1.x, (int)v1.y}, Vect2<int>{(int)v2.x, (int)v2.y}, color);
 }
-void DrawBresLine(Vec3 v1, Vec3 v2, unsigned int color, Vec3 offset) {
+void DrawBresLine(Vec3 v1, Vec3 v2, Color color, Vec3 offset) {
 	DrawBresLine(Vect2<int>{(int)(v1.x + offset.x), (int)(v1.y + offset.y)}, Vect2<int>{(int)(v2.x + offset.x), (int)(v2.y + offset.y)}, color);
 }
 void DrawBresLine(float x1, float y1, float x2, float y2) {
 	DrawBresLine(Vect2<int>{ (int)x1, (int)y1 }, Vect2<int>{ (int)x2, (int)y2 }, 0xffffff);
 }
-void DrawBresLine(float x1, float y1, float x2, float y2, unsigned color) {
+void DrawBresLine(float x1, float y1, float x2, float y2, Color color) {
 	DrawBresLine(Vect2<int>{ (int)x1, (int)y1 }, Vect2<int>{ (int)x2, (int)y2 }, color);
 }
 
-void DrawHorizLine(int x1, int x2, int y, unsigned int color, float depth, Vec3 off) {
+void DrawHorizLine(int x1, int x2, int y, Color color, Vec3 off) {
 	if (x2 < x1) Swap(x1, x2);
 	for (int i = x1; i <= x2; i++)
-		DrawPixel(i + off.x, y + off.y, color, depth);
+		DrawPixel(i + off.x, y + off.y, color);
 }
 void DrawHorizTexture(float ax, float bx, float y, float& texU, float& texV, float& texW, 
 						float texStartU, float texEndU, float texStartV, float texEndV, 
-						float texStartW, float texEndW, Texture<short>* texture) {
+						float texStartW, float texEndW, Texture* texture) {
 	float tStep = 1.0f / ((float)(bx - ax));
 	float t = 0.0f;
 	for (int j = ax; j < bx; j++) {
@@ -217,21 +268,18 @@ void DrawHorizTexture(float ax, float bx, float y, float& texU, float& texV, flo
 		texU = (1.0f - t) * texStartU + t * texEndU;
 		texV = (1.0f - t) * texStartV + t * texEndV;
 		texW = (1.0f - t) * texStartW + t * texEndW;
-		DrawPixel(j, (int)y, (unsigned int)texture->SampleColour(texU/ texW, texV/ texW));
+		DrawPixel(j, (int)y, texture->SampleColour(texU / texW, texV / texW));
+		//DrawPixel(j, (int)y, texture->SampleColour(texU, texV));
 		t += tStep;
 	}
 }
 
-void ColorTriangle(Triangle, unsigned int, Vec3)
-{
-}
-
-void DrawTriangle(Triangle& t, unsigned int color) {
+void DrawTriangle(Triangle& t, Color color) {
 	DrawBresLine(t.vertex[0], t.vertex[1], color);
 	DrawBresLine(t.vertex[1], t.vertex[2], color);
 	DrawBresLine(t.vertex[2], t.vertex[0], color);
 }
-void ColorTriangle(Triangle& tri, unsigned int color, Vec3 off) {
+void ColorTriangle(Triangle& tri, Color color, Vec3 off) {
 	float dx1, dx2, dx3;
 	Vec3 array[] = { tri.vertex[0], tri.vertex[1], tri.vertex[2] };
 	SortByY(array);
@@ -244,23 +292,22 @@ void ColorTriangle(Triangle& tri, unsigned int color, Vec3 off) {
 	if (C.y - B.y > 0) dx3 = (C.x - B.x) / (C.y - B.y); else dx3 = 0;
 
 	Source = End = A;
-	float depthh = 1000;
 	if (dx1 > dx2) {
 		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx2, End.x += dx1)
-			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
+			DrawHorizLine(Source.x, End.x, Source.y, color, off);
 		End = B;
 		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx2, End.x += dx3)
-			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
+			DrawHorizLine(Source.x, End.x, Source.y, color, off);
 	}
 	else {
 		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx1, End.x += dx2)
-			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
+			DrawHorizLine(Source.x, End.x, Source.y, color, off);
 		Source = B;
 		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx3, End.x += dx2)
-			DrawHorizLine(Source.x, End.x, Source.y, color, depthh, off);
+			DrawHorizLine(Source.x, End.x, Source.y, color, off);
 	}
 }
-void TextureTriangle(Triangle& tri, Texture<short>* texture) {
+void TextureTriangle(Triangle& tri, Texture* texture) {
 	//Sort  Vertices by y value
 	Vec3 array[] = { tri.vertex[0], tri.vertex[1], tri.vertex[2] };
 	Vec2 textureArray[] = { tri.texCood[0], tri.texCood[1], tri.texCood[2] };
