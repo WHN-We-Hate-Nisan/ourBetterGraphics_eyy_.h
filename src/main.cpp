@@ -114,6 +114,11 @@ int CALLBACK WinMain(
 						if (vkCode == 'Z')
 						{
 							p -= multiplier;
+							controller.wireframe = !controller.wireframe;
+						}
+						if (vkCode == 'X')
+						{
+							controller.colored = !controller.colored;
 						}
 						if (vkCode == 'C')
 						{
@@ -168,7 +173,7 @@ int CALLBACK WinMain(
 				//Lab5(x, y, z, p, textured, rot, rotBool);				
 				s.checkInput(controller, frameCounter);
 				s.draw();
-				/*Image test("../Assets/Textures/house.png");
+				/*Image test("../Assets/Textures/kriti.png");
 				DrawImage(test);*/
 #pragma region Initializer
 				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,

@@ -5,7 +5,7 @@ struct Mesh {
 	bool LoadFromObjectFile(std::string FileName) {
 		std::ifstream f(FileName);
 		if (!f.is_open()) return false;
-		
+
 		//Vertices
 		std::vector<Vec3> vertices;
 
@@ -271,7 +271,7 @@ struct Mat4x4 {
 struct Controller {
 	bool up = 0, down = 0, left = 0, right = 0,
 		forward = 0, backward = 0,
-		yawL = 0, yawR = 0;
+		yawL = 0, yawR = 0, colored = 1, wireframe = 1;
 	void reset() {
 		up = 0; down = 0; left = 0; right = 0;
 		forward = 0; backward = 0;
@@ -282,103 +282,110 @@ class Shape3D {
 	Mesh mesh;
 	Mat4x4 matProj;
 	Texture* texture;
-	int ij = 0;
+	//int ij = 0;
 
 	Vec3 camera{ 0.0f, 0.0f, 0.0f };
 	float speed = -1.0f;
-	Vec3 lookDir= { 0,0,1 };
-	float yaw=0;
+	Vec3 lookDir = { 0,0,1 };
+	float yaw = 0;
 
-	float fTheta=0;
+	float fTheta = 0;
+
+	bool colored = false, wireframe = true;
 
 public:
 	Shape3D() {
 		//The Cube
-		mesh.triangles = {
-			// SOUTH
-			{ 0.0f, 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-			{ 0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-																																						  
-			// EAST           																	   		  												 
-			{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-			{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-																						  			
-			// NORTH           																		 
-			{ 1.0f, 0.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-			{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-																						  				
-			// WEST            																		   	
-			{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-			{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-																						  				  
-			// TOP             																		   	   
-			{ 0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-			{ 0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-																						  				 
-			// BOTTOM          																	  		
-			{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-			{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-		};
+		//mesh.triangles = {
+		//	// SOUTH
+		//	{ 0.0f, 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//																																				  
+		//	// EAST           																	   		  												 
+		//	{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//																				  			
+		//	// NORTH           																		 
+		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//																				  				
+		//	// WEST            																		   	
+		//	{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//																				  				  
+		//	// TOP             																		   	   
+		//	{ 0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//																				  				 
+		//	// BOTTOM          																	  		
+		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//};
 
 		//Loading obj
 		//mesh.LoadFromObjectFile("../Assets/Church.obj");
 		//mesh.LoadFromObjectFile("../Assets/Cube.obj");
 		//mesh.LoadFromObjectFile("../Assets/Teapot.obj");
 		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
-		//mesh.LoadFromObjectFile("../Assets/Mountain.obj");
-		
+		mesh.LoadFromObjectFile("../Assets/Mountain.obj");
+
 		//For Release
 		//mesh.LoadFromObjectFile("Object.obj");
 
 		//Load Texture
-		texture = new Texture("../Assets/Textures/house.png");
+		//texture = new Texture("../Assets/Textures/house.png");
+		//texture = new Texture("../Assets/Textures/kriti.png");
+		texture = NULL;
 
-		matProj = Mat4x4::MakeProjection();		
+		matProj = Mat4x4::MakeProjection();
 	}
 	void checkInput(Controller& c, float elapsedFrames = 0) {
 		elapsedFrames *= 0.1f;
 		//fTheta += elapsedFrames;
 
-		if (c.up) 
+		if (c.up)
 			camera.y += speed;
-		if (c.down) 
+		if (c.down)
 			camera.y -= speed;
-		if (c.left) 
-			ij--; //camera.x -= speed; 
-		if (c.right) 
-			ij++; //camera.x += speed;
+		if (c.left)
+			camera.x -= speed; 
+		if (c.right)
+			camera.x += speed;
 
 		Vec3 forward = lookDir * speed;
 
 		if (c.forward)
-			camera -= forward;		;
+			camera -= forward; 
 		if (c.backward)
 			camera += forward;
 		if (c.yawL)
 			yaw += speed;
 		if (c.yawR)
 			yaw -= speed;
+
+		wireframe = c.wireframe;
+		colored = c.colored;
 	}
-	void draw() {			
+	void draw() {
 		Mesh toRaster;
 
 		// Rotation Z
-		Mat4x4 matRotZ;
-		matRotZ = Mat4x4::MakeRotationZ(fTheta*0.5f);
+		//Mat4x4 matRotZ;
+		//matRotZ = Mat4x4::MakeRotationZ(fTheta * 0.5f);
 		// Rotation Y
-		Mat4x4 matRotY;
-		matRotY = Mat4x4::MakeRotationY(fTheta);
+		//Mat4x4 matRotY;
+		//matRotY = Mat4x4::MakeRotationY(fTheta);
 		// Rotation X
-		Mat4x4  matRotX;
-		matRotX = Mat4x4::MakeRotationX(0);
+		//Mat4x4  matRotX;
+		//matRotX = Mat4x4::MakeRotationX(0);
 		//Tranlation
 		Mat4x4 matTrans;
 		matTrans = Mat4x4::MakeTranslate(0.0f, 0.0f, 3.0f);
 		//World Transformations
 		Mat4x4 matWorld;
 		matWorld = Mat4x4::MakeIdentity();
-		matWorld.MultiplyMatrix(matRotZ);
-		matWorld.MultiplyMatrix(matRotY);
+		/*matWorld.MultiplyMatrix(matRotZ);
+		matWorld.MultiplyMatrix(matRotY);*/
 		matWorld.MultiplyMatrix(matTrans);
 
 		//camera
@@ -394,12 +401,11 @@ public:
 		Mat4x4 matView = Mat4x4::LookAtInverse(matCamera);
 
 		//Draw Triangles
-		//for (auto tri : mesh.triangles) {
-		{
-		//for (int ij = 0; ij < 1; ij++) {
-			ij %= mesh.triangles.size();
-			consoleLogSpace(ij);
-			Triangle tri = mesh.triangles[ij];
+		for (auto tri : mesh.triangles) {
+			//for (int ij = 0; ij < 1; ij++) {
+			//ij %= mesh.triangles.size();
+			//consoleLogSpace(ij);
+			//Triangle tri = mesh.triangles[ij];
 			Triangle triProjected, triTransformed, triViewed;
 
 			//Apply Transformations
@@ -420,28 +426,28 @@ public:
 				unsigned char col = interPolate(-1.0f, 1.0f, light, (unsigned int)0, (unsigned int)0xff);
 				triTransformed.color
 					= Color(col, col * 0.9, col * 0.8, 0xff);
-			}
-			else {
-				triTransformed.color = Color(0xff, 0, 0, 0xff);
-			}
+				/*}
+				else {
+					triTransformed.color = Color(0xff, 0, 0, 0xff);
+				}*/
 				//Convert World Space to View Space
 				matView.MultiplyTriangle(triViewed, triTransformed);
-				
+
 				//Clip viewed triangle against near plane
 				//Forms upto 2 additional triangles
 				int nClippedTriangles = 0;
 				Triangle clipped[2];
-				nClippedTriangles = Triangle::ClipAgainstPlane({ 0.0f,0.0f, 0.1f }, { 0.0f,0.0f, 0.1f }, triViewed, clipped[0], clipped[1]);
+				nClippedTriangles = Triangle::ClipAgainstPlane({ 0.0f,0.0f, 5.0f }, { 0.0f,0.0f, 0.1f }, triViewed, clipped[0], clipped[1]);
 
-				for(int n=0; n<nClippedTriangles;n++) {
+				for (int n = 0; n < nClippedTriangles; n++) {
 					//Projection
 					matProj.MultiplyTriangle(triProjected, clipped[n]);
 
 					//Project Textures
-					for (int i = 0; i < 3; i++) {
+					/*for (int i = 0; i < 3; i++) {
 						triProjected.texCood[i] /= triProjected.vertex[i].w;
 						triProjected.texCood[i].w = 1.0f / triProjected.vertex[i].w;
-					}
+					}*/
 					//Normalise Projected matrix
 					triProjected.normalize();
 
@@ -453,19 +459,18 @@ public:
 					//Store Triangles
 					toRaster.triangles.push_back(triProjected);
 				}
-			//}
+			}
 		}
-		
 		//Sort Triangles - Painter's Algorithm
-		/*std::sort(toRaster.triangles.begin(), toRaster.triangles.end(), [](Triangle& t1, Triangle& t2) {
+		std::sort(toRaster.triangles.begin(), toRaster.triangles.end(), [](Triangle& t1, Triangle& t2) {
 			float midZ1 = (t1.vertex[0].z + t1.vertex[1].z + t1.vertex[2].z) / 3.0f;
 			float midZ2 = (t2.vertex[0].z + t2.vertex[1].z + t2.vertex[2].z) / 3.0f;
 			return midZ1 > midZ2;
-		});*/
+			});
 
 		//Rasterize Triangle
 		for (auto& triToRasterize : toRaster.triangles) {
-			
+
 			//Clip triangles against all four screen edges
 			Triangle clipped[2];
 			std::list<Triangle> triangleList;
@@ -480,17 +485,17 @@ public:
 					nNewTriangles--;
 
 					switch (p) {
-					//bottom
-					case 0: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, test, clipped[0], clipped[1]); 
+						//bottom
+					case 0: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, test, clipped[0], clipped[1]);
 						break;
-					//top
-					case 1: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, (float)globalBuffer.height-1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]);
+						//top
+					case 1: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, (float)globalBuffer.height - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]);
 						break;
-					//left
+						//left
 					case 2: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]);
 						break;
-					//right
-					case 3: nTrisToAdd = Triangle::ClipAgainstPlane({(float)globalBuffer.width-1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]);
+						//right
+					case 3: nTrisToAdd = Triangle::ClipAgainstPlane({ (float)globalBuffer.width - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]);
 						break;
 					}
 					for (int w = 0; w < nTrisToAdd; w++)
@@ -504,10 +509,10 @@ public:
 					tri.vertex[i].x = (float)globalBuffer.width - tri.vertex[i].x;
 				}
 				//TextureTriangle(tri, texture);
-				ColorTriangle(tri, tri.color);
-				DrawTriangle(tri, 0xffffffff-tri.color.color);
+				if (colored) ColorTriangle(tri, tri.color);
+				if (wireframe) DrawTriangle(tri, 0xffffffff - tri.color.color);
 			}
 		}
-	}		
+	}
 };
 
