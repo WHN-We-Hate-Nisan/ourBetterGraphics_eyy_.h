@@ -114,6 +114,12 @@ int CALLBACK WinMain(
 						if (vkCode == 'Z')
 						{
 							p -= multiplier;
+							controller.wireframe = !controller.wireframe;
+						}
+						if (vkCode == 'X')
+						{
+							p -= multiplier;
+							controller.colored = !controller.colored;
 						}
 						if (vkCode == 'C')
 						{

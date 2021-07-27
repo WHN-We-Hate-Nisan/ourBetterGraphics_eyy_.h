@@ -271,7 +271,8 @@ struct Mat4x4 {
 struct Controller {
 	bool up = 0, down = 0, left = 0, right = 0,
 		forward = 0, backward = 0,
-		yawL = 0, yawR = 0;
+		yawL = 0, yawR = 0, colored = 1, wireframe = 0;
+
 	void reset() {
 		up = 0; down = 0; left = 0; right = 0;
 		forward = 0; backward = 0;
@@ -282,7 +283,6 @@ class Shape3D {
 	Mesh mesh;
 	Mat4x4 matProj;
 	Texture* texture;
-	int ij = 0;
 
 	Vec3 camera{ 0.0f, 0.0f, 0.0f };
 	float speed = -1.0f;
@@ -291,6 +291,7 @@ class Shape3D {
 
 	float fTheta=0;
 
+	bool wireframe = 0, colored = 1;
 public:
 	Shape3D() {
 		//The Cube
@@ -328,10 +329,11 @@ public:
 		//mesh.LoadFromObjectFile("../Assets/Mountain.obj");
 		
 		//For Release
-		//mesh.LoadFromObjectFile("Object.obj");
+		mesh.LoadFromObjectFile("Object.obj");
 
 		//Load Texture
-		texture = new Texture("../Assets/Textures/house.png");
+		texture = NULL;
+		//texture = new Texture("../Assets/Textures/house.png");
 
 		matProj = Mat4x4::MakeProjection();		
 	}
@@ -344,9 +346,9 @@ public:
 		if (c.down) 
 			camera.y -= speed;
 		if (c.left) 
-			ij--; //camera.x -= speed; 
+			camera.x -= speed; 
 		if (c.right) 
-			ij++; //camera.x += speed;
+			camera.x += speed;
 
 		Vec3 forward = lookDir * speed;
 
@@ -358,27 +360,29 @@ public:
 			yaw += speed;
 		if (c.yawR)
 			yaw -= speed;
+		wireframe = c.wireframe;
+		colored = c.colored;
 	}
 	void draw() {			
 		Mesh toRaster;
 
 		// Rotation Z
-		Mat4x4 matRotZ;
-		matRotZ = Mat4x4::MakeRotationZ(fTheta*0.5f);
+		//Mat4x4 matRotZ;
+		//matRotZ = Mat4x4::MakeRotationZ(fTheta*0.5f);
 		// Rotation Y
-		Mat4x4 matRotY;
-		matRotY = Mat4x4::MakeRotationY(fTheta);
+		//Mat4x4 matRotY;
+		//matRotY = Mat4x4::MakeRotationY(fTheta);
 		// Rotation X
-		Mat4x4  matRotX;
-		matRotX = Mat4x4::MakeRotationX(0);
+		//Mat4x4  matRotX;
+		//matRotX = Mat4x4::MakeRotationX(0);
 		//Tranlation
 		Mat4x4 matTrans;
 		matTrans = Mat4x4::MakeTranslate(0.0f, 0.0f, 3.0f);
 		//World Transformations
 		Mat4x4 matWorld;
 		matWorld = Mat4x4::MakeIdentity();
-		matWorld.MultiplyMatrix(matRotZ);
-		matWorld.MultiplyMatrix(matRotY);
+		//matWorld.MultiplyMatrix(matRotZ);
+		//matWorld.MultiplyMatrix(matRotY);
 		matWorld.MultiplyMatrix(matTrans);
 
 		//camera
@@ -394,12 +398,7 @@ public:
 		Mat4x4 matView = Mat4x4::LookAtInverse(matCamera);
 
 		//Draw Triangles
-		//for (auto tri : mesh.triangles) {
-		{
-		//for (int ij = 0; ij < 1; ij++) {
-			ij %= mesh.triangles.size();
-			consoleLogSpace(ij);
-			Triangle tri = mesh.triangles[ij];
+		for (auto tri : mesh.triangles) {		
 			Triangle triProjected, triTransformed, triViewed;
 
 			//Apply Transformations
@@ -409,9 +408,8 @@ public:
 			Vec3 normal = triTransformed.normal();
 			Vec3 CameraRay = triTransformed.vertex[0] - camera;
 
-			//if(normal.dot(CameraRay.normalize()) < 0.0f){
-				//Illumination
 			if (normal.dot(CameraRay.normalize()) < 0.0f) {
+				//Illumination
 				Vec3 lightDirection = { 0.0f, 1.0f, -1.0f };
 				lightDirection.normalize();
 
@@ -420,10 +418,7 @@ public:
 				unsigned char col = interPolate(-1.0f, 1.0f, light, (unsigned int)0, (unsigned int)0xff);
 				triTransformed.color
 					= Color(col, col * 0.9, col * 0.8, 0xff);
-			}
-			else {
-				triTransformed.color = Color(0xff, 0, 0, 0xff);
-			}
+
 				//Convert World Space to View Space
 				matView.MultiplyTriangle(triViewed, triTransformed);
 				
@@ -453,15 +448,15 @@ public:
 					//Store Triangles
 					toRaster.triangles.push_back(triProjected);
 				}
-			//}
+			}
 		}
 		
 		//Sort Triangles - Painter's Algorithm
-		/*std::sort(toRaster.triangles.begin(), toRaster.triangles.end(), [](Triangle& t1, Triangle& t2) {
+		std::sort(toRaster.triangles.begin(), toRaster.triangles.end(), [](Triangle& t1, Triangle& t2) {
 			float midZ1 = (t1.vertex[0].z + t1.vertex[1].z + t1.vertex[2].z) / 3.0f;
 			float midZ2 = (t2.vertex[0].z + t2.vertex[1].z + t2.vertex[2].z) / 3.0f;
 			return midZ1 > midZ2;
-		});*/
+		});
 
 		//Rasterize Triangle
 		for (auto& triToRasterize : toRaster.triangles) {
@@ -504,8 +499,8 @@ public:
 					tri.vertex[i].x = (float)globalBuffer.width - tri.vertex[i].x;
 				}
 				//TextureTriangle(tri, texture);
-				ColorTriangle(tri, tri.color);
-				DrawTriangle(tri, 0xffffffff-tri.color.color);
+				if (colored) ColorTriangle(tri, tri.color);
+				if (wireframe) DrawTriangle(tri, 0xffffffff - tri.color.color);
 			}
 		}
 	}		
