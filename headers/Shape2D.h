@@ -12,8 +12,8 @@ class Shape2D {
 public:
 	Shape2D(float, float, int, float, float);
 	Shape2D();
-	void DrawShape(unsigned);
-	void DrawShapeOrigin(unsigned);
+	void DrawShape(Color);
+	void DrawShapeOrigin(Color);
 
 	//everything below needs doing - DankBros 12:30AM signing off
 	void matMul(float[3][3], float[3][max_Vertex]);

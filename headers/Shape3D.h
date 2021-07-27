@@ -1,5 +1,4 @@
 #pragma once
-
 struct Mesh {
 	std::vector<Triangle> triangles;
 
@@ -67,6 +66,8 @@ struct Mat4x4 {
 	}
 	Triangle& MultiplyTriangle(Triangle& result, Triangle& in) {
 		result.color = in.color;
+		for (int i = 0; i < 3; i++)
+			result.texCood[i] = in.texCood[i];
 		for (int i = 0; i < 3; i++)
 			result.vertex[i] = this->MultiplyVector(in.vertex[i]);
 		return result;
@@ -270,7 +271,8 @@ struct Mat4x4 {
 struct Controller {
 	bool up = 0, down = 0, left = 0, right = 0,
 		forward = 0, backward = 0,
-		yawL = 0, yawR = 0;
+		yawL = 0, yawR = 0, colored = 1, wireframe = 0;
+
 	void reset() {
 		up = 0; down = 0; left = 0; right = 0;
 		forward = 0; backward = 0;
@@ -280,6 +282,7 @@ struct Controller {
 class Shape3D {
 	Mesh mesh;
 	Mat4x4 matProj;
+	Texture* texture;
 
 	Vec3 camera{ 0.0f, 0.0f, 0.0f };
 	float speed = -1.0f;
@@ -288,30 +291,62 @@ class Shape3D {
 
 	float fTheta=0;
 
+	bool wireframe = 0, colored = 1;
 public:
 	Shape3D() {
+		//The Cube
+		mesh.triangles = {
+			// SOUTH
+			{ 0.0f, 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+			{ 0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+																																						  
+			// EAST           																	   		  												 
+			{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+			{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+																						  			
+			// NORTH           																		 
+			{ 1.0f, 0.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+			{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+																						  				
+			// WEST            																		   	
+			{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+			{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+																						  				  
+			// TOP             																		   	   
+			{ 0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+			{ 0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+																						  				 
+			// BOTTOM          																	  		
+			{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+			{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		};
+
 		//Loading obj
 		//mesh.LoadFromObjectFile("../Assets/Church.obj");
 		//mesh.LoadFromObjectFile("../Assets/Cube.obj");
 		//mesh.LoadFromObjectFile("../Assets/Teapot.obj");
 		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
-		//Projection Matrix
-
+		//mesh.LoadFromObjectFile("../Assets/Mountain.obj");
+		
 		//For Release
 		mesh.LoadFromObjectFile("Object.obj");
+
+		//Load Texture
+		texture = NULL;
+		//texture = new Texture("../Assets/Textures/house.png");
 
 		matProj = Mat4x4::MakeProjection();		
 	}
 	void checkInput(Controller& c, float elapsedFrames = 0) {
 		elapsedFrames *= 0.1f;
-		fTheta += elapsedFrames;
+		//fTheta += elapsedFrames;
 
 		if (c.up) 
 			camera.y += speed;
 		if (c.down) 
 			camera.y -= speed;
 		if (c.left) 
-			camera.x -= speed;
+			camera.x -= speed; 
 		if (c.right) 
 			camera.x += speed;
 
@@ -322,30 +357,32 @@ public:
 		if (c.backward)
 			camera += forward;
 		if (c.yawL)
-			yaw -= speed;
-		if (c.yawR)
 			yaw += speed;
+		if (c.yawR)
+			yaw -= speed;
+		wireframe = c.wireframe;
+		colored = c.colored;
 	}
 	void draw() {			
 		Mesh toRaster;
 
 		// Rotation Z
-		Mat4x4 matRotZ;
-		matRotZ = Mat4x4::MakeRotationZ(5.0f);
+		//Mat4x4 matRotZ;
+		//matRotZ = Mat4x4::MakeRotationZ(fTheta*0.5f);
 		// Rotation Y
-		Mat4x4 matRotY;
-		matRotY = Mat4x4::MakeRotationY(fTheta);
+		//Mat4x4 matRotY;
+		//matRotY = Mat4x4::MakeRotationY(fTheta);
 		// Rotation X
-		Mat4x4  matRotX;
-		matRotX = Mat4x4::MakeRotationX(0);
+		//Mat4x4  matRotX;
+		//matRotX = Mat4x4::MakeRotationX(0);
 		//Tranlation
 		Mat4x4 matTrans;
-		matTrans = Mat4x4::MakeTranslate(0.0f, 0.0f, 20.0f);
+		matTrans = Mat4x4::MakeTranslate(0.0f, 0.0f, 3.0f);
 		//World Transformations
 		Mat4x4 matWorld;
 		matWorld = Mat4x4::MakeIdentity();
-		/*matWorld.MultiplyMatrix(matRotZ);
-		matWorld.MultiplyMatrix(matRotY);*/
+		//matWorld.MultiplyMatrix(matRotZ);
+		//matWorld.MultiplyMatrix(matRotY);
 		matWorld.MultiplyMatrix(matTrans);
 
 		//camera
@@ -361,7 +398,7 @@ public:
 		Mat4x4 matView = Mat4x4::LookAtInverse(matCamera);
 
 		//Draw Triangles
-		for (auto tri : mesh.triangles) {
+		for (auto tri : mesh.triangles) {		
 			Triangle triProjected, triTransformed, triViewed;
 
 			//Apply Transformations
@@ -371,18 +408,16 @@ public:
 			Vec3 normal = triTransformed.normal();
 			Vec3 CameraRay = triTransformed.vertex[0] - camera;
 
-			if(normal.dot(CameraRay.normalize()) < 0.0f){
+			if (normal.dot(CameraRay.normalize()) < 0.0f) {
 				//Illumination
 				Vec3 lightDirection = { 0.0f, 1.0f, -1.0f };
 				lightDirection.normalize();
 
 				float light = normal.dot(lightDirection);
 
-				unsigned col = interPolate(-1.0f, 1.0f, light, (unsigned int)0, (unsigned int)0xff);
-				triTransformed.color 
-					= col * 0x100 * 0x100 +
-					  col * 0x100 +
-					  col;
+				unsigned char col = interPolate(-1.0f, 1.0f, light, (unsigned int)0, (unsigned int)0xff);
+				triTransformed.color
+					= Color(col, col * 0.9, col * 0.8, 0xff);
 
 				//Convert World Space to View Space
 				matView.MultiplyTriangle(triViewed, triTransformed);
@@ -397,8 +432,13 @@ public:
 					//Projection
 					matProj.MultiplyTriangle(triProjected, clipped[n]);
 
+					//Project Textures
+					for (int i = 0; i < 3; i++) {
+						triProjected.texCood[i] /= triProjected.vertex[i].w;
+						triProjected.texCood[i].w = 1.0f / triProjected.vertex[i].w;
+					}
 					//Normalise Projected matrix
-					triProjected.normalise();
+					triProjected.normalize();
 
 					//Scale Triangles into view
 					Vec3 offSetView = { 1.0f, 1.0f, 0.0f };
@@ -458,8 +498,9 @@ public:
 					tri.vertex[i].y = (float)globalBuffer.height - tri.vertex[i].y;
 					tri.vertex[i].x = (float)globalBuffer.width - tri.vertex[i].x;
 				}
-				ColorTriangle(tri, tri.color);
-				//DrawTriangle(tri, 0);
+				//TextureTriangle(tri, texture);
+				if (colored) ColorTriangle(tri, tri.color);
+				if (wireframe) DrawTriangle(tri, 0xffffffff - tri.color.color);
 			}
 		}
 	}		

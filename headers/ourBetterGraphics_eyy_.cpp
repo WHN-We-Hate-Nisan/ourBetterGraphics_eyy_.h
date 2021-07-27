@@ -1,7 +1,5 @@
 #pragma once
-#include"Essentials.h"
-#include"Shape2D.h"
-#include"Cube3D.h"
+#include "Shape2D.h"
 #include "ourBetterGraphics_eyy_.h"
 
 void resetMatrix(void* mat, int bytesToZero)

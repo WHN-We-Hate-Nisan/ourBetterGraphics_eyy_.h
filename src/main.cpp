@@ -45,7 +45,6 @@ int CALLBACK WinMain(
 	globalBuffer.info.bmiHeader.biCompression = BI_RGB;
 
 	globalBuffer.memory = VirtualAlloc(0, globalBuffer.width * globalBuffer.height * 4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-	globalBuffer.depthBuffer = VirtualAlloc(0, globalBuffer.width * globalBuffer.height * 4, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
 	if (RegisterClass(&wndclass))
 	{
@@ -115,6 +114,12 @@ int CALLBACK WinMain(
 						if (vkCode == 'Z')
 						{
 							p -= multiplier;
+							controller.wireframe = !controller.wireframe;
+						}
+						if (vkCode == 'X')
+						{
+							p -= multiplier;
+							controller.colored = !controller.colored;
 						}
 						if (vkCode == 'C')
 						{
@@ -165,11 +170,12 @@ int CALLBACK WinMain(
 				}
 
 #pragma endregion
-				ClrScr();			
+				ClrScr(Color(173, 225, 229, 0xff));
 				//Lab5(x, y, z, p, textured, rot, rotBool);				
 				s.checkInput(controller, frameCounter);
 				s.draw();
-
+				/*Image test("../Assets/Textures/house.png");
+				DrawImage(test);*/
 #pragma region Initializer
 				StretchDIBits(deviceContext, 0, 0, globalBuffer.width, globalBuffer.height,
 							  0, 0, globalBuffer.width, globalBuffer.height, globalBuffer.memory, &globalBuffer.info, DIB_RGB_COLORS, SRCCOPY);
