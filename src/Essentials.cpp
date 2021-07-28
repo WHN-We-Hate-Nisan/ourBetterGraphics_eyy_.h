@@ -4,14 +4,14 @@
 void consoleLog(const char* out) {
 	OutputDebugStringA(out);
 }
-void consoleLog(int out) {
+void consoleLog(float out) {
 	char output[100];
-	sprintf_s(output, 100, "%d", out);
+	sprintf_s(output, 100, "%f", out);
 	OutputDebugStringA(output);
 }
-void consoleLogSpace(int out) {
+void consoleLogSpace(float out) {
 	char output[100];
-	sprintf_s(output, 100, "%d\n", out);
+	sprintf_s(output, 100, "%f\n", out);
 	OutputDebugStringA(output);
 }
 
