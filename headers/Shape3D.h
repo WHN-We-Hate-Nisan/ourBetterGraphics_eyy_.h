@@ -377,11 +377,13 @@ class Shape3D {
 	Mat4x4 matProj;
 	Texture* texture;
 
-	Vec3 camera{ 0.0f, 0.0f, 0.0f };
+	//Vec3 camera{ 0.0f, 0.0f, 0.0f };
+	Vec3 camera{ 0.0f, 10.0f, 30.0f };
 
 	//Lighting Parameters
 	Vec3 lightDirection = { 1.0f, 1.0f, 1.0f };
-	Vec3 lightPosition = { 5.0f, 5.0f,5.0f };
+	//Vec3 lightPosition = { 5.0f, 5.0f,5.0f };
+	Vec3 lightPosition = { 5.0f, 20.0f, 40.0f };
 	float Ka = 0.75f, Kd = 0.75f, Ks = 0.5f,
 		Ia = 5.0f, Il = 7.0f;
 	int n = 10;
@@ -427,10 +429,10 @@ public:
 
 		//Loading obj
 		//mesh.LoadFromObjectFile("../Assets/Church.obj");
-		//mesh.LoadFromObjectFile("../Assets/Cube2.obj");
+		mesh.LoadFromObjectFile("../Assets/Cube2.obj");
 		//mesh.LoadFromObjectFile("../Assets/Teapot.obj");
 		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
-		mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
+		//mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
 		//mesh.LoadFromObjectFile("../Assets/Sample.obj");
 		
 		//For Release
@@ -497,16 +499,7 @@ public:
 	}
 	void draw() {
 		Mesh toRaster;
-
-		// Rotation Z
-		//Mat4x4 matRotZ;
-		//matRotZ = Mat4x4::MakeRotationZ(fTheta*0.5f);
-		// Rotation Y
-		//Mat4x4 matRotY;
-		//matRotY = Mat4x4::MakeRotationY(fTheta);
-		// Rotation X
-		//Mat4x4  matRotX;
-		//matRotX = Mat4x4::MakeRotationX(0);
+				
 		//Tranlation
 		Mat4x4 matTrans;
 		matTrans = Mat4x4::MakeTranslate(0.0f, 0.0f, 3.0f);
@@ -514,14 +507,12 @@ public:
 		matLightTrans = Mat4x4::MakeTranslate(lightPosition);
 		//World Transformations
 		Mat4x4 matWorld;
-		Mat4x4 matWorld2;
+		Mat4x4 matLighting;
 		matWorld = Mat4x4::MakeIdentity();
-		matWorld2 = Mat4x4::MakeIdentity();
-		//matWorld.MultiplyMatrix(matRotZ);
-		//matWorld.MultiplyMatrix(matRotY);
+		matLighting = Mat4x4::MakeIdentity();
 		matWorld.MultiplyMatrix(matTrans);
-		matWorld2.MultiplyMatrix(matLightTrans);
-		matWorld2.MultiplyMatrix(matTrans);
+		matLighting.MultiplyMatrix(matLightTrans);
+		matLighting.MultiplyMatrix(matTrans);
 
 		//camera
 		Vec3 up = { 0,1,0 };
@@ -539,13 +530,12 @@ public:
 
 		//Draw Triangles
 		for (int index=0; index < sizee; index++) {
-		//for (auto tri : mesh.triangles) {
 			Triangle tri = mesh.triangles[index];
 			Triangle triProjected, triTransformed, triViewed;
 
 			//Apply Transformations
 			if(index<12)
-				matWorld2.MultiplyTriangle(triTransformed, tri);
+				matLighting.MultiplyTriangle(triTransformed, tri);
 			else
 				matWorld.MultiplyTriangle(triTransformed, tri);
 
