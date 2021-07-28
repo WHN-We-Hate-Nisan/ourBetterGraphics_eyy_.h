@@ -390,6 +390,9 @@ class Shape3D {
 	bool wireframe = 0, colored = 1;
 public:
 	Shape3D() {
+		//Loading Light
+		//mesh.LoadFromObjectFile("../Assets/cubeSmall.obj");
+
 		//The Cube
 		//mesh.triangles = {
 		//	// SOUTH
@@ -423,11 +426,12 @@ public:
 		//mesh.LoadFromObjectFile("../Assets/Teapot.obj");
 		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
 		//mesh.LoadFromObjectFile("../Assets/Mountain.obj");
-		mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
+		//mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
 		//mesh.LoadFromObjectFile("../Assets/Sample.obj");
 		
 		//For Release
-		//mesh.LoadFromObjectFile("Object.obj");
+		mesh.LoadFromObjectFile("Light.obj");
+		mesh.LoadFromObjectFile("Object.obj");
 
 		//Load Texture
 		texture = NULL;
@@ -501,12 +505,18 @@ public:
 		//Tranlation
 		Mat4x4 matTrans;
 		matTrans = Mat4x4::MakeTranslate(0.0f, 0.0f, 3.0f);
+		Mat4x4 matLightTrans;
+		matLightTrans = Mat4x4::MakeTranslate(lightPosition);
 		//World Transformations
 		Mat4x4 matWorld;
+		Mat4x4 matWorld2;
 		matWorld = Mat4x4::MakeIdentity();
+		matWorld2 = Mat4x4::MakeIdentity();
 		//matWorld.MultiplyMatrix(matRotZ);
 		//matWorld.MultiplyMatrix(matRotY);
 		matWorld.MultiplyMatrix(matTrans);
+		matWorld2.MultiplyMatrix(matLightTrans);
+		matWorld2.MultiplyMatrix(matTrans);
 
 		//camera
 		Vec3 up = { 0,1,0 };
@@ -529,47 +539,55 @@ public:
 			Triangle triProjected, triTransformed, triViewed;
 
 			//Apply Transformations
-			matWorld.MultiplyTriangle(triTransformed, tri);
+			if(index<12)
+				matWorld2.MultiplyTriangle(triTransformed, tri);
+			else
+				matWorld.MultiplyTriangle(triTransformed, tri);
 
 			//Find Normal
 			Vec3 normal = triTransformed.normal();
 			Vec3 CameraRay = triTransformed.vertex[0] - camera;
 
 			if (Vec3::dot(normal,CameraRay.normalize()) < 0.0f) {
-				//Illumination
+				if (index < 12)
+					triTransformed.color
+					= Color(0xff, 0xff, 0xff, 0xff);
+				else {
+					//Illumination
+					/*float light = normal.dot(lightDirection.normalize());
 
-				/*float light = normal.dot(lightDirection.normalize());
+					unsigned char col = interPolate(-1.0f, 1.0f, light, (unsigned int)0, (unsigned int)0xff);
+					triTransformed.color
+						= Color(col, col, col, 0xff);*/
 
-				unsigned char col = interPolate(-1.0f, 1.0f, light, (unsigned int)0, (unsigned int)0xff);
-				triTransformed.color
-					= Color(col, col, col, 0xff);*/
+					float Ka = 0.75f, Kd = 0.75f, Ks = 0.5f,
+						Ia = 5.0f, Il = 7.0f;
+					int n = 10;
+					//camera
+					Vec3 Normals[] = { triTransformed.normals[0], triTransformed.normals[1], triTransformed.normals[2] };
+					Vec3 Positions[] = { triTransformed.vertex[0], triTransformed.vertex[1], triTransformed.vertex[2] };
 
-				float Ka = 0.75f, Kd = 0.75f, Ks = 0.5f,
-					Ia = 5.0f, Il = 7.0f;
-				int n = 10;
-				//camera
-				Vec3 Normals[] = { triTransformed.normals[0], triTransformed.normals[1], triTransformed.normals[2] };
-				Vec3 Positions[] = { triTransformed.vertex[0], triTransformed.vertex[1], triTransformed.vertex[2] };
 
-				for (int k = 0; k < 3; k++) {
-					Vec3 L = (lightPosition - Positions[k]).normalize();
-					Vec3 V = (camera - Positions[k]).normalize();
-					Vec3 N = Normals[k];
+					for (int k = 0; k < 3; k++) {
+						Vec3 L = (lightPosition - Positions[k]).normalize();
+						Vec3 V = (camera - Positions[k]).normalize();
+						Vec3 N = Normals[k];
 
-					float I1 = Ka * Ia;
-					float I2 = Kd * Il * Vec3::dot(N, L);
-					float I3 = Ks * Il * pow(Vec3::dot(N, (L + V).normalize()), n);
-							
-					triTransformed.intensities[k] = I1 + I2 + I3;
+						float I1 = Ka * Ia;
+						float I2 = Kd * Il * Vec3::dot(N, L);
+						float I3 = Ks * Il * pow(Vec3::dot(N, (L + V).normalize()), n);
+
+						triTransformed.intensities[k] = I1 + I2 + I3;
+					}
+					float inten = (triTransformed.intensities[0] + triTransformed.intensities[1] + triTransformed.intensities[2]) / 3;
+					inten = (inten < 0) ? 0 : inten;
+					float minIp = 0, maxIp = 12.5f;
+					unsigned int minCol = 0, maxCol = 0xff;
+					unsigned char col = interPolate(minIp, maxIp, inten, minCol, maxCol);
+					triTransformed.color
+						= Color(col, col, col, 0xff);
+					//Illumination end
 				}
-				float inten = (triTransformed.intensities[0] + triTransformed.intensities[1] + triTransformed.intensities[2]) / 3;
-				inten = (inten < 0) ? 0 : inten;
-				float minIp = 0, maxIp = 12.5f;
-				unsigned int minCol = 0, maxCol = 0xff;
-				unsigned char col= interPolate(minIp, maxIp, inten, minCol, maxCol);
-				triTransformed.color
-					= Color(col, col, col, 0xff);
-
 			/*	char output[100];
 				sprintf_s(output, 100, "%d. Intensity: %f %f %f\n",
 					index, triTransformed.intensities[0], triTransformed.intensities[1], triTransformed.intensities[2]);
