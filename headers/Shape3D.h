@@ -391,7 +391,7 @@ class Shape3D {
 public:
 	Shape3D() {
 		//Loading Light
-		mesh.LoadFromObjectFile("../Assets/cubeSmall.obj");
+		//mesh.LoadFromObjectFile("../Assets/cubeSmall.obj");
 
 		//The Cube
 		//mesh.triangles = {
@@ -430,6 +430,7 @@ public:
 		//mesh.LoadFromObjectFile("../Assets/Sample.obj");
 		
 		//For Release
+		mesh.LoadFromObjectFile("Light.obj");
 		mesh.LoadFromObjectFile("Object.obj");
 
 		//Load Texture
