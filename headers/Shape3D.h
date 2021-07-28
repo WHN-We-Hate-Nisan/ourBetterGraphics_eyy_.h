@@ -1,38 +1,123 @@
 #pragma once
 struct Mesh {
 	std::vector<Triangle> triangles;
+	typedef std::vector<Vec3> VertSet;
+	struct Vertex
+	{
+		Vec3 position;
+		Vec2 texcoord;
+		Vec3 normal;
+	};
+	struct VertRef
+	{
+		VertRef(int v, int vt, int vn) : v(v), vt(vt), vn(vn) { }
+		int v, vt, vn;
+	};
 
 	bool LoadFromObjectFile(std::string FileName) {
 		std::ifstream f(FileName);
 		if (!f.is_open()) return false;
 		
+		std::vector<Vertex> verts;
 		//Vertices
-		std::vector<Vec3> vertices;
+		VertSet vertices(1, { 0,0,0,1 });
+		std::vector<Vec2> texcoords(1, { 0,0,0 });
+		VertSet normals(1, { 0,0,0,1 });
 
 		while (!f.eof()) {
-			char line[128];
-			f.getline(line, 128);
+			std::string line;
+			std::getline(f, line);
 
-			std::strstream s;
-			s << line;
+			std::istringstream lineSS(line);
+			std::string lineType;
+			lineSS >> lineType;
 
-			char dataType;
+			/*std::strstream s;
+			s << line;*/
 
+			/*char dataType;
+			int junk;*/
+
+			/*if (line[0] == 'v') {
+				if (line[1] != 'n') {
+					Vec3 v;
+					s >> dataType >> v.x >> v.y >> v.z;
+					vertices.push_back(v);
+				}
+			}*/
 			//Getting vertices and making a pool
-			if (line[0] == 'v') {
-				Vec3 v;
-				s >> dataType >> v.x >> v.y >> v.z;
-				vertices.push_back(v);
+			if (lineType == "v")
+			{
+				float x = 0, y = 0, z = 0, w = 1;
+				lineSS >> x >> y >> z >> w;
+				vertices.push_back(Vec3{ x, y, z, w });
 			}
 
-			//Getting triangles and making a pool
-			if (line[0] == 'f') {
-				int f[3];
-				s >> dataType >> f[0] >> f[1] >> f[2];
-				triangles.push_back({ vertices[f[0] - 1],vertices[f[1] - 1], vertices[f[2] - 1] });
+			//Getting textures and making a pool
+			if (lineType == "vt")
+			{
+				float u = 0, v = 0, w = 0;
+				lineSS >> u >> v >> w;
+				texcoords.push_back(Vec2{ u, v, w });
 			}
+
+			//Getting normals and making a pool
+			if (lineType == "vn")
+			{
+				float i = 0, j = 0, k = 0;
+				lineSS >> i >> j >> k;
+				normals.push_back(Vec3{ i, j, k }.normalize());
+			}
+
+			if (lineType == "f")
+			{
+				std::vector<VertRef> refs;
+				std::string refStr;
+				while (lineSS >> refStr) {
+					std::istringstream ref(refStr);
+					std::string vStr, vtStr, vnStr;
+					std::getline(ref, vStr, '/');
+					std::getline(ref, vtStr, '/');
+					std::getline(ref, vnStr, '/');
+					int v = atoi(vStr.c_str());
+					int vt = atoi(vtStr.c_str());
+					int vn = atoi(vnStr.c_str());
+					v = (v >= 0 ? v : vertices.size() + v);
+					vt = (vt >= 0 ? vt : texcoords.size() + vt);
+					vn = (vn >= 0 ? vn : normals.size() + vn);
+					refs.push_back(VertRef(v, vt, vn));
+				}
+
+				// triangulate, assuming n>3-gons are convex and coplanar
+				for (size_t i = 1; i + 1 < refs.size(); ++i) {
+					const VertRef* p[3] = { &refs[0], &refs[i], &refs[i + 1] };
+
+					Vec3 U = vertices[p[1]->v] - vertices[p[0]->v];
+					Vec3 V = vertices[p[2]->v] - vertices[p[0]->v];
+					Vec3 faceNormal = (U * V).normalize();
+
+					for (size_t j = 0; j < 3; ++j) {
+						Vertex vert;
+						vert.position = vertices[p[j]->v];
+						vert.texcoord = texcoords[p[j]->vt];
+						vert.normal = (p[j]->vn != 0 ? normals[p[j]->vn] : faceNormal);
+						verts.push_back(vert);
+					}
+				}
+			}			
 		}
 
+		//Getting triangles and making a pool
+		consoleLogSpace(verts.size());
+		for (int i = 0; i < verts.size() / 3; i++) {
+			Triangle tri;
+			for (int j = 0; j < 3; j++) {
+				tri.vertex[j] = verts[i * 3 + j].position;
+				tri.texCood[j] = verts[i * 3 + j].texcoord;
+				tri.normals[j] = verts[i * 3 + j].normal;
+			}
+			triangles.push_back(tri);
+		}
 		return true;
 	}
 };
@@ -68,6 +153,10 @@ struct Mat4x4 {
 		result.color = in.color;
 		for (int i = 0; i < 3; i++)
 			result.texCood[i] = in.texCood[i];
+		for (int i = 0; i < 3; i++)
+			result.normals[i] = in.normals[i];
+		for (int i = 0; i < 3; i++)
+			result.intensities[i] = in.intensities[i];
 		for (int i = 0; i < 3; i++)
 			result.vertex[i] = this->MultiplyVector(in.vertex[i]);
 		return result;
@@ -194,7 +283,7 @@ struct Mat4x4 {
 		0,    0,    0,   1
 		*/
 	}
-	static Mat4x4 MakeOrthographicProjection(float alpha, float theeta) {
+	static Mat4x4 MakeObliqueProjection(float alpha, float theeta) {
 		if (alpha == 0 || alpha == 90 || alpha == 180 || alpha == 270 || alpha == 360) alpha++;
 
 		Mat4x4 mat;
@@ -270,11 +359,15 @@ struct Mat4x4 {
 };
 struct Controller {
 	bool up = 0, down = 0, left = 0, right = 0,
+	     lUp = 0, lDown = 0, lLeft = 0, lRight = 0,
+		lForward = 0, lBackward = 0,
 		forward = 0, backward = 0,
 		yawL = 0, yawR = 0, colored = 1, wireframe = 0;
 
 	void reset() {
 		up = 0; down = 0; left = 0; right = 0;
+		lUp = 0; lDown = 0; lLeft = 0; lRight = 0;
+		lForward = 0; lBackward = 0;
 		forward = 0; backward = 0;
 		yawL = 0; yawR = 0;
 	}
@@ -285,7 +378,10 @@ class Shape3D {
 	Texture* texture;
 
 	Vec3 camera{ 0.0f, 0.0f, 0.0f };
-	float speed = -1.0f;
+	Vec3 lightDirection = { 1.0f, 1.0f, 1.0f };
+	Vec3 lightPosition = { 20.0f,20.0f,20.0f };
+
+	float speed = 50.0f;
 	Vec3 lookDir= { 0,0,1 };
 	float yaw=0;
 
@@ -295,41 +391,43 @@ class Shape3D {
 public:
 	Shape3D() {
 		//The Cube
-		mesh.triangles = {
-			// SOUTH
-			{ 0.0f, 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-			{ 0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-																																						  
-			// EAST           																	   		  												 
-			{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-			{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-																						  			
-			// NORTH           																		 
-			{ 1.0f, 0.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-			{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-																						  				
-			// WEST            																		   	
-			{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-			{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-																						  				  
-			// TOP             																		   	   
-			{ 0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-			{ 0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-																						  				 
-			// BOTTOM          																	  		
-			{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
-			{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
-		};
+		//mesh.triangles = {
+		//	// SOUTH
+		//	{ 0.0f, 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//																																				  
+		//	// EAST           																	   		  												 
+		//	{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 1.0f, 0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//																				  			
+		//	// NORTH           																		 
+		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//																				  				
+		//	// WEST            																		   	
+		//	{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//																				  				  
+		//	// TOP             																		   	   
+		//	{ 0.0f, 1.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 0.0f, 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//																				  				 
+		//	// BOTTOM          																	  		
+		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 1.0f},
+		//	{ 1.0f, 0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 1.0f,		1.0f, 0.0f, 1.0f,		1.0f, 1.0f, 1.0f},
+		//};
 
 		//Loading obj
 		//mesh.LoadFromObjectFile("../Assets/Church.obj");
-		//mesh.LoadFromObjectFile("../Assets/Cube.obj");
+		//mesh.LoadFromObjectFile("../Assets/Cube2.obj");
 		//mesh.LoadFromObjectFile("../Assets/Teapot.obj");
 		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
 		//mesh.LoadFromObjectFile("../Assets/Mountain.obj");
+		mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
+		//mesh.LoadFromObjectFile("../Assets/Sample.obj");
 		
 		//For Release
-		mesh.LoadFromObjectFile("Object.obj");
+		//mesh.LoadFromObjectFile("Object.obj");
 
 		//Load Texture
 		texture = NULL;
@@ -337,33 +435,58 @@ public:
 
 		matProj = Mat4x4::MakeProjection();		
 	}
-	void checkInput(Controller& c, float elapsedFrames = 0) {
-		elapsedFrames *= 0.1f;
+	void checkInput(Controller& c, float elapsedTime = 0) {
+		elapsedTime *= 0.000001f;
 		//fTheta += elapsedFrames;
-
+		float change = speed * elapsedTime;
 		if (c.up) 
-			camera.y += speed;
+			camera.y += change;
 		if (c.down) 
-			camera.y -= speed;
+			camera.y -= change;
 		if (c.left) 
-			camera.x -= speed; 
+			camera.x += change; 
 		if (c.right) 
-			camera.x += speed;
+			camera.x -= change;
 
-		Vec3 forward = lookDir * speed;
+		if (c.lUp){
+			lightDirection.y += change;
+			lightPosition.y += change;
+		}
+		if (c.lDown) {
+			lightDirection.y -= change;
+			lightPosition.y -= change;
+		}
+		if (c.lLeft) {
+			lightDirection.x += change;
+			lightPosition.x += change;
+		}
+		if (c.lRight) {
+			lightDirection.x -= change;
+			lightPosition.x -= change;
+		}
+		if (c.lBackward) {
+			lightDirection.z -= change;
+			lightPosition.z -= change;
+		}
+		if (c.lForward) {
+			lightDirection.z += change;
+			lightPosition.z += change;
+		}
+
+		Vec3 forward = lookDir * change;
 
 		if (c.forward)
-			camera -= forward;		;
+			camera += forward;		
 		if (c.backward)
-			camera += forward;
+			camera -= forward;
 		if (c.yawL)
-			yaw += speed;
+			yaw -= change * 10.0f;
 		if (c.yawR)
-			yaw -= speed;
+			yaw += change * 10.0f;
 		wireframe = c.wireframe;
 		colored = c.colored;
 	}
-	void draw() {			
+	void draw() {
 		Mesh toRaster;
 
 		// Rotation Z
@@ -397,8 +520,12 @@ public:
 		//View Matrix from camera
 		Mat4x4 matView = Mat4x4::LookAtInverse(matCamera);
 
+		int sizee = mesh.triangles.size();
+
 		//Draw Triangles
-		for (auto tri : mesh.triangles) {		
+		for (int index=0; index < sizee; index++) {
+		//for (auto tri : mesh.triangles) {
+			Triangle tri = mesh.triangles[index];
 			Triangle triProjected, triTransformed, triViewed;
 
 			//Apply Transformations
@@ -408,27 +535,56 @@ public:
 			Vec3 normal = triTransformed.normal();
 			Vec3 CameraRay = triTransformed.vertex[0] - camera;
 
-			if (normal.dot(CameraRay.normalize()) < 0.0f) {
+			if (Vec3::dot(normal,CameraRay.normalize()) < 0.0f) {
 				//Illumination
-				Vec3 lightDirection = { 0.0f, 1.0f, -1.0f };
-				lightDirection.normalize();
 
-				float light = normal.dot(lightDirection);
+				/*float light = normal.dot(lightDirection.normalize());
 
 				unsigned char col = interPolate(-1.0f, 1.0f, light, (unsigned int)0, (unsigned int)0xff);
 				triTransformed.color
-					= Color(col, col * 0.9, col * 0.8, 0xff);
+					= Color(col, col, col, 0xff);*/
+
+				float Ka = 0.75f, Kd = 0.75f, Ks = 0.5f,
+					Ia = 5.0f, Il = 7.0f;
+				int n = 10;
+				//camera
+				Vec3 Normals[] = { triTransformed.normals[0], triTransformed.normals[1], triTransformed.normals[2] };
+				Vec3 Positions[] = { triTransformed.vertex[0], triTransformed.vertex[1], triTransformed.vertex[2] };
+
+				for (int k = 0; k < 3; k++) {
+					Vec3 L = (lightPosition - Positions[k]).normalize();
+					Vec3 V = (camera - Positions[k]).normalize();
+					Vec3 N = Normals[k];
+
+					float I1 = Ka * Ia;
+					float I2 = Kd * Il * Vec3::dot(N, L);
+					float I3 = Ks * Il * pow(Vec3::dot(N, (L + V).normalize()), n);
+							
+					triTransformed.intensities[k] = I1 + I2 + I3;
+				}
+				float inten = (triTransformed.intensities[0] + triTransformed.intensities[1] + triTransformed.intensities[2]) / 3;
+				inten = (inten < 0) ? 0 : inten;
+				float minIp = 0, maxIp = 12.5f;
+				unsigned int minCol = 0, maxCol = 0xff;
+				unsigned char col= interPolate(minIp, maxIp, inten, minCol, maxCol);
+				triTransformed.color
+					= Color(col, col, col, 0xff);
+
+			/*	char output[100];
+				sprintf_s(output, 100, "%d. Intensity: %f %f %f\n",
+					index, triTransformed.intensities[0], triTransformed.intensities[1], triTransformed.intensities[2]);
+				OutputDebugStringA(output);*/
 
 				//Convert World Space to View Space
 				matView.MultiplyTriangle(triViewed, triTransformed);
-				
+
 				//Clip viewed triangle against near plane
 				//Forms upto 2 additional triangles
 				int nClippedTriangles = 0;
 				Triangle clipped[2];
 				nClippedTriangles = Triangle::ClipAgainstPlane({ 0.0f,0.0f, 0.1f }, { 0.0f,0.0f, 0.1f }, triViewed, clipped[0], clipped[1]);
 
-				for(int n=0; n<nClippedTriangles;n++) {
+				for (int n = 0; n < nClippedTriangles; n++) {
 					//Projection
 					matProj.MultiplyTriangle(triProjected, clipped[n]);
 
@@ -450,7 +606,7 @@ public:
 				}
 			}
 		}
-		
+
 		//Sort Triangles - Painter's Algorithm
 		std::sort(toRaster.triangles.begin(), toRaster.triangles.end(), [](Triangle& t1, Triangle& t2) {
 			float midZ1 = (t1.vertex[0].z + t1.vertex[1].z + t1.vertex[2].z) / 3.0f;
@@ -460,7 +616,7 @@ public:
 
 		//Rasterize Triangle
 		for (auto& triToRasterize : toRaster.triangles) {
-			
+
 			//Clip triangles against all four screen edges
 			Triangle clipped[2];
 			std::list<Triangle> triangleList;
@@ -475,17 +631,17 @@ public:
 					nNewTriangles--;
 
 					switch (p) {
-					//bottom
-					case 0: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, test, clipped[0], clipped[1]); 
+						//bottom
+					case 0: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, test, clipped[0], clipped[1]);
 						break;
-					//top
-					case 1: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, (float)globalBuffer.height-1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]);
+						//top
+					case 1: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, (float)globalBuffer.height - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]);
 						break;
-					//left
+						//left
 					case 2: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]);
 						break;
-					//right
-					case 3: nTrisToAdd = Triangle::ClipAgainstPlane({(float)globalBuffer.width-1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]);
+						//right
+					case 3: nTrisToAdd = Triangle::ClipAgainstPlane({ (float)globalBuffer.width - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]);
 						break;
 					}
 					for (int w = 0; w < nTrisToAdd; w++)
@@ -503,6 +659,7 @@ public:
 				if (wireframe) DrawTriangle(tri, 0xffffffff - tri.color.color);
 			}
 		}
-	}		
+	}
+
 };
 

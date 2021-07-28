@@ -220,10 +220,10 @@ void Cube3D::perspective_projection(float xprp, float yprp, float zprp, float zv
 		consoleLog("Zprp is zero\n"); zprp = 1;
 	}
 	float tranMatrix[4][4] = {
-								  1,         0,       xprp / dp,      -xprp * zvp / dp,
-								  0,         1,       yprp / dp,      -yprp * zvp / dp,
-								  0,         0,       -zvp / dp,    zvp * (zprp / dp),
-								  0,         0,       -1 / dp,      zprp / dp
+								  1,         0,       -xprp / dp,       xprp * zvp / dp,
+								  0,         1,       -yprp / dp,       yprp * zvp / dp,
+								  0,         0,       -zvp / dp,        zvp * (zprp / dp),
+								  0,         0,       -1 / dp,          zprp / dp
 	};
 	float result[4] = { 0 };
 	for (int index = 0; index < n; index++) {

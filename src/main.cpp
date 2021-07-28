@@ -1,5 +1,6 @@
 #pragma once
 #include "ourBetterGraphics_eyy_.h"
+#include<chrono>
 
 LRESULT CALLBACK WindowProc(HWND window_handle, unsigned int message, WPARAM w_param, LPARAM l_param)
 {
@@ -68,11 +69,16 @@ int CALLBACK WinMain(
 			bool textured = false;
 			Vect3<int> rot{0, 0, 0}, rotBool{0, 0, 0};
 			Controller controller;
+			unsigned deltatime;
+			auto lastframe = std::chrono::high_resolution_clock::now();
 			Shape3D s;
 #pragma region Loop
 
 			while (globalRunning)
 			{
+				deltatime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - lastframe).count();
+				lastframe = std::chrono::high_resolution_clock::now();
+				consoleLogSpace(1e6 / deltatime);
 				controller.reset();
 				while (PeekMessage(&message, 0, 0, 0, PM_REMOVE))
 				{
@@ -163,16 +169,33 @@ int CALLBACK WinMain(
 						if (vkCode == 'B') {
 							textured = !textured;
 						}
+						if (vkCode == 'T') {
+							controller.lUp = 1;
+						}
+						if (vkCode == 'F') {
+							controller.lLeft = 1;
+						}
+						if (vkCode == 'G') {
+							controller.lDown = 1;
+						}
+						if (vkCode == 'H') {
+							controller.lRight = 1;
+						}
+						if (vkCode == 'R') {
+							controller.lBackward = 1;
+						}
+						if (vkCode == 'Y') {
+							controller.lForward = 1;
+						}
 						break;
 					default:
 						break;
 					}
-				}
-
+				}					
 #pragma endregion
 				ClrScr(Color(173, 225, 229, 0xff));
 				//Lab5(x, y, z, p, textured, rot, rotBool);				
-				s.checkInput(controller, frameCounter);
+				s.checkInput(controller, deltatime);
 				s.draw();
 				/*Image test("../Assets/Textures/house.png");
 				DrawImage(test);*/

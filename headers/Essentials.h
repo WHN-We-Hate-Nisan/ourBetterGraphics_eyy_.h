@@ -4,8 +4,10 @@
 #include <cstdlib>
 #include <vector>
 #include <fstream>
-#include <strstream>
-#include <string>
+#include <sstream>
+
+//#include <strstream>
+//#include <string>
 #include <algorithm>
 #include <list>
 #include "Image.h"
@@ -14,8 +16,8 @@ constexpr float pi = 3.14159f;
 constexpr int max_Vertex = 15;
 
 void consoleLog(const char*);
-void consoleLog(int);
-void consoleLogSpace(int);
+void consoleLog(float);
+void consoleLogSpace(float);
 
 int Clamp(int, int, int);
 
@@ -192,6 +194,8 @@ typedef Vect3<float> Vec3;
 struct Triangle {
 	Vec3 vertex[3];
 	Vec2 texCood[3];
+	Vec3 normals[3];
+	float intensities[3];
 	Color color;
 
 	Triangle operator+(const Vec3& right) {
@@ -292,6 +296,10 @@ struct Triangle {
 				
 				//Set Output
 				out1.color = in.color;
+				for(int i=0;i<3;i++)
+					out1.intensities[i] = in.intensities[i];
+				for (int i = 0; i < 3; i++)
+					out1.normals[i] = in.normals[i];
 				
 				out1.vertex[0] = *insides[0];
 				out1.texCood[0] = *insideTextures[0];
@@ -319,6 +327,14 @@ struct Triangle {
 				//Set Output
 				out1.color = in.color;
 				out2.color = in.color;
+				for (int i = 0; i < 3; i++)
+					out1.intensities[i] = in.intensities[i];
+				for (int i = 0; i < 3; i++)
+					out1.normals[i] = in.normals[i]; 
+				for (int i = 0; i < 3; i++)
+					out2.intensities[i] = in.intensities[i];
+				for (int i = 0; i < 3; i++)
+					out2.normals[i] = in.normals[i];
 
 				//First triangle consists of 2 inside points and
 				//location where one side intersects the plane
