@@ -362,7 +362,7 @@ struct Controller {
 	     lUp = 0, lDown = 0, lLeft = 0, lRight = 0,
 		lForward = 0, lBackward = 0,
 		forward = 0, backward = 0,
-		yawL = 0, yawR = 0, colored = 1, wireframe = 0;
+		yawL = 0, yawR = 0, colored = 1, wireframe = 0, shaded=1;
 
 	void reset() {
 		up = 0; down = 0; left = 0; right = 0;
@@ -378,8 +378,13 @@ class Shape3D {
 	Texture* texture;
 
 	Vec3 camera{ 0.0f, 0.0f, 0.0f };
+
+	//Lighting Parameters
 	Vec3 lightDirection = { 1.0f, 1.0f, 1.0f };
-	Vec3 lightPosition = { 20.0f,20.0f,20.0f };
+	Vec3 lightPosition = { 5.0f, 5.0f,5.0f };
+	float Ka = 0.75f, Kd = 0.75f, Ks = 0.5f,
+		Ia = 5.0f, Il = 7.0f;
+	int n = 10;
 
 	float speed = 50.0f;
 	Vec3 lookDir= { 0,0,1 };
@@ -387,11 +392,11 @@ class Shape3D {
 
 	float fTheta=0;
 
-	bool wireframe = 0, colored = 1;
+	bool wireframe = 0, colored = 1, shaded=1;
 public:
 	Shape3D() {
 		//Loading Light
-		//mesh.LoadFromObjectFile("../Assets/cubeSmall.obj");
+		mesh.LoadFromObjectFile("../Assets/cubeSmall.obj");
 
 		//The Cube
 		//mesh.triangles = {
@@ -425,13 +430,12 @@ public:
 		//mesh.LoadFromObjectFile("../Assets/Cube2.obj");
 		//mesh.LoadFromObjectFile("../Assets/Teapot.obj");
 		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
-		//mesh.LoadFromObjectFile("../Assets/Mountain.obj");
-		//mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
+		mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
 		//mesh.LoadFromObjectFile("../Assets/Sample.obj");
 		
 		//For Release
-		mesh.LoadFromObjectFile("Light.obj");
-		mesh.LoadFromObjectFile("Object.obj");
+		//mesh.LoadFromObjectFile("Light.obj");
+		//mesh.LoadFromObjectFile("Object.obj");
 
 		//Load Texture
 		texture = NULL;
@@ -489,6 +493,7 @@ public:
 			yaw += change * 10.0f;
 		wireframe = c.wireframe;
 		colored = c.colored;
+		shaded = c.shaded;
 	}
 	void draw() {
 		Mesh toRaster;
@@ -549,36 +554,24 @@ public:
 			Vec3 CameraRay = triTransformed.vertex[0] - camera;
 
 			if (Vec3::dot(normal,CameraRay.normalize()) < 0.0f) {
-				if (index < 12)
+				if (index < 12) {
 					triTransformed.color
-					= Color(0xff, 0xff, 0xff, 0xff);
+						= Color(0xff, 0xff, 0xff, 0xff);
+					for (int k = 0; k < 3; k++)			
+						triTransformed.intensities[k] = 12.5f;
+				}
 				else {
-					//Illumination
-					/*float light = normal.dot(lightDirection.normalize());
-
-					unsigned char col = interPolate(-1.0f, 1.0f, light, (unsigned int)0, (unsigned int)0xff);
-					triTransformed.color
-						= Color(col, col, col, 0xff);*/
-
-					float Ka = 0.75f, Kd = 0.75f, Ks = 0.5f,
-						Ia = 5.0f, Il = 7.0f;
-					int n = 10;
-					//camera
-					Vec3 Normals[] = { triTransformed.normals[0], triTransformed.normals[1], triTransformed.normals[2] };
-					Vec3 Positions[] = { triTransformed.vertex[0], triTransformed.vertex[1], triTransformed.vertex[2] };
-
+					//Illumination				
 
 					for (int k = 0; k < 3; k++) {
-						Vec3 L = (lightPosition - Positions[k]).normalize();
-						Vec3 V = (camera - Positions[k]).normalize();
-						Vec3 N = Normals[k];
+						Vec3 L = (lightPosition - triTransformed.vertex[k]).normalize();
+						Vec3 V = (camera - triTransformed.vertex[k]).normalize();
+						Vec3 N = triTransformed.normals[k];
 
-						float I1 = Ka * Ia;
-						float I2 = Kd * Il * Vec3::dot(N, L);
-						float I3 = Ks * Il * pow(Vec3::dot(N, (L + V).normalize()), n);
-
-						triTransformed.intensities[k] = I1 + I2 + I3;
+						triTransformed.intensities[k] = Ka * Ia + Kd * Il * Vec3::dot(N, L) + Ks * Il * pow(Vec3::dot(N, (L + V).normalize()), n);
 					}
+					
+					if(!shaded){
 					float inten = (triTransformed.intensities[0] + triTransformed.intensities[1] + triTransformed.intensities[2]) / 3;
 					inten = (inten < 0) ? 0 : inten;
 					float minIp = 0, maxIp = 12.5f;
@@ -586,12 +579,8 @@ public:
 					unsigned char col = interPolate(minIp, maxIp, inten, minCol, maxCol);
 					triTransformed.color
 						= Color(col, col, col, 0xff);
-					//Illumination end
-				}
-			/*	char output[100];
-				sprintf_s(output, 100, "%d. Intensity: %f %f %f\n",
-					index, triTransformed.intensities[0], triTransformed.intensities[1], triTransformed.intensities[2]);
-				OutputDebugStringA(output);*/
+					}
+				}			
 
 				//Convert World Space to View Space
 				matView.MultiplyTriangle(triViewed, triTransformed);
@@ -673,7 +662,11 @@ public:
 					tri.vertex[i].x = (float)globalBuffer.width - tri.vertex[i].x;
 				}
 				//TextureTriangle(tri, texture);
-				if (colored) ColorTriangle(tri, tri.color);
+				if (colored) { 
+					if(shaded) ShadeTriangle(tri);
+					else ColorTriangle(tri, tri.color);
+				}
+				//if (wireframe) DrawTriangle(tri, 0xffffffff - tri.color.color);
 				if (wireframe) DrawTriangle(tri, 0xffffffff - tri.color.color);
 			}
 		}
