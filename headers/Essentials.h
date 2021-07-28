@@ -23,6 +23,7 @@ int Clamp(int, int, int);
 
 template<typename T>
 void Swap(T &xp, T &yp);
+float distance(const float& x1, const float& y1, const float& x2, const float& y2);
 unsigned int interPolate(const float& input1, const float& input2, const float& position, const unsigned int& val1, const unsigned int& val2);
 float interPolate(const float& input1, const float& input2, const float& position, const float& val1, const float& val2);
 float interPolate(const float& fraction, const float& val1, const float& val2);
@@ -403,6 +404,7 @@ inline void DrawPixel(int x, int y, Color color);
 void DrawImage(Image, Vect2<int> = { 0,0,1 });
 void SortByY(Vec3[max_Vertex], int = 3);
 void SortByYTextures(Vec3[max_Vertex], Vec2[max_Vertex], int = 3);
+void SortByYIntensity(Vec3[max_Vertex], float[max_Vertex], int = 3);
 void DrawDDALine(Vect2<int>, Vect2<int>, Color);
 void DrawDDALine(float, float, float, float);
 void DrawDDALine(float, float, float, float, Color);
@@ -415,10 +417,12 @@ void DrawBresLine(float, float, float, float);
 void DrawBresLine(float, float, float, float, unsigned);
 
 void DrawHorizLine(int, int, int, Color, Vec3 = { 0, 0, 0 });
+void DrawHorizLineShaded(int, int, int, unsigned char, unsigned char, Vec3 = { 0, 0, 0 });
 void DrawHorizTexture(float, float, float, float&, float&, float, float, float, float, Texture*);
 
 void DrawTriangle(Triangle&, Color = 0xffffff);
 void ColorTriangle(Triangle&, Color, Vec3 = { 0.0f,0.0f,0.0f });
+void ShadeTriangle(Triangle&, Vec3 = { 0.0f,0.0f,0.0f });
 void TextureTriangle(Triangle&, Texture*);
 
 int getMidX();

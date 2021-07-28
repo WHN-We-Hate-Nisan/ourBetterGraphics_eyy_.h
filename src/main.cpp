@@ -130,6 +130,7 @@ int CALLBACK WinMain(
 						if (vkCode == 'C')
 						{
 							p += multiplier;
+							controller.shaded = !controller.shaded;
 						}
 
 						if (vkCode == 'J')

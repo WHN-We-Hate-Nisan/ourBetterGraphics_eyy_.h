@@ -25,6 +25,10 @@ void Swap(T &xp, T &yp){
 	xp = yp;
 	yp = temp;
 }
+float distance(const float& x1, const float& y1, const float& x2, const float& y2) {
+	return sqrtf((x2 - x1)*(x2-x1) + (y2 - y1)*(y2-y1));
+	//return abs(x2 - x1) + abs(y2 - y1);
+}
 unsigned int interPolate(const float& input1, const float& input2, const float& position, const unsigned int& val1, const unsigned int& val2) {
 	if (input1 == input2) return val1;
 	else return val1 +  (position - input1) / (input2 - input1) * (val2 - val1);
@@ -117,8 +121,19 @@ void SortByY(Vec3 arr[max_Vertex], int n) {
 	for (i = 0; i < n - 1; i++)
 		// Last i elements are already in place 
 		for (j = 0; j < n - 1 - i; j++)
-			if (arr[j].y > arr[j + 1].y)
+			if (arr[j].y > arr[j + 1].y) {
 				Swap(arr[j], arr[j + 1]);
+			}
+}
+void SortByYIntensity(Vec3 arr[max_Vertex],float intensities[max_Vertex], int n) {
+	int i, j;
+	for (i = 0; i < n - 1; i++)
+		// Last i elements are already in place 
+		for (j = 0; j < n - 1 - i; j++)
+			if (arr[j].y > arr[j + 1].y) {
+				Swap(arr[j], arr[j + 1]);
+				Swap(intensities[j], intensities[j + 1]);
+			}
 }
 void SortByYTextures(Vec3 arr[max_Vertex], Vec2 tex[max_Vertex], int n) {
 	int i, j;
@@ -254,9 +269,26 @@ void DrawBresLine(float x1, float y1, float x2, float y2, Color color) {
 }
 
 void DrawHorizLine(int x1, int x2, int y, Color color, Vec3 off) {
-	if (x2 < x1) Swap(x1, x2);
-	for (int i = x1; i <= x2; i++)
+	if (x2 < x1) { 
+		Swap(x1, x2); 
+	};
+	for (int i = x1; i <= x2; i++) {
 		DrawPixel(i + off.x, y + off.y, color);
+	}
+}
+void DrawHorizLineShaded(int x1, int x2, int y, Triangle tri, Vec3 off) {
+	if (x2 < x1)
+		Swap(x1, x2);	
+	for (int i = x1; i <= x2; i++) {
+		//Barycentric coordinates
+		float W1 = ( (tri.vertex[1].y - tri.vertex[2].y)*( i - tri.vertex[2].x ) + ( tri.vertex[2].x - tri.vertex[1].x) * (y - tri.vertex[2].y) ) / 
+			((tri.vertex[1].y - tri.vertex[2].y) * (tri.vertex[0].x - tri.vertex[2].x) + (tri.vertex[2].x - tri.vertex[1].x) * (tri.vertex[0].y - tri.vertex[2].y));
+		float W2 = ((tri.vertex[2].y - tri.vertex[0].y) * (i - tri.vertex[2].x) + (tri.vertex[0].x - tri.vertex[2].x) * (y - tri.vertex[2].y)) /
+			((tri.vertex[1].y - tri.vertex[2].y) * (tri.vertex[0].x - tri.vertex[2].x) + (tri.vertex[2].x - tri.vertex[1].x) * (tri.vertex[0].y - tri.vertex[2].y));
+		float W3 = 1 - W1 - W2;
+		unsigned char col = (W1*tri.intensities[0]+ W2 * tri.intensities[1]+ W3 * tri.intensities[2]) / 12.5f * 0xff;
+		DrawPixel(i + off.x, y + off.y, Color(col, col, col, 0xff));
+	}
 }
 void DrawHorizTexture(float ax, float bx, float y, float& texU, float& texV, float& texW, 
 						float texStartU, float texEndU, float texStartV, float texEndV, 
@@ -305,6 +337,35 @@ void ColorTriangle(Triangle& tri, Color color, Vec3 off) {
 		Source = B;
 		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx3, End.x += dx2)
 			DrawHorizLine(Source.x, End.x, Source.y, color, off);
+	}
+}
+void ShadeTriangle(Triangle& tri, Vec3 off) {
+	float dx1, dx2, dx3;
+	Vec3 array[] = { tri.vertex[0], tri.vertex[1], tri.vertex[2] };
+	SortByY(array);
+	Vec3 A = array[0];
+	Vec3 B = array[1];
+	Vec3 C = array[2];
+
+	Vec3 Source, End;
+	if (B.y - A.y > 0) dx1 = (B.x - A.x) / (B.y - A.y); else dx1 = 0;
+	if (C.y - A.y > 0) dx2 = (C.x - A.x) / (C.y - A.y); else dx2 = 0;
+	if (C.y - B.y > 0) dx3 = (C.x - B.x) / (C.y - B.y); else dx3 = 0;
+
+	Source = End = A;
+	if (dx1 > dx2) {
+		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx2, End.x += dx1) 			
+			DrawHorizLineShaded(Source.x, End.x, Source.y, tri, off);
+		End = B;
+		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx2, End.x += dx3)			
+			DrawHorizLineShaded(Source.x, End.x, Source.y, tri, off);
+	}
+	else {
+		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx1, End.x += dx2)
+			DrawHorizLineShaded(Source.x, End.x, Source.y, tri, off);
+		Source = B;
+		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx3, End.x += dx2) 
+			DrawHorizLineShaded(Source.x, End.x, Source.y, tri, off);
 	}
 }
 void TextureTriangle(Triangle& tri, Texture* texture) {
