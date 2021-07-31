@@ -278,9 +278,6 @@ void DrawHorizLineShaded(int x1, int x2, int y, Triangle tri, Vec3 off) {
 		unsigned char g = W1 * tri.vertex[0].color.g + W2 * tri.vertex[1].color.g + W3 * tri.vertex[2].color.g;
 		unsigned char b = W1 * tri.vertex[0].color.b + W2 * tri.vertex[1].color.b + W3 * tri.vertex[2].color.b;
 
-		//unsigned char r = (tri.vertex[0].color.r * W1 * tri.vertex[0].intensity / 12.5f + tri.vertex[0].color.r*W2 * tri.vertex[1].intensity / 12.5f + tri.vertex[0].color.r * W3 * tri.vertex[2].intensity / 12.5f) ;
-		//unsigned char g = (tri.vertex[0].color.g * W1 * tri.vertex[0].intensity / 12.5f + tri.vertex[0].color.g*W2 * tri.vertex[1].intensity / 12.5f + tri.vertex[0].color.g * W3 * tri.vertex[2].intensity / 12.5f) ;
-		//unsigned char b = (tri.vertex[0].color.b * W1 * tri.vertex[0].intensity / 12.5f + tri.vertex[0].color.b*W2 * tri.vertex[1].intensity / 12.5f + tri.vertex[0].color.b * W3 * tri.vertex[2].intensity / 12.5f) ;
 		DrawPixel(i + off.x, y + off.y, Color(r*a, g*a, b*a, 0xff));
 	}
 }
