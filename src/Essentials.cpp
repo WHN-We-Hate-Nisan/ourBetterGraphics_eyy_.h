@@ -125,14 +125,14 @@ void SortByY(Vec3 arr[max_Vertex], int n) {
 				Swap(arr[j], arr[j + 1]);
 			}
 }
-void SortByYIntensity(Vec3 arr[max_Vertex],float intensities[max_Vertex], int n) {
+void SortByYIntensity(Vec3 arr[max_Vertex],float vertex[max_Vertex], int n) {
 	int i, j;
 	for (i = 0; i < n - 1; i++)
 		// Last i elements are already in place 
 		for (j = 0; j < n - 1 - i; j++)
 			if (arr[j].y > arr[j + 1].y) {
 				Swap(arr[j], arr[j + 1]);
-				Swap(intensities[j], intensities[j + 1]);
+				Swap(vertex[j], vertex[j + 1]);
 			}
 }
 void SortByYTextures(Vec3 arr[max_Vertex], Vec2 tex[max_Vertex], int n) {
@@ -272,7 +272,7 @@ void DrawHorizLineShaded(int x1, int x2, int y, Triangle tri, Vec3 off) {
 		float W2 = ((tri.vertex[2].position.y - tri.vertex[0].position.y) * (i - tri.vertex[2].position.x) + (tri.vertex[0].position.x - tri.vertex[2].position.x) * (y - tri.vertex[2].position.y)) /
 			((tri.vertex[1].position.y - tri.vertex[2].position.y) * (tri.vertex[0].position.x - tri.vertex[2].position.x) + (tri.vertex[2].position.x - tri.vertex[1].position.x) * (tri.vertex[0].position.y - tri.vertex[2].position.y));
 		float W3 = 1 - W1 - W2;
-		unsigned char col = (W1*tri.intensities[0]+ W2 * tri.intensities[1]+ W3 * tri.intensities[2]) / 12.5f * 0xff;
+		unsigned char col = (W1*tri.vertex[0].intensity+ W2 * tri.vertex[1].intensity+ W3 * tri.vertex[2].intensity) / 12.5f * 0xff;
 		DrawPixel(i + off.x, y + off.y, Color(col, col, col, 0xff));
 	}
 }
@@ -357,7 +357,7 @@ void ShadeTriangle(Triangle& tri, Vec3 off) {
 void TextureTriangle(Triangle& tri, Texture* texture) {
 	//Sort  Vertices by y value
 	Vec3 array[] = { tri.vertex[0].position, tri.vertex[1].position, tri.vertex[2].position };
-	Vec2 textureArray[] = { tri.texCood[0], tri.texCood[1], tri.texCood[2] };
+	Vec2 textureArray[] = { tri.vertex[0].textureCood, tri.vertex[1].textureCood, tri.vertex[2].textureCood };
 	SortByYTextures(array, textureArray);
 	Vec3 A = array[0];
 	Vec3 B = array[1];

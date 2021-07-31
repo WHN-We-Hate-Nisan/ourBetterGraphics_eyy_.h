@@ -200,9 +200,7 @@ struct Vertex {
 	Color color;
 };
 struct Triangle {
-	Vec2 texCood[3];
 	Vec3 normals[3];
-	float intensities[3];
 	Color color;
 	Vertex vertex[3];
 
@@ -277,11 +275,11 @@ struct Triangle {
 		for (int i = 0; i < 3; i++) {
 			if (dis[i] >= 0) {
 				insides[nInsidePointCount++] = &in.vertex[i].position;
-				insideTextures[nInsideTextureCount++] = &in.texCood[i];
+				insideTextures[nInsideTextureCount++] = &in.vertex[i].textureCood;
 			}
 			else {
 				outsides[nOutsidePointCount++] = &in.vertex[i].position;
-				outsideTextures[nOutsideTextureCount++] = &in.texCood[i];
+				outsideTextures[nOutsideTextureCount++] = &in.vertex[i].textureCood;
 			}
 		}
 
@@ -309,24 +307,24 @@ struct Triangle {
 				//Set Output
 				out1.color = in.color;
 				for(int i=0;i<3;i++)
-					out1.intensities[i] = in.intensities[i];
+					out1.vertex[i].intensity = in.vertex[i].intensity;
 				for (int i = 0; i < 3; i++)
 					out1.normals[i] = in.normals[i];
 				
 				out1.vertex[0].position = *insides[0];
-				out1.texCood[0] = *insideTextures[0];
+				out1.vertex[0].textureCood = *insideTextures[0];
 
 				//Two new points, at the location where
 				//original sides of the triangle intersect the plane
 				float t;
 				out1.vertex[1].position = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0], t);
-				//out1.texCood[1]=Vec2::interpolate(t, *insideTextures[0], *outsideTextures[0]);
-				out1.texCood[1].u = interPolate(t, insideTextures[0]->u, outsideTextures[0]->u);
-				out1.texCood[1].v = interPolate(t, insideTextures[0]->v, outsideTextures[0]->v);
+				//out1.vertex[1].textureCood=Vec2::interpolate(t, *insideTextures[0], *outsideTextures[0]);
+				out1.vertex[1].textureCood.u = interPolate(t, insideTextures[0]->u, outsideTextures[0]->u);
+				out1.vertex[1].textureCood.v = interPolate(t, insideTextures[0]->v, outsideTextures[0]->v);
 
 				out1.vertex[2].position = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[1], t);
-				out1.texCood[2].u = interPolate(t, insideTextures[0]->u, outsideTextures[1]->u);
-				out1.texCood[2].v = interPolate(t, insideTextures[0]->v, outsideTextures[1]->v);
+				out1.vertex[2].textureCood.u = interPolate(t, insideTextures[0]->u, outsideTextures[1]->u);
+				out1.vertex[2].textureCood.v = interPolate(t, insideTextures[0]->v, outsideTextures[1]->v);
 
 				return 1;
 			}
@@ -340,11 +338,11 @@ struct Triangle {
 				out1.color = in.color;
 				out2.color = in.color;
 				for (int i = 0; i < 3; i++)
-					out1.intensities[i] = in.intensities[i];
+					out1.vertex[i].intensity = in.vertex[i].intensity;
 				for (int i = 0; i < 3; i++)
 					out1.normals[i] = in.normals[i]; 
 				for (int i = 0; i < 3; i++)
-					out2.intensities[i] = in.intensities[i];
+					out2.vertex[i].intensity = in.vertex[i].intensity;
 				for (int i = 0; i < 3; i++)
 					out2.normals[i] = in.normals[i];
 
@@ -352,26 +350,26 @@ struct Triangle {
 				//location where one side intersects the plane
 				out1.vertex[0].position = *insides[0];
 				out1.vertex[1].position = *insides[1];
-				out1.texCood[0] = *insideTextures[0];
-				out1.texCood[1] = *insideTextures[1];
+				out1.vertex[0].textureCood = *insideTextures[0];
+				out1.vertex[1].textureCood = *insideTextures[1];
 				
 				float t;
 				out1.vertex[2].position = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0],t);
-				out1.texCood[2].u = interPolate(t, insideTextures[0]->u, outsideTextures[0]->u);
-				out1.texCood[2].v = interPolate(t, insideTextures[0]->v, outsideTextures[0]->v);
+				out1.vertex[2].textureCood.u = interPolate(t, insideTextures[0]->u, outsideTextures[0]->u);
+				out1.vertex[2].textureCood.v = interPolate(t, insideTextures[0]->v, outsideTextures[0]->v);
 
 				//Second triangle consists of 1 inside point and
 				//location where other side intersects the plane
 				//and the newly created point;
 				out2.vertex[0].position = *insides[1];
-				out2.texCood[0] = *insideTextures[1];
+				out2.vertex[0].textureCood = *insideTextures[1];
 
 				out2.vertex[1].position = out1.vertex[2].position;
-				out2.texCood[1] = out1.texCood[2];
+				out2.vertex[1].textureCood = out1.vertex[2].textureCood;
 
 				out2.vertex[2].position = Vec3::intersectPlane(planeP, planeN, *insides[1], *outsides[0],t);
-				out2.texCood[2].u = interPolate(t, insideTextures[1]->u, outsideTextures[0]->u);
-				out2.texCood[2].v = interPolate(t, insideTextures[1]->v, outsideTextures[0]->v);
+				out2.vertex[2].textureCood.u = interPolate(t, insideTextures[1]->u, outsideTextures[0]->u);
+				out2.vertex[2].textureCood.v = interPolate(t, insideTextures[1]->v, outsideTextures[0]->v);
 
 				return 2;
 			}

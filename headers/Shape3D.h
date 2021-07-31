@@ -99,7 +99,7 @@ struct Mesh {
 			Triangle tri;
 			for (int j = 0; j < 3; j++) {
 				tri.vertex[j].position = verts[i * 3 + j].position;
-				tri.texCood[j] = verts[i * 3 + j].texcoord;
+				tri.vertex[j].textureCood = verts[i * 3 + j].texcoord;
 				tri.normals[j] = verts[i * 3 + j].normal;
 			}
 			triangles.push_back(tri);
@@ -138,11 +138,11 @@ struct Mat4x4 {
 	Triangle& MultiplyTriangle(Triangle& result, Triangle& in) {
 		result.color = in.color;
 		for (int i = 0; i < 3; i++)
-			result.texCood[i] = in.texCood[i];
+			result.vertex[i].textureCood = in.vertex[i].textureCood;
 		for (int i = 0; i < 3; i++)
 			result.normals[i] = in.normals[i];
 		for (int i = 0; i < 3; i++)
-			result.intensities[i] = in.intensities[i];
+			result.vertex[i].intensity = in.vertex[i].intensity;
 		for (int i = 0; i < 3; i++)
 			result.vertex[i].position = this->MultiplyVector(in.vertex[i].position);
 		return result;
@@ -534,7 +534,7 @@ public:
 					triTransformed.color
 						= Color(0xff, 0xff, 0xff, 0xff);
 					for (int k = 0; k < 3; k++)			
-						triTransformed.intensities[k] = 12.5f;
+						triTransformed.vertex[k].intensity = 12.5f;
 				}
 				else {
 					//Illumination				
@@ -544,11 +544,11 @@ public:
 						Vec3 V = (camera - triTransformed.vertex[k].position).normalize();
 						Vec3 N = triTransformed.normals[k];
 
-						triTransformed.intensities[k] = Ka * Ia + Kd * Il * Vec3::dot(N, L) + Ks * Il * pow(Vec3::dot(N, (L + V).normalize()), n);
+						triTransformed.vertex[k].intensity = Ka * Ia + Kd * Il * Vec3::dot(N, L) + Ks * Il * pow(Vec3::dot(N, (L + V).normalize()), n);
 					}
 					
 					if(!shaded){
-					float inten = (triTransformed.intensities[0] + triTransformed.intensities[1] + triTransformed.intensities[2]) / 3;
+					float inten = (triTransformed.vertex[0].intensity + triTransformed.vertex[1].intensity + triTransformed.vertex[2].intensity) / 3;
 					inten = (inten < 0) ? 0 : inten;
 					float minIp = 0, maxIp = 12.5f;
 					unsigned int minCol = 0, maxCol = 0xff;
@@ -573,8 +573,8 @@ public:
 
 					//Project Textures
 					for (int i = 0; i < 3; i++) {
-						triProjected.texCood[i] /= triProjected.vertex[i].position.w;
-						triProjected.texCood[i].w = 1.0f / triProjected.vertex[i].position.w;
+						triProjected.vertex[i].textureCood /= triProjected.vertex[i].position.w;
+						triProjected.vertex[i].textureCood.w = 1.0f / triProjected.vertex[i].position.w;
 					}
 					//Normalise Projected matrix
 					triProjected.normalize();

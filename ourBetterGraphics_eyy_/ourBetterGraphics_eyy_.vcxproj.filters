@@ -33,9 +33,6 @@
     <ClCompile Include="..\src\Shape3D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\junk.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
