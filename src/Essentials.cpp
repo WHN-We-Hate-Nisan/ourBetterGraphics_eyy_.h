@@ -20,18 +20,18 @@ int Clamp(int current, int min, int max) {
 }
 
 template<typename T>
-void Swap(T &xp, T &yp){
+void Swap(T& xp, T& yp) {
 	T temp = xp;
 	xp = yp;
 	yp = temp;
 }
 float distance(const float& x1, const float& y1, const float& x2, const float& y2) {
-	return sqrtf((x2 - x1)*(x2-x1) + (y2 - y1)*(y2-y1));
+	return sqrtf((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 	//return abs(x2 - x1) + abs(y2 - y1);
 }
 unsigned int interPolate(const float& input1, const float& input2, const float& position, const unsigned int& val1, const unsigned int& val2) {
 	if (input1 == input2) return val1;
-	else return val1 +  (position - input1) / (input2 - input1) * (val2 - val1);
+	else return val1 + (position - input1) / (input2 - input1) * (val2 - val1);
 }
 float interPolate(const float& input1, const float& input2, const float& position, const float& val1, const float& val2) {
 	if (input1 == input2) return val1;
@@ -125,7 +125,7 @@ void SortByY(Vec3 arr[max_Vertex], int n) {
 				Swap(arr[j], arr[j + 1]);
 			}
 }
-void SortByYIntensity(Vec3 arr[max_Vertex],float vertex[max_Vertex], int n) {
+void SortByYIntensity(Vec3 arr[max_Vertex], float vertex[max_Vertex], int n) {
 	int i, j;
 	for (i = 0; i < n - 1; i++)
 		// Last i elements are already in place 
@@ -258,16 +258,16 @@ void DrawBresLine(float x1, float y1, float x2, float y2, Color color) {
 
 void DrawHorizLine(int x1, int x2, int y, Color color, Vec3 off) {
 	if (x2 < x1)
-		Swap(x1, x2); 
+		Swap(x1, x2);
 	for (int i = x1; i <= x2; i++)
 		DrawPixel(i + off.x, y + off.y, color);
 }
 void DrawHorizLineShaded(int x1, int x2, int y, Triangle tri, Vec3 off) {
 	if (x2 < x1)
-		Swap(x1, x2);	
+		Swap(x1, x2);
 	for (int i = x1; i <= x2; i++) {
 		//Barycentric coordinates
-		float W1 = ( (tri.vertex[1].position.y - tri.vertex[2].position.y)*( i - tri.vertex[2].position.x ) + ( tri.vertex[2].position.x - tri.vertex[1].position.x) * (y - tri.vertex[2].position.y) ) / 
+		float W1 = ((tri.vertex[1].position.y - tri.vertex[2].position.y) * (i - tri.vertex[2].position.x) + (tri.vertex[2].position.x - tri.vertex[1].position.x) * (y - tri.vertex[2].position.y)) /
 			((tri.vertex[1].position.y - tri.vertex[2].position.y) * (tri.vertex[0].position.x - tri.vertex[2].position.x) + (tri.vertex[2].position.x - tri.vertex[1].position.x) * (tri.vertex[0].position.y - tri.vertex[2].position.y));
 		float W2 = ((tri.vertex[2].position.y - tri.vertex[0].position.y) * (i - tri.vertex[2].position.x) + (tri.vertex[0].position.x - tri.vertex[2].position.x) * (y - tri.vertex[2].position.y)) /
 			((tri.vertex[1].position.y - tri.vertex[2].position.y) * (tri.vertex[0].position.x - tri.vertex[2].position.x) + (tri.vertex[2].position.x - tri.vertex[1].position.x) * (tri.vertex[0].position.y - tri.vertex[2].position.y));
@@ -278,12 +278,12 @@ void DrawHorizLineShaded(int x1, int x2, int y, Triangle tri, Vec3 off) {
 		unsigned char g = W1 * tri.vertex[0].color.g + W2 * tri.vertex[1].color.g + W3 * tri.vertex[2].color.g;
 		unsigned char b = W1 * tri.vertex[0].color.b + W2 * tri.vertex[1].color.b + W3 * tri.vertex[2].color.b;
 
-		DrawPixel(i + off.x, y + off.y, Color(r*a, g*a, b*a, 0xff));
+		DrawPixel(i + off.x, y + off.y, Color(r * a, g * a, b * a, 0xff));
 	}
 }
-void DrawHorizTexture(float ax, float bx, float y, float& texU, float& texV, float& texW, 
-						float texStartU, float texEndU, float texStartV, float texEndV, 
-						float texStartW, float texEndW, Texture* texture) {
+void DrawHorizTexture(float ax, float bx, float y, float& texU, float& texV, float& texW,
+	float texStartU, float texEndU, float texStartV, float texEndV,
+	float texStartW, float texEndW, Texture* texture) {
 	float tStep = 1.0f / ((float)(bx - ax));
 	float t = 0.0f;
 	for (int j = ax; j < bx; j++) {
@@ -304,7 +304,7 @@ void DrawTriangle(Triangle& t, Color color) {
 }
 void ColorTriangle(Triangle& tri, Color color, Vec3 off) {
 	float dx1, dx2, dx3;
-	Vec3 array[] = { tri.vertex[0].position, tri.vertex[1].position, tri.vertex[2].position};
+	Vec3 array[] = { tri.vertex[0].position, tri.vertex[1].position, tri.vertex[2].position };
 	SortByY(array);
 	Vec3 A = array[0];
 	Vec3 B = array[1];
@@ -342,21 +342,21 @@ void ShadeTriangle(Triangle& tri, Vec3 off) {
 	if (B.y - A.y > 0) dx1 = (B.x - A.x) / (B.y - A.y); else dx1 = 0;
 	if (C.y - A.y > 0) dx2 = (C.x - A.x) / (C.y - A.y); else dx2 = 0;
 	if (C.y - B.y > 0) dx3 = (C.x - B.x) / (C.y - B.y); else dx3 = 0;
-	
+
 
 	Source = End = A;
 	if (dx1 > dx2) {
-		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx2, End.x += dx1) 			
+		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx2, End.x += dx1)
 			DrawHorizLineShaded(Source.x, End.x, Source.y, tri, off);
 		End = B;
-		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx2, End.x += dx3)			
+		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx2, End.x += dx3)
 			DrawHorizLineShaded(Source.x, End.x, Source.y, tri, off);
 	}
 	else {
 		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx1, End.x += dx2)
 			DrawHorizLineShaded(Source.x, End.x, Source.y, tri, off);
 		Source = B;
-		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx3, End.x += dx2) 
+		for (; Source.y <= C.y; Source.y++, End.y++, Source.x += dx3, End.x += dx2)
 			DrawHorizLineShaded(Source.x, End.x, Source.y, tri, off);
 	}
 }
@@ -397,9 +397,9 @@ void TextureTriangle(Triangle& tri, Texture* texture) {
 
 	//Amount to move in each step
 	float dAxStep = 0, dBxStep = 0,
-		  dU1Step = 0, dV1Step = 0,
-		  dU2Step = 0, dV2Step = 0,
-		  dW1Step = 0, dW2Step = 0;
+		dU1Step = 0, dV1Step = 0,
+		dU2Step = 0, dV2Step = 0,
+		dW1Step = 0, dW2Step = 0;
 
 	if (dy1) dAxStep = dx1 / (float)abs(dy1);
 	if (dy2) dBxStep = dx2 / (float)abs(dy2);
@@ -443,7 +443,7 @@ void TextureTriangle(Triangle& tri, Texture* texture) {
 			//Draw Line
 			DrawHorizTexture(ax, bx, i, texU, texV, texW, texStartU, texEndU, texStartV, texEndV, texStartW, texEndW, texture);
 		}
-		
+
 		//Left bottom line of triangle
 		dy1 = C.y - A.y;
 		dx1 = C.x - A.x;
@@ -487,7 +487,7 @@ void TextureTriangle(Triangle& tri, Texture* texture) {
 			texW = texStartW;
 
 			//Draw Line
-			DrawHorizTexture(ax, bx, i, texU, texV, texW, texStartU, texEndU, texStartV, texEndV,texStartW, texEndW, texture);
+			DrawHorizTexture(ax, bx, i, texU, texV, texW, texStartU, texEndU, texStartV, texEndV, texStartW, texEndW, texture);
 		}
 	}
 }
@@ -497,4 +497,400 @@ int getMidX() {
 }
 int getMidY() {
 	return globalBuffer.height / 2;
+}
+
+
+template <typename T>
+Vect2<T> Vect2<T>::operator-() {
+	return { -this->x, -this->y, this->w };
+}
+
+template <typename T>
+Vect2<T> Vect2<T>::operator+(const Vect2<T>& right) {
+	return { this->x + right.x, this->y + right.y, 1 };
+}
+
+template <typename T>
+Vect2<T>& Vect2<T>::operator+=(const Vect2<T>& right) {
+	this->x += right.x; this->y += right.y;
+	return *this;
+}
+
+template <typename T>
+Vect2<T> Vect2<T>::operator-(const Vect2<T>& right) {
+	return { this->x - right.x, this->y - right.y, 1 };
+}
+
+template <typename T>
+Vect2<T>& Vect2<T>::operator-=(const Vect2<T>& right) {
+	this->x -= right.x; this->y -= right.y;
+	return *this;
+}
+
+template <typename T>
+Vect2<T> Vect2<T>::operator*(const Vect2<T>& right) {
+	return { this->x * right.x, this->y * right.y, 1 };
+}
+
+template <typename T>
+Vect2<T>& Vect2<T>::operator *= (const Vect2<T>& right) {
+	this->x *= right.x; this->y *= right.y;
+	return *this;
+}
+
+template <typename T>
+Vect2<T> Vect2<T>::operator*(const T& right) {
+	return { this->x * right, this->y * right, this->w };
+}
+
+template <typename T>
+Vect2<T>& Vect2<T>::operator*=(const T& right) {
+	this->x *= right; this->y *= right;
+	return *this;
+}
+
+template <typename T>
+Vect2<T> Vect2<T>::operator/(const T& right) {
+	return { this->x / right, this->y / right, this->w };
+}
+
+//template <typename T>
+//Vect2<T>& Vect2<T>::operator/=(const T& right) {
+//	this->x /= right; this->y /= right;
+//	return *this;
+//}
+
+template <typename T>
+Vect2<T>& Vect2<T>::multiplyEach(const Vect2<T>& right) {
+	this->x *= right.x; this->y *= right.y;
+	return *this;
+}
+
+template <typename T>
+Vect2<T> Vect2<T>::multiplyEach(const Vect2<T>& left, const Vect2<T>& right) {
+	return { left.x * right.x, left.y * right.y, 1 };
+}
+
+template <typename T>
+T Vect2<T>::dot(const Vect2<T>& right) {
+	return this->x * right.x + this->y * right.y;
+}
+
+template <typename T>
+T Vect2<T>::dot(const Vect2<T>& left, const Vect2<T>& right) {
+	return left.x * right.x + left.y * right.y;
+}
+
+template <typename T>
+T Vect2<T>::length() {
+	return sqrtf(this->x * this->x + this->y * this->y);
+}
+
+template <typename T>
+Vect2<T>& Vect2<T>::normalize() {
+	float mag = length();
+	this->x /= mag;
+	this->y /= mag;
+	return *this;
+}
+
+template <typename T>
+Vect2<T> Vect2<T>::normalize(Vect2<T> v) {
+	return v.normalize();
+}
+
+template <typename T>
+Vect2<T> Vect2<T>::interpolate(const float& fraction, const Vect2<T>& left, const Vect2<T>& right) {
+	return { interPolate(fraction, left.u, right.u), interPolate(fraction, left.v, right.v) };
+}
+
+
+//template <typename T>
+//Vect3<T> Vect3<T>::operator-() {
+//	return { -this->x, -this->y, -this->z, this->w };
+//}
+
+template <typename T>
+Vect3<T> Vect3<T>::operator+(const Vect3<T>& right) {
+	return { this->x + right.x, this->y + right.y, this->z + right.z, this->w };
+}
+
+template <typename T>
+Vect3<T>& Vect3<T>::operator+=(const Vect3<T>& right) {
+	this->x += right.x; this->y += right.y; this->z += right.z;
+	return *this;
+}
+
+template <typename T>
+Vect3<T> Vect3<T>::operator-(const Vect3<T>& right) {
+	return { this->x - right.x, this->y - right.y, this->z - right.z, this->w };
+}
+
+//template <typename T>
+//Vect3<T>& Vect3<T>::operator-=(const Vect3<T>& right) {
+//	this->x -= right.x; this->y -= right.y; this->z -= right.z;
+//	return *this;
+//}
+
+template <typename T>
+Vect3<T> Vect3<T>::operator*(const Vect3<T>& right) {
+	//i  j  k 
+	//x  y  z
+	//rx ry rz
+
+	return { this->y * right.z - right.y * this->z,
+			 this->z * right.x - right.y * this->x,
+			 this->x * right.y - right.x * this->y,
+			 this->w };
+}
+
+template <typename T>
+Vect3<T> Vect3<T>::operator*(const T& right) {
+	return { this->x * right, this->y * right, this->z * right, this->w };
+}
+
+template <typename T>
+Vect3<T>& Vect3<T>::operator*=(const T& right) {
+	this->x *= right; this->y *= right; this->z *= right;
+	return *this;
+}
+
+template <typename T>
+Vect3<T> Vect3<T>::operator/(const T& right) {
+	return { this->x / right, this->y / right, this->z / right, this->w };
+}
+
+template <typename T>
+Vect3<T>& Vect3<T>::operator/=(const T& right) {
+	this->x /= right; this->y /= right; this->z /= right;
+	return *this;
+}
+
+template <typename T>
+Vect3<T>& Vect3<T>::multiplyEach(const Vect3<T>& right) {
+	this->x *= right.x; this->y *= right.y; this->z *= right.z;
+	return *this;
+}
+
+template <typename T>
+Vect3<T> Vect3<T>::multiplyEach(const Vect3<T>& left, const Vect3<T>& right) {
+	return { left.x * right.x, left.y * right.y, left.z * right.z, 1 };
+}
+
+template <typename T>
+T Vect3<T>::dot(const Vect3<T>& right) {
+	return this->x * right.x + this->y * right.y + this->z * right.z;
+}
+
+template <typename T>
+T Vect3<T>::dot(const Vect3<T>& left, const Vect3<T>& right) {
+	return left.x * right.x + left.y * right.y + left.z * right.z;
+}
+
+template <typename T>
+T Vect3<T>::length() {
+	return sqrtf(this->x * this->x + this->y * this->y + this->z * this->z);
+}
+
+template <typename T>
+Vect3<T>& Vect3<T>::normalize() {
+	float mag = length();
+	this->x /= mag;
+	this->y /= mag;
+	this->z /= mag;
+	return *this;
+}
+
+template <typename T>
+Vect3<T> Vect3<T>::normalize(Vect3<T> v) {
+	return v.normalize();
+}
+
+template <typename T>
+Vect3<T> Vect3<T>::intersectPlane(Vect3<T>& planeP, Vect3<T>& planeN, Vect3<T>& lineStart, Vect3<T>& lineEnd, float& t) {
+	planeN.normalize();
+	float planeD = -planeN.dot(planeP);
+	float ad = lineStart.dot(planeN);
+	float bd = lineEnd.dot(planeN);
+	t = (planeD + ad) / (ad - bd);
+
+	Vect3 lineStartToEnd = lineEnd - lineStart;
+	Vect3 lineToIntersect = lineStartToEnd * t;
+	return lineStart + lineToIntersect;
+}
+
+Triangle Triangle::operator+(const Vec3& right) {
+	Triangle tri(*this);
+	tri.vertex[0].position += right;
+	tri.vertex[1].position += right;
+	tri.vertex[2].position += right;
+	return tri;
+}
+Triangle& Triangle::operator+=(const Vec3& right) {
+	this->vertex[0].position += right;
+	this->vertex[1].position += right;
+	this->vertex[2].position += right;
+	return *this;
+}
+Triangle Triangle::operator*(const Vec3& right) {
+	Triangle tri(*this);
+	tri.vertex[0].position.multiplyEach(right);
+	tri.vertex[1].position.multiplyEach(right);
+	tri.vertex[2].position.multiplyEach(right);
+	return tri;
+}
+Triangle& Triangle::operator*=(const Vec3& right) {
+	this->vertex[0].position.multiplyEach(right);
+	this->vertex[1].position.multiplyEach(right);
+	this->vertex[2].position.multiplyEach(right);
+	return *this;
+}
+Triangle Triangle::operator/(const float& right) {
+	Triangle tri(*this);
+	tri.vertex[0].position /= right;
+	tri.vertex[1].position /= right;
+	tri.vertex[2].position /= right;
+	return tri;
+}
+Triangle& Triangle::operator/=(const float& right) {
+	this->vertex[0].position /= right;
+	this->vertex[1].position /= right;
+	this->vertex[2].position /= right;
+	return *this;
+}
+Vec3 Triangle::normal() {
+	return ((vertex[1].position - vertex[0].position) * (vertex[2].position - vertex[0].position)).normalize();
+}
+Color Triangle::avgColor() {
+	return  (vertex[0].color / 3 + vertex[1].color / 3 + vertex[2].color / 3);
+}
+Triangle& Triangle::normalize() {
+	for (int i = 0; i < 3; i++)
+		vertex[i].position /= vertex[i].position.w;
+	return *this;
+}
+int Triangle::ClipAgainstPlane(Vec3 planeP, Vec3 planeN, Triangle& in, Triangle& out1, Triangle& out2) {
+	//Make plane Normal normal
+	planeN.normalize();
+
+	//Return signed shortest distance from point to plane
+	auto d = [&](Vec3& p) {
+		Vec3 n = Vec3::normalize(p);
+		return Vec3::dot(planeN, p) - Vec3::dot(planeN, planeP);
+	};
+	//Create two storages to classify points on either side of the plane
+	//+ve sign = inside
+	Vec3* insides[3]; int nInsidePointCount = 0;
+	Vec3* outsides[3]; int nOutsidePointCount = 0;
+	Vec2* insideTextures[3]; int nInsideTextureCount = 0;
+	Vec2* outsideTextures[3]; int nOutsideTextureCount = 0;
+
+
+	//Get signed distance of each point in triangle to plane
+	float dis[3];
+	for (int i = 0; i < 3; i++)
+		dis[i] = d(in.vertex[i].position);
+	for (int i = 0; i < 3; i++) {
+		if (dis[i] >= 0) {
+			insides[nInsidePointCount++] = &in.vertex[i].position;
+			insideTextures[nInsideTextureCount++] = &in.vertex[i].textureCood;
+		}
+		else {
+			outsides[nOutsidePointCount++] = &in.vertex[i].position;
+			outsideTextures[nOutsideTextureCount++] = &in.vertex[i].textureCood;
+		}
+	}
+
+	//Classify triangle points and change input into
+	//smaller triangles if needed
+
+	switch (nInsidePointCount) {
+	case 0:
+		//All points lie on the outside of the plane
+		//Clip whole triangle
+		//return nothing
+		return 0;
+		break;
+	case 3:
+		//All points lie on the inside of the plane
+		//No clipping
+		out1 = in;
+		return 1;
+		break;
+	case 1:
+		if (nOutsidePointCount == 2) {
+			//2 points lie outside
+			//triangle becomes smaller triangle
+
+			//Set Output
+			for (int i = 0; i < 3; i++) {
+				out1.vertex[i].color = in.vertex[i].color;
+				out1.vertex[i].intensity = in.vertex[i].intensity;
+				out1.vertex[i].normal = in.vertex[i].normal;
+			}
+
+			out1.vertex[0].position = *insides[0];
+			out1.vertex[0].textureCood = *insideTextures[0];
+
+			//Two new points, at the location where
+			//original sides of the triangle intersect the plane
+			float t;
+			out1.vertex[1].position = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0], t);
+			//out1.vertex[1].textureCood=Vec2::interpolate(t, *insideTextures[0], *outsideTextures[0]);
+			out1.vertex[1].textureCood.u = interPolate(t, insideTextures[0]->u, outsideTextures[0]->u);
+			out1.vertex[1].textureCood.v = interPolate(t, insideTextures[0]->v, outsideTextures[0]->v);
+
+			out1.vertex[2].position = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[1], t);
+			out1.vertex[2].textureCood.u = interPolate(t, insideTextures[0]->u, outsideTextures[1]->u);
+			out1.vertex[2].textureCood.v = interPolate(t, insideTextures[0]->v, outsideTextures[1]->v);
+
+			return 1;
+		}
+		break;
+	case 2:
+		if (nOutsidePointCount == 1) {
+			//1 point lies outside
+			//triangle becomes a quad
+
+			//Set Output
+			for (int i = 0; i < 3; i++) {
+				out1.vertex[i].color = in.vertex[i].color;
+				out1.vertex[i].intensity = in.vertex[i].intensity;
+				out1.vertex[i].normal = in.vertex[i].normal;
+
+				out2.vertex[i].color = in.vertex[i].color;
+				out2.vertex[i].intensity = in.vertex[i].intensity;
+				out2.vertex[i].normal = in.vertex[i].normal;
+			}
+
+			//First triangle consists of 2 inside points and
+			//location where one side intersects the plane
+			out1.vertex[0].position = *insides[0];
+			out1.vertex[1].position = *insides[1];
+			out1.vertex[0].textureCood = *insideTextures[0];
+			out1.vertex[1].textureCood = *insideTextures[1];
+
+			float t;
+			out1.vertex[2].position = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0], t);
+			out1.vertex[2].textureCood.u = interPolate(t, insideTextures[0]->u, outsideTextures[0]->u);
+			out1.vertex[2].textureCood.v = interPolate(t, insideTextures[0]->v, outsideTextures[0]->v);
+
+			//Second triangle consists of 1 inside point and
+			//location where other side intersects the plane
+			//and the newly created point;
+			out2.vertex[0].position = *insides[1];
+			out2.vertex[0].textureCood = *insideTextures[1];
+
+			out2.vertex[1].position = out1.vertex[2].position;
+			out2.vertex[1].textureCood = out1.vertex[2].textureCood;
+
+			out2.vertex[2].position = Vec3::intersectPlane(planeP, planeN, *insides[1], *outsides[0], t);
+			out2.vertex[2].textureCood.u = interPolate(t, insideTextures[1]->u, outsideTextures[0]->u);
+			out2.vertex[2].textureCood.v = interPolate(t, insideTextures[1]->v, outsideTextures[0]->v);
+
+			return 2;
+		}
+		break;
+	}
+	return 0;
 }
