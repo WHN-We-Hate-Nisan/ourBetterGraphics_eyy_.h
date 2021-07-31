@@ -14,10 +14,11 @@ struct Mesh {
 		int v, vt, vn;
 	};
 
+	//Make this boi load colors
 	bool LoadFromObjectFile(std::string FileName) {
 		std::ifstream f(FileName);
 		if (!f.is_open()) return false;
-		
+
 		std::vector<Vertex> verts;
 		//Vertices
 		VertSet vertices(1, { 0,0,0,1 });
@@ -30,13 +31,13 @@ struct Mesh {
 			std::istringstream lineSS(line);
 			std::string lineType;
 			lineSS >> lineType;
-			
+
 			//Getting vertices and making a pool
 			if (lineType == "v")
 			{
 				float x = 0, y = 0, z = 0, w = 1;
 				lineSS >> x >> y >> z >> w;
-				vertices.push_back(Vec3{ x, y, z, w });
+				vertices.emplace_back(Vec3{ x, y, z, w });
 			}
 
 			//Getting textures and making a pool
@@ -44,15 +45,15 @@ struct Mesh {
 			{
 				float u = 0, v = 0, w = 0;
 				lineSS >> u >> v >> w;
-				texcoords.push_back(Vec2{ u, v, w });
+				texcoords.emplace_back(Vec2{ u, v, w });
 			}
 
-			//Getting normals and making a pool
+			//Getting pramissnormal and making a pool
 			if (lineType == "vn")
 			{
 				float i = 0, j = 0, k = 0;
 				lineSS >> i >> j >> k;
-				normals.push_back(Vec3{ i, j, k }.normalize());
+				normals.emplace_back(Vec3{ i, j, k }.normalize());
 			}
 
 			if (lineType == "f")
@@ -71,7 +72,7 @@ struct Mesh {
 					v = (v >= 0 ? v : vertices.size() + v);
 					vt = (vt >= 0 ? vt : texcoords.size() + vt);
 					vn = (vn >= 0 ? vn : normals.size() + vn);
-					refs.push_back(VertRef(v, vt, vn));
+					refs.emplace_back(VertRef(v, vt, vn));
 				}
 
 				// triangulate, assuming n>3-gons are convex and coplanar
@@ -87,10 +88,10 @@ struct Mesh {
 						vert.position = vertices[p[j]->v];
 						vert.texcoord = texcoords[p[j]->vt];
 						vert.normal = (p[j]->vn != 0 ? normals[p[j]->vn] : faceNormal);
-						verts.push_back(vert);
+						verts.emplace_back(vert);
 					}
 				}
-			}			
+			}
 		}
 
 		//Getting triangles and making a pool
@@ -100,9 +101,9 @@ struct Mesh {
 			for (int j = 0; j < 3; j++) {
 				tri.vertex[j].position = verts[i * 3 + j].position;
 				tri.vertex[j].textureCood = verts[i * 3 + j].texcoord;
-				tri.normals[j] = verts[i * 3 + j].normal;
+				tri.vertex[j].normal = verts[i * 3 + j].normal;
 			}
-			triangles.push_back(tri);
+			triangles.emplace_back(tri);
 		}
 		return true;
 	}
@@ -136,15 +137,14 @@ struct Mat4x4 {
 		return *this;
 	}
 	Triangle& MultiplyTriangle(Triangle& result, Triangle& in) {
-		result.color = in.color;
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < 3; i++) {
+			result.vertex[i].color = in.vertex[i].color;
 			result.vertex[i].textureCood = in.vertex[i].textureCood;
-		for (int i = 0; i < 3; i++)
-			result.normals[i] = in.normals[i];
-		for (int i = 0; i < 3; i++)
+			result.vertex[i].normal = in.vertex[i].normal;
 			result.vertex[i].intensity = in.vertex[i].intensity;
-		for (int i = 0; i < 3; i++)
+
 			result.vertex[i].position = this->MultiplyVector(in.vertex[i].position);
+		}
 		return result;
 	}
 	static Mat4x4 MakeIdentity() {
@@ -345,10 +345,10 @@ struct Mat4x4 {
 };
 struct Controller {
 	bool up = 0, down = 0, left = 0, right = 0,
-	     lUp = 0, lDown = 0, lLeft = 0, lRight = 0,
+		lUp = 0, lDown = 0, lLeft = 0, lRight = 0,
 		lForward = 0, lBackward = 0,
 		forward = 0, backward = 0,
-		yawL = 0, yawR = 0, colored = 1, wireframe = 0, shaded=1;
+		yawL = 0, yawR = 0, colored = 1, wireframe = 0, shaded = 1;
 
 	void reset() {
 		up = 0; down = 0; left = 0; right = 0;
@@ -375,12 +375,12 @@ class Shape3D {
 	int n = 10;
 
 	float speed = 50.0f;
-	Vec3 lookDir= { 0,0,1 };
-	float yaw=0;
+	Vec3 lookDir = { 0,0,1 };
+	float yaw = 0;
 
-	float fTheta=0;
+	float fTheta = 0;
 
-	bool wireframe = 0, colored = 1, shaded=1;
+	bool wireframe = 0, colored = 1, shaded = 1;
 public:
 	Shape3D() {
 		//Loading Light
@@ -420,7 +420,7 @@ public:
 		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
 		mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
 		//mesh.LoadFromObjectFile("../Assets/Sample.obj");
-		
+
 		//For Release
 		//mesh.LoadFromObjectFile("Light.obj");
 		//mesh.LoadFromObjectFile("Object.obj");
@@ -429,22 +429,22 @@ public:
 		texture = NULL;
 		//texture = new Texture("../Assets/Textures/house.png");
 
-		matProj = Mat4x4::MakeProjection();		
+		matProj = Mat4x4::MakeProjection();
 	}
 	void checkInput(Controller& c, float elapsedTime = 0) {
 		elapsedTime *= 0.000001f;
 		//fTheta += elapsedFrames;
 		float change = speed * elapsedTime;
-		if (c.up) 
+		if (c.up)
 			camera.y += change;
-		if (c.down) 
+		if (c.down)
 			camera.y -= change;
-		if (c.left) 
-			camera.x += change; 
-		if (c.right) 
+		if (c.left)
+			camera.x += change;
+		if (c.right)
 			camera.x -= change;
 
-		if (c.lUp){
+		if (c.lUp) {
 			lightDirection.y += change;
 			lightPosition.y += change;
 		}
@@ -472,7 +472,7 @@ public:
 		Vec3 forward = lookDir * change;
 
 		if (c.forward)
-			camera += forward;		
+			camera += forward;
 		if (c.backward)
 			camera -= forward;
 		if (c.yawL)
@@ -485,7 +485,7 @@ public:
 	}
 	void draw() {
 		Mesh toRaster;
-				
+
 		//Tranlation
 		Mat4x4 matTrans;
 		matTrans = Mat4x4::MakeTranslate(0.0f, 0.0f, 3.0f);
@@ -515,12 +515,12 @@ public:
 		int sizee = mesh.triangles.size();
 
 		//Draw Triangles
-		for (int index=0; index < sizee; index++) {
-			Triangle tri = mesh.triangles[index];
+		for (int index = 0; index < sizee; index++) {
+			Triangle tri = mesh.triangles[index];			
 			Triangle triProjected, triTransformed, triViewed;
 
 			//Apply Transformations
-			if(index<12)
+			if (index < 12)
 				matLighting.MultiplyTriangle(triTransformed, tri);
 			else
 				matWorld.MultiplyTriangle(triTransformed, tri);
@@ -529,35 +529,44 @@ public:
 			Vec3 normal = triTransformed.normal();
 			Vec3 CameraRay = triTransformed.vertex[0].position - camera;
 
-			if (Vec3::dot(normal,CameraRay.normalize()) < 0.0f) {
+			//Illumination
+			/*for (int k = 0; k < 3; k++)
+				triTransformed.vertex[k].color
+				= Color(0xff, 0xff, 0xff, 0xff);*/
+			//if (Vec3::dot(normal, CameraRay.normalize()) < 0.0f) {
+			{
 				if (index < 12) {
-					triTransformed.color
-						= Color(0xff, 0xff, 0xff, 0xff);
-					for (int k = 0; k < 3; k++)			
+					for (int k = 0; k < 3; k++)
+						triTransformed.vertex[k].color = Color(0xffffffff);
+					for (int k = 0; k < 3; k++)
 						triTransformed.vertex[k].intensity = 12.5f;
 				}
 				else {
-					//Illumination				
-
+					for (int k = 0; k < 3; k++) {
+						triTransformed.vertex[k].color.r = (triTransformed.vertex[k].position.x + 80.f) * 0xff / 160.0f;
+						triTransformed.vertex[k].color.g = (triTransformed.vertex[k].position.y) * 0xff / 34.2f;
+						triTransformed.vertex[k].color.b = (triTransformed.vertex[k].position.z + 80.f) * 0xff / 160.0f;
+					}
 					for (int k = 0; k < 3; k++) {
 						Vec3 L = (lightPosition - triTransformed.vertex[k].position).normalize();
 						Vec3 V = (camera - triTransformed.vertex[k].position).normalize();
-						Vec3 N = triTransformed.normals[k];
+						Vec3 N = triTransformed.vertex[k].normal;
 
 						triTransformed.vertex[k].intensity = Ka * Ia + Kd * Il * Vec3::dot(N, L) + Ks * Il * pow(Vec3::dot(N, (L + V).normalize()), n);
+						triTransformed.vertex[k].intensity = (triTransformed.vertex[k].intensity < 0) ? 0 : triTransformed.vertex[k].intensity;
 					}
-					
-					if(!shaded){
-					float inten = (triTransformed.vertex[0].intensity + triTransformed.vertex[1].intensity + triTransformed.vertex[2].intensity) / 3;
-					inten = (inten < 0) ? 0 : inten;
-					float minIp = 0, maxIp = 12.5f;
-					unsigned int minCol = 0, maxCol = 0xff;
-					unsigned char col = interPolate(minIp, maxIp, inten, minCol, maxCol);
-					triTransformed.color
-						= Color(col, col, col, 0xff);
-					}
-				}			
 
+					if (!shaded) {
+						float inten = (triTransformed.vertex[0].intensity + triTransformed.vertex[1].intensity + triTransformed.vertex[2].intensity) / 3;
+						
+						float minIp = 0, maxIp = 12.5f;
+						unsigned int minCol = 0, maxCol = 0xff;
+						unsigned char col = interPolate(minIp, maxIp, inten, minCol, maxCol);
+						for (int k = 0; k < 3; k++)
+							triTransformed.vertex[k].color
+							= Color(col, col, col, 0xff);
+					}
+				}				
 				//Convert World Space to View Space
 				matView.MultiplyTriangle(triViewed, triTransformed);
 
@@ -595,7 +604,7 @@ public:
 			float midZ1 = (t1.vertex[0].position.z + t1.vertex[1].position.z + t1.vertex[2].position.z) / 3.0f;
 			float midZ2 = (t2.vertex[0].position.z + t2.vertex[1].position.z + t2.vertex[2].position.z) / 3.0f;
 			return midZ1 > midZ2;
-		});
+			});
 
 		//Rasterize Triangle
 		for (auto& triToRasterize : toRaster.triangles) {
@@ -637,12 +646,12 @@ public:
 					tri.vertex[i].position.x = (float)globalBuffer.width - tri.vertex[i].position.x;
 				}
 				//TextureTriangle(tri, texture);
-				if (colored) { 
-					if(shaded) ShadeTriangle(tri);
-					else ColorTriangle(tri, tri.color);
+				if (colored) {
+					if (shaded) ShadeTriangle(tri);
+					else ColorTriangle(tri, tri.avgColor());
 				}
 				//if (wireframe) DrawTriangle(tri, 0xffffffff - tri.color.color);
-				if (wireframe) DrawTriangle(tri, 0xffffffff - tri.color.color);
+				if (wireframe) DrawTriangle(tri, 0xffffffff - tri.avgColor().color);
 			}
 		}
 	}

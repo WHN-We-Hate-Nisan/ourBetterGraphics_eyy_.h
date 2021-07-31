@@ -272,8 +272,16 @@ void DrawHorizLineShaded(int x1, int x2, int y, Triangle tri, Vec3 off) {
 		float W2 = ((tri.vertex[2].position.y - tri.vertex[0].position.y) * (i - tri.vertex[2].position.x) + (tri.vertex[0].position.x - tri.vertex[2].position.x) * (y - tri.vertex[2].position.y)) /
 			((tri.vertex[1].position.y - tri.vertex[2].position.y) * (tri.vertex[0].position.x - tri.vertex[2].position.x) + (tri.vertex[2].position.x - tri.vertex[1].position.x) * (tri.vertex[0].position.y - tri.vertex[2].position.y));
 		float W3 = 1 - W1 - W2;
-		unsigned char col = (W1*tri.vertex[0].intensity+ W2 * tri.vertex[1].intensity+ W3 * tri.vertex[2].intensity) / 12.5f * 0xff;
-		DrawPixel(i + off.x, y + off.y, Color(col, col, col, 0xff));
+
+		float a = (W1 * tri.vertex[0].intensity / 12.5f + W2 * tri.vertex[1].intensity / 12.5f + W3 * tri.vertex[2].intensity / 12.5f);
+		unsigned char r = W1 * tri.vertex[0].color.r + W2 * tri.vertex[1].color.r + W3 * tri.vertex[2].color.r;
+		unsigned char g = W1 * tri.vertex[0].color.g + W2 * tri.vertex[1].color.g + W3 * tri.vertex[2].color.g;
+		unsigned char b = W1 * tri.vertex[0].color.b + W2 * tri.vertex[1].color.b + W3 * tri.vertex[2].color.b;
+
+		//unsigned char r = (tri.vertex[0].color.r * W1 * tri.vertex[0].intensity / 12.5f + tri.vertex[0].color.r*W2 * tri.vertex[1].intensity / 12.5f + tri.vertex[0].color.r * W3 * tri.vertex[2].intensity / 12.5f) ;
+		//unsigned char g = (tri.vertex[0].color.g * W1 * tri.vertex[0].intensity / 12.5f + tri.vertex[0].color.g*W2 * tri.vertex[1].intensity / 12.5f + tri.vertex[0].color.g * W3 * tri.vertex[2].intensity / 12.5f) ;
+		//unsigned char b = (tri.vertex[0].color.b * W1 * tri.vertex[0].intensity / 12.5f + tri.vertex[0].color.b*W2 * tri.vertex[1].intensity / 12.5f + tri.vertex[0].color.b * W3 * tri.vertex[2].intensity / 12.5f) ;
+		DrawPixel(i + off.x, y + off.y, Color(r*a, g*a, b*a, 0xff));
 	}
 }
 void DrawHorizTexture(float ax, float bx, float y, float& texU, float& texV, float& texW, 
@@ -337,6 +345,7 @@ void ShadeTriangle(Triangle& tri, Vec3 off) {
 	if (B.y - A.y > 0) dx1 = (B.x - A.x) / (B.y - A.y); else dx1 = 0;
 	if (C.y - A.y > 0) dx2 = (C.x - A.x) / (C.y - A.y); else dx2 = 0;
 	if (C.y - B.y > 0) dx3 = (C.x - B.x) / (C.y - B.y); else dx3 = 0;
+	
 
 	Source = End = A;
 	if (dx1 > dx2) {

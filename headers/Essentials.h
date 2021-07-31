@@ -200,8 +200,6 @@ struct Vertex {
 	Color color;
 };
 struct Triangle {
-	Vec3 normals[3];
-	Color color;
 	Vertex vertex[3];
 
 	Triangle operator+(const Vec3& right) {
@@ -245,6 +243,9 @@ struct Triangle {
 	}
 	Vec3 normal() {
 		return ( (vertex[1].position - vertex[0].position) * (vertex[2].position - vertex[0].position) ).normalize();
+	}
+	Color avgColor() {
+		return  (vertex[0].color / 3 + vertex[1].color / 3 + vertex[2].color / 3);
 	}
 	Triangle& normalize() {
 		for (int i = 0; i < 3; i++)
@@ -305,11 +306,11 @@ struct Triangle {
 				//triangle becomes smaller triangle
 				
 				//Set Output
-				out1.color = in.color;
-				for(int i=0;i<3;i++)
+				for (int i = 0; i < 3; i++) {
+					out1.vertex[i].color = in.vertex[i].color;
 					out1.vertex[i].intensity = in.vertex[i].intensity;
-				for (int i = 0; i < 3; i++)
-					out1.normals[i] = in.normals[i];
+					out1.vertex[i].normal = in.vertex[i].normal;
+				}
 				
 				out1.vertex[0].position = *insides[0];
 				out1.vertex[0].textureCood = *insideTextures[0];
@@ -335,16 +336,15 @@ struct Triangle {
 				//triangle becomes a quad
 
 				//Set Output
-				out1.color = in.color;
-				out2.color = in.color;
-				for (int i = 0; i < 3; i++)
+				for (int i = 0; i < 3; i++) {
+					out1.vertex[i].color = in.vertex[i].color;
 					out1.vertex[i].intensity = in.vertex[i].intensity;
-				for (int i = 0; i < 3; i++)
-					out1.normals[i] = in.normals[i]; 
-				for (int i = 0; i < 3; i++)
+					out1.vertex[i].normal = in.vertex[i].normal;
+				
+					out2.vertex[i].color = in.vertex[i].color;
 					out2.vertex[i].intensity = in.vertex[i].intensity;
-				for (int i = 0; i < 3; i++)
-					out2.normals[i] = in.normals[i];
+					out2.vertex[i].normal = in.vertex[i].normal;
+				}
 
 				//First triangle consists of 2 inside points and
 				//location where one side intersects the plane

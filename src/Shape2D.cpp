@@ -13,20 +13,20 @@ auto Shape2D::vectorify(float matrix[3][max_Vertex])
 {
 	tempVector.clear();
 	for (int k = 0; k < n; k++)
-		tempVector.push_back(Vect2<float>{matrix[0][k], matrix[1][k]});
+		tempVector.emplace_back(Vect2<float>{matrix[0][k], matrix[1][k]});
 	return tempVector;
 }
 Shape2D::Shape2D(float rad, float angle, int side, float offX = getMidX(), float offY = getMidY()) : radius(rad), n(side)
 {
 	angle *= pi / n;
 	for (int i = 0; i < n; i++)
-		vertSet.push_back({radius * cos(2 * pi * i / n + angle) + offX,
+		vertSet.emplace_back(Vect2<float>{ radius * cos(2 * pi * i / n + angle) + offX,
 						   radius * sin(2 * pi * i / n + angle) + offY});
 }
 Shape2D::Shape2D() : n(3), radius(25)
 {
 	for (int i = 0; i < n; i++)
-		vertSet.push_back({radius * cos(2 * pi * i / n + pi / n) + getMidX() / 4,
+		vertSet.emplace_back(Vect2<float>{radius * cos(2 * pi * i / n + pi / n) + getMidX() / 4,
 						   radius * sin(2 * pi * i / n + pi / n) + getMidY() / 4});
 }
 void Shape2D::DrawShape(Color color = 0)
