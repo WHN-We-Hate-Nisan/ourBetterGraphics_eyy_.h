@@ -27,24 +27,10 @@ struct Mesh {
 		while (!f.eof()) {
 			std::string line;
 			std::getline(f, line);
-
 			std::istringstream lineSS(line);
 			std::string lineType;
 			lineSS >> lineType;
-
-			/*std::strstream s;
-			s << line;*/
-
-			/*char dataType;
-			int junk;*/
-
-			/*if (line[0] == 'v') {
-				if (line[1] != 'n') {
-					Vec3 v;
-					s >> dataType >> v.x >> v.y >> v.z;
-					vertices.push_back(v);
-				}
-			}*/
+			
 			//Getting vertices and making a pool
 			if (lineType == "v")
 			{
@@ -112,7 +98,7 @@ struct Mesh {
 		for (int i = 0; i < verts.size() / 3; i++) {
 			Triangle tri;
 			for (int j = 0; j < 3; j++) {
-				tri.vertex[j] = verts[i * 3 + j].position;
+				tri.vertex[j].position = verts[i * 3 + j].position;
 				tri.texCood[j] = verts[i * 3 + j].texcoord;
 				tri.normals[j] = verts[i * 3 + j].normal;
 			}
@@ -158,7 +144,7 @@ struct Mat4x4 {
 		for (int i = 0; i < 3; i++)
 			result.intensities[i] = in.intensities[i];
 		for (int i = 0; i < 3; i++)
-			result.vertex[i] = this->MultiplyVector(in.vertex[i]);
+			result.vertex[i].position = this->MultiplyVector(in.vertex[i].position);
 		return result;
 	}
 	static Mat4x4 MakeIdentity() {
@@ -429,10 +415,10 @@ public:
 
 		//Loading obj
 		//mesh.LoadFromObjectFile("../Assets/Church.obj");
-		mesh.LoadFromObjectFile("../Assets/Cube2.obj");
+		//mesh.LoadFromObjectFile("../Assets/Cube2.obj");
 		//mesh.LoadFromObjectFile("../Assets/Teapot.obj");
 		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
-		//mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
+		mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
 		//mesh.LoadFromObjectFile("../Assets/Sample.obj");
 		
 		//For Release
@@ -541,7 +527,7 @@ public:
 
 			//Find Normal
 			Vec3 normal = triTransformed.normal();
-			Vec3 CameraRay = triTransformed.vertex[0] - camera;
+			Vec3 CameraRay = triTransformed.vertex[0].position - camera;
 
 			if (Vec3::dot(normal,CameraRay.normalize()) < 0.0f) {
 				if (index < 12) {
@@ -554,8 +540,8 @@ public:
 					//Illumination				
 
 					for (int k = 0; k < 3; k++) {
-						Vec3 L = (lightPosition - triTransformed.vertex[k]).normalize();
-						Vec3 V = (camera - triTransformed.vertex[k]).normalize();
+						Vec3 L = (lightPosition - triTransformed.vertex[k].position).normalize();
+						Vec3 V = (camera - triTransformed.vertex[k].position).normalize();
 						Vec3 N = triTransformed.normals[k];
 
 						triTransformed.intensities[k] = Ka * Ia + Kd * Il * Vec3::dot(N, L) + Ks * Il * pow(Vec3::dot(N, (L + V).normalize()), n);
@@ -587,8 +573,8 @@ public:
 
 					//Project Textures
 					for (int i = 0; i < 3; i++) {
-						triProjected.texCood[i] /= triProjected.vertex[i].w;
-						triProjected.texCood[i].w = 1.0f / triProjected.vertex[i].w;
+						triProjected.texCood[i] /= triProjected.vertex[i].position.w;
+						triProjected.texCood[i].w = 1.0f / triProjected.vertex[i].position.w;
 					}
 					//Normalise Projected matrix
 					triProjected.normalize();
@@ -606,14 +592,13 @@ public:
 
 		//Sort Triangles - Painter's Algorithm
 		std::sort(toRaster.triangles.begin(), toRaster.triangles.end(), [](Triangle& t1, Triangle& t2) {
-			float midZ1 = (t1.vertex[0].z + t1.vertex[1].z + t1.vertex[2].z) / 3.0f;
-			float midZ2 = (t2.vertex[0].z + t2.vertex[1].z + t2.vertex[2].z) / 3.0f;
+			float midZ1 = (t1.vertex[0].position.z + t1.vertex[1].position.z + t1.vertex[2].position.z) / 3.0f;
+			float midZ2 = (t2.vertex[0].position.z + t2.vertex[1].position.z + t2.vertex[2].position.z) / 3.0f;
 			return midZ1 > midZ2;
 		});
 
 		//Rasterize Triangle
 		for (auto& triToRasterize : toRaster.triangles) {
-
 			//Clip triangles against all four screen edges
 			Triangle clipped[2];
 			std::list<Triangle> triangleList;
@@ -648,8 +633,8 @@ public:
 			}
 			for (auto& tri : triangleList) {
 				for (int i = 0; i < 3; i++) {
-					tri.vertex[i].y = (float)globalBuffer.height - tri.vertex[i].y;
-					tri.vertex[i].x = (float)globalBuffer.width - tri.vertex[i].x;
+					tri.vertex[i].position.y = (float)globalBuffer.height - tri.vertex[i].position.y;
+					tri.vertex[i].position.x = (float)globalBuffer.width - tri.vertex[i].position.x;
 				}
 				//TextureTriangle(tri, texture);
 				if (colored) { 

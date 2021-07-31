@@ -192,54 +192,65 @@ struct Vect3 {
 };
 typedef Vect2<float> Vec2;
 typedef Vect3<float> Vec3;
+struct Vertex {
+	Vec3 position;
+	Vec2 textureCood;
+	Vec3 normal;
+	float intensity;
+	Color color;
+};
 struct Triangle {
-	Vec3 vertex[3];
 	Vec2 texCood[3];
 	Vec3 normals[3];
 	float intensities[3];
 	Color color;
+	Vertex vertex[3];
 
 	Triangle operator+(const Vec3& right) {
-		return { vertex[0] + right,	vertex[1] + right, vertex[2] + right };
+		Triangle tri(*this);
+		tri.vertex[0].position += right;
+		tri.vertex[1].position += right;
+		tri.vertex[2].position += right;
+		return tri;
 	}
 	Triangle& operator+=(const Vec3& right) {
-		vertex[0] += right;
-		vertex[1] += right;
-		vertex[2] += right;
+		this->vertex[0].position += right;
+		this->vertex[1].position += right;
+		this->vertex[2].position += right;
 		return *this;
 	}
 	Triangle operator*(const Vec3& right) {
-		return { 
-			vertex[0].multiplyEach(right),
-			vertex[1].multiplyEach(right),
-			vertex[2].multiplyEach(right)
-		};
+		Triangle tri(*this);
+		tri.vertex[0].position.multiplyEach(right);
+		tri.vertex[1].position.multiplyEach(right);
+		tri.vertex[2].position.multiplyEach(right);
+		return tri;
 	}
 	Triangle& operator*=(const Vec3& right) {
-		vertex[0].multiplyEach(right);
-		vertex[1].multiplyEach(right);
-		vertex[2].multiplyEach(right);
+		this->vertex[0].position.multiplyEach(right);
+		this->vertex[1].position.multiplyEach(right);
+		this->vertex[2].position.multiplyEach(right);
 		return *this;
 	}
 	Triangle operator/(const float& right) {
-		return {
-			vertex[0]/right,
-			vertex[1]/right,
-			vertex[2]/right
-		};
+		Triangle tri(*this);
+		tri.vertex[0].position /= right;
+		tri.vertex[1].position /= right;
+		tri.vertex[2].position /= right;
+		return tri;
 	}
 	Triangle& operator/=(const float& right) {
-		vertex[0] /= right;
-		vertex[1] /= right;
-		vertex[2] /= right;
+		this->vertex[0].position /= right;
+		this->vertex[1].position /= right;
+		this->vertex[2].position /= right;
 		return *this;
 	}
 	Vec3 normal() {
-		return ( (vertex[1] - vertex[0]) * (vertex[2] - vertex[0]) ).normalize();
+		return ( (vertex[1].position - vertex[0].position) * (vertex[2].position - vertex[0].position) ).normalize();
 	}
 	Triangle& normalize() {
 		for (int i = 0; i < 3; i++)
-			vertex[i] /= vertex[i].w;
+			vertex[i].position /= vertex[i].position.w;
 		return *this;
 	}
 	static int ClipAgainstPlane(Vec3 planeP, Vec3 planeN, Triangle& in, Triangle& out1, Triangle& out2) {
@@ -262,14 +273,14 @@ struct Triangle {
 		//Get signed distance of each point in triangle to plane
 		float dis[3];
 		for (int i = 0; i < 3; i++)
-			dis[i] = d(in.vertex[i]);
+			dis[i] = d(in.vertex[i].position);
 		for (int i = 0; i < 3; i++) {
 			if (dis[i] >= 0) {
-				insides[nInsidePointCount++] = &in.vertex[i];
+				insides[nInsidePointCount++] = &in.vertex[i].position;
 				insideTextures[nInsideTextureCount++] = &in.texCood[i];
 			}
 			else {
-				outsides[nOutsidePointCount++] = &in.vertex[i];
+				outsides[nOutsidePointCount++] = &in.vertex[i].position;
 				outsideTextures[nOutsideTextureCount++] = &in.texCood[i];
 			}
 		}
@@ -302,18 +313,18 @@ struct Triangle {
 				for (int i = 0; i < 3; i++)
 					out1.normals[i] = in.normals[i];
 				
-				out1.vertex[0] = *insides[0];
+				out1.vertex[0].position = *insides[0];
 				out1.texCood[0] = *insideTextures[0];
 
 				//Two new points, at the location where
 				//original sides of the triangle intersect the plane
 				float t;
-				out1.vertex[1] = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0], t);
+				out1.vertex[1].position = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0], t);
 				//out1.texCood[1]=Vec2::interpolate(t, *insideTextures[0], *outsideTextures[0]);
 				out1.texCood[1].u = interPolate(t, insideTextures[0]->u, outsideTextures[0]->u);
 				out1.texCood[1].v = interPolate(t, insideTextures[0]->v, outsideTextures[0]->v);
 
-				out1.vertex[2] = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[1], t);
+				out1.vertex[2].position = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[1], t);
 				out1.texCood[2].u = interPolate(t, insideTextures[0]->u, outsideTextures[1]->u);
 				out1.texCood[2].v = interPolate(t, insideTextures[0]->v, outsideTextures[1]->v);
 
@@ -339,26 +350,26 @@ struct Triangle {
 
 				//First triangle consists of 2 inside points and
 				//location where one side intersects the plane
-				out1.vertex[0] = *insides[0];
-				out1.vertex[1] = *insides[1];
+				out1.vertex[0].position = *insides[0];
+				out1.vertex[1].position = *insides[1];
 				out1.texCood[0] = *insideTextures[0];
 				out1.texCood[1] = *insideTextures[1];
 				
 				float t;
-				out1.vertex[2] = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0],t);
+				out1.vertex[2].position = Vec3::intersectPlane(planeP, planeN, *insides[0], *outsides[0],t);
 				out1.texCood[2].u = interPolate(t, insideTextures[0]->u, outsideTextures[0]->u);
 				out1.texCood[2].v = interPolate(t, insideTextures[0]->v, outsideTextures[0]->v);
 
 				//Second triangle consists of 1 inside point and
 				//location where other side intersects the plane
 				//and the newly created point;
-				out2.vertex[0] = *insides[1];
+				out2.vertex[0].position = *insides[1];
 				out2.texCood[0] = *insideTextures[1];
 
-				out2.vertex[1] = out1.vertex[2];
+				out2.vertex[1].position = out1.vertex[2].position;
 				out2.texCood[1] = out1.texCood[2];
 
-				out2.vertex[2] = Vec3::intersectPlane(planeP, planeN, *insides[1], *outsides[0],t);
+				out2.vertex[2].position = Vec3::intersectPlane(planeP, planeN, *insides[1], *outsides[0],t);
 				out2.texCood[2].u = interPolate(t, insideTextures[1]->u, outsideTextures[0]->u);
 				out2.texCood[2].v = interPolate(t, insideTextures[1]->v, outsideTextures[0]->v);
 

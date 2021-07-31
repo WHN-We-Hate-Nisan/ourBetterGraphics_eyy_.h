@@ -194,18 +194,6 @@ void DrawDDALine(Vec3 v1, Vec3 v2, Color color, Vec3 offset) {
 }
 
 void DrawBresLine(Vect2<int> v1, Vect2<int> v2, Color color) {
-	/*if (v1.x < 0 || v1.x >= globalBuffer.width || v1.y < 0 || v1.y >= globalBuffer.height) {
-		consoleLog("\nOut OF Bounds: \t");
-		consoleLog("x:"); consoleLogSpace(v1.x);
-		consoleLog("y:"); consoleLogSpace(v1.y);
-		return;
-	}
-	if (v2.x < 0 || v2.x >= globalBuffer.width || v2.y < 0 || v2.y >= globalBuffer.height) {
-		consoleLog("\nOut OF Bounds: \t");
-		consoleLog("x:"); consoleLogSpace(v2.x);
-		consoleLog("y:"); consoleLogSpace(v2.y);
-		return;
-	}*/
 	//Bresengham's Algorithm
 	int dx, dy, i, e;
 	int incx, incy, inc1, inc2;
@@ -269,22 +257,20 @@ void DrawBresLine(float x1, float y1, float x2, float y2, Color color) {
 }
 
 void DrawHorizLine(int x1, int x2, int y, Color color, Vec3 off) {
-	if (x2 < x1) { 
+	if (x2 < x1)
 		Swap(x1, x2); 
-	};
-	for (int i = x1; i <= x2; i++) {
+	for (int i = x1; i <= x2; i++)
 		DrawPixel(i + off.x, y + off.y, color);
-	}
 }
 void DrawHorizLineShaded(int x1, int x2, int y, Triangle tri, Vec3 off) {
 	if (x2 < x1)
 		Swap(x1, x2);	
 	for (int i = x1; i <= x2; i++) {
 		//Barycentric coordinates
-		float W1 = ( (tri.vertex[1].y - tri.vertex[2].y)*( i - tri.vertex[2].x ) + ( tri.vertex[2].x - tri.vertex[1].x) * (y - tri.vertex[2].y) ) / 
-			((tri.vertex[1].y - tri.vertex[2].y) * (tri.vertex[0].x - tri.vertex[2].x) + (tri.vertex[2].x - tri.vertex[1].x) * (tri.vertex[0].y - tri.vertex[2].y));
-		float W2 = ((tri.vertex[2].y - tri.vertex[0].y) * (i - tri.vertex[2].x) + (tri.vertex[0].x - tri.vertex[2].x) * (y - tri.vertex[2].y)) /
-			((tri.vertex[1].y - tri.vertex[2].y) * (tri.vertex[0].x - tri.vertex[2].x) + (tri.vertex[2].x - tri.vertex[1].x) * (tri.vertex[0].y - tri.vertex[2].y));
+		float W1 = ( (tri.vertex[1].position.y - tri.vertex[2].position.y)*( i - tri.vertex[2].position.x ) + ( tri.vertex[2].position.x - tri.vertex[1].position.x) * (y - tri.vertex[2].position.y) ) / 
+			((tri.vertex[1].position.y - tri.vertex[2].position.y) * (tri.vertex[0].position.x - tri.vertex[2].position.x) + (tri.vertex[2].position.x - tri.vertex[1].position.x) * (tri.vertex[0].position.y - tri.vertex[2].position.y));
+		float W2 = ((tri.vertex[2].position.y - tri.vertex[0].position.y) * (i - tri.vertex[2].position.x) + (tri.vertex[0].position.x - tri.vertex[2].position.x) * (y - tri.vertex[2].position.y)) /
+			((tri.vertex[1].position.y - tri.vertex[2].position.y) * (tri.vertex[0].position.x - tri.vertex[2].position.x) + (tri.vertex[2].position.x - tri.vertex[1].position.x) * (tri.vertex[0].position.y - tri.vertex[2].position.y));
 		float W3 = 1 - W1 - W2;
 		unsigned char col = (W1*tri.intensities[0]+ W2 * tri.intensities[1]+ W3 * tri.intensities[2]) / 12.5f * 0xff;
 		DrawPixel(i + off.x, y + off.y, Color(col, col, col, 0xff));
@@ -307,13 +293,13 @@ void DrawHorizTexture(float ax, float bx, float y, float& texU, float& texV, flo
 }
 
 void DrawTriangle(Triangle& t, Color color) {
-	DrawBresLine(t.vertex[0], t.vertex[1], color);
-	DrawBresLine(t.vertex[1], t.vertex[2], color);
-	DrawBresLine(t.vertex[2], t.vertex[0], color);
+	DrawBresLine(t.vertex[0].position, t.vertex[1].position, color);
+	DrawBresLine(t.vertex[1].position, t.vertex[2].position, color);
+	DrawBresLine(t.vertex[2].position, t.vertex[0].position, color);
 }
 void ColorTriangle(Triangle& tri, Color color, Vec3 off) {
 	float dx1, dx2, dx3;
-	Vec3 array[] = { tri.vertex[0], tri.vertex[1], tri.vertex[2] };
+	Vec3 array[] = { tri.vertex[0].position, tri.vertex[1].position, tri.vertex[2].position};
 	SortByY(array);
 	Vec3 A = array[0];
 	Vec3 B = array[1];
@@ -341,7 +327,7 @@ void ColorTriangle(Triangle& tri, Color color, Vec3 off) {
 }
 void ShadeTriangle(Triangle& tri, Vec3 off) {
 	float dx1, dx2, dx3;
-	Vec3 array[] = { tri.vertex[0], tri.vertex[1], tri.vertex[2] };
+	Vec3 array[] = { tri.vertex[0].position, tri.vertex[1].position, tri.vertex[2].position };
 	SortByY(array);
 	Vec3 A = array[0];
 	Vec3 B = array[1];
@@ -370,7 +356,7 @@ void ShadeTriangle(Triangle& tri, Vec3 off) {
 }
 void TextureTriangle(Triangle& tri, Texture* texture) {
 	//Sort  Vertices by y value
-	Vec3 array[] = { tri.vertex[0], tri.vertex[1], tri.vertex[2] };
+	Vec3 array[] = { tri.vertex[0].position, tri.vertex[1].position, tri.vertex[2].position };
 	Vec2 textureArray[] = { tri.texCood[0], tri.texCood[1], tri.texCood[2] };
 	SortByYTextures(array, textureArray);
 	Vec3 A = array[0];
