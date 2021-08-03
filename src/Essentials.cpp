@@ -33,6 +33,10 @@ unsigned int interPolate(const float& input1, const float& input2, const float& 
 	if (input1 == input2) return val1;
 	else return val1 + (position - input1) / (input2 - input1) * (val2 - val1);
 }
+unsigned char interPolate(const float& input1, const float& input2, const float& position, const unsigned char& val1, const unsigned char& val2) {
+	if (input1 == input2) return val1;
+	else return val1 + (position - input1) / (input2 - input1) * (val2 - val1);
+}
 float interPolate(const float& input1, const float& input2, const float& position, const float& val1, const float& val2) {
 	if (input1 == input2) return val1;
 	else return val1 + (position - input1) / (input2 - input1) * (val2 - val1);
@@ -343,7 +347,6 @@ void ShadeTriangle(Triangle& tri, Vec3 off) {
 	if (C.y - A.y > 0) dx2 = (C.x - A.x) / (C.y - A.y); else dx2 = 0;
 	if (C.y - B.y > 0) dx3 = (C.x - B.x) / (C.y - B.y); else dx3 = 0;
 
-
 	Source = End = A;
 	if (dx1 > dx2) {
 		for (; Source.y <= B.y; Source.y++, End.y++, Source.x += dx2, End.x += dx1)
@@ -644,10 +647,10 @@ Vect3<T> Vect3<T>::operator*(const Vect3<T>& right) {
 			 this->w };
 }
 
-template <typename T>
-Vect3<T> Vect3<T>::operator*(const T& right) {
-	return { this->x * right, this->y * right, this->z * right, this->w };
-}
+//template <typename T>
+//Vect3<T> Vect3<T>::operator*(const T& right){
+//return { this->x * right, this->y * right, this->z * right, this->w };
+//};
 
 template <typename T>
 Vect3<T>& Vect3<T>::operator*=(const T& right) {

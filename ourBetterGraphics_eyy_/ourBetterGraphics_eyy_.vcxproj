@@ -173,6 +173,9 @@
       </PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\src\GeneratedCube.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\src\Image.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Image.h</PrecompiledHeaderFile>
@@ -183,6 +186,9 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Essentials.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Essentials.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\src\MarchingCubes.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\Shape2D.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -206,7 +212,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\headers\Essentials.h" />
+    <ClInclude Include="..\headers\GeneratedCube.h" />
     <ClInclude Include="..\headers\Image.h" />
+    <ClInclude Include="..\headers\MarchingCubes.h" />
     <ClInclude Include="..\headers\ourBetterGraphics_eyy_.h" />
     <ClInclude Include="..\headers\Shape2D.h" />
     <ClInclude Include="..\headers\Cube3D.h" />

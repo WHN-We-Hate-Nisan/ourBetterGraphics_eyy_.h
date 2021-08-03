@@ -5,7 +5,9 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
-
+#include <glm/glm.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/gtc/type_ptr.hpp>
 //#include <strstream>
 //#include <string>
 #include <algorithm>
@@ -25,6 +27,7 @@ template<typename T>
 void Swap(T &xp, T &yp);
 float distance(const float& x1, const float& y1, const float& x2, const float& y2);
 unsigned int interPolate(const float& input1, const float& input2, const float& position, const unsigned int& val1, const unsigned int& val2);
+unsigned char interPolate(const float& input1, const float& input2, const float& position, const unsigned char& val1, const unsigned char& val2);
 float interPolate(const float& input1, const float& input2, const float& position, const float& val1, const float& val2);
 float interPolate(const float& fraction, const float& val1, const float& val2);
 float interPolate(const float& fraction, const float& val1, const float& input1, const float& input2);
@@ -78,7 +81,9 @@ struct Vect3 {
 		return *this;
 	}
 	Vect3 operator*(const Vect3& right);
-	Vect3 operator*(const T& right);
+	Vect3 operator*(const T& right) {
+		return { this->x * right, this->y * right, this->z * right, this->w };
+	}
 	Vect3& operator*=(const T& right);
 	Vect3 operator/(const T& right);
 	Vect3& operator/=(const T& right);
@@ -90,6 +95,12 @@ struct Vect3 {
 	Vect3& normalize();
 	static Vect3 normalize(Vect3 v);
 	static Vect3 intersectPlane(Vect3&, Vect3&, Vect3&, Vect3&, float&);
+	Vect3 multiply(T right) {
+		return { this->x * right, this->y * right, this->z * right, this->w };
+	}
+	Vect3 subtract(Vect3 right) {
+		return { this->x - right.x, this->y - right.y, this->z - right.z, this->w };
+	}
 };
 typedef Vect2<float> Vec2;
 typedef Vect3<float> Vec3;
@@ -100,6 +111,36 @@ struct Vertex {
 	float intensity;
 	Color color;
 };
+//struct MeshVertex
+//{
+//	Vec3 position;           // position of the vertex in 3-space
+//	Vec3 normal;        // vector normal to the surface passing through this vertex
+//	Color color;      // color of this vertex
+//
+//	MeshVertex() {}
+//	static void Interpolate(const MeshVertex& sv, const MeshVertex& ev, MeshVertex& out, float fraction)
+//	{
+//		int i;
+//		Color* color1, * color2, * color;
+//		color = (Color*)&out.color;
+//		color1 = (Color*)&sv.color;
+//		color2 = (Color*)&ev.color;
+//		for (i = 0; i < 3; i++)
+//			color[i] = color1[i] + (color2[i] - color1[i])*fraction*256;    //interpolate each component of the color seperately
+//
+//		//out.TexCoord.x = sv.TexCoord.x + s * (ev.TexCoord.x - sv.TexCoord.x);
+//		//out.TexCoord.y = sv.TexCoord.y + s * (ev.TexCoord.y - sv.TexCoord.y);    //interpolate the texture coordinates
+//
+//		out.normal = sv.normal + fraction * (ev.normal - sv.normal);    //interpolate the normal vector
+//		float Len = out.normal.length();
+//		if (Len == 0.0f)
+//			out.normal = sv.normal;                                    //renormalize the normal vector
+//		else out.normal /= Len;
+//
+//		out.position = sv.position + fraction * (ev.position - sv.position);    //interpolate the position
+//	}
+//};
+
 struct Triangle {
 	Vertex vertex[3];
 

@@ -1,4 +1,5 @@
 #pragma once
+#include "GeneratedCube.h"
 struct Mesh {
 	std::vector<Triangle> triangles;
 	typedef std::vector<Vec3> VertSet;
@@ -418,8 +419,14 @@ public:
 		//mesh.LoadFromObjectFile("../Assets/Cube2.obj");
 		//mesh.LoadFromObjectFile("../Assets/Teapot.obj");
 		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
-		mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
+		//mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
 		//mesh.LoadFromObjectFile("../Assets/Sample.obj");
+
+
+		//Marching Cubes
+		GeneratedCube marchingCube;
+		marchingCube.triangles;
+		mesh.triangles.insert(mesh.triangles.end(), marchingCube.triangles.begin(), marchingCube.triangles.end());
 
 		//For Release
 		//mesh.LoadFromObjectFile("Light.obj");
@@ -542,11 +549,11 @@ public:
 						triTransformed.vertex[k].intensity = 12.5f;
 				}
 				else {
-					for (int k = 0; k < 3; k++) {
+					/*for (int k = 0; k < 3; k++) {
 						triTransformed.vertex[k].color.r = (triTransformed.vertex[k].position.x + 80.f) * 0xff / 160.0f;
 						triTransformed.vertex[k].color.g = (triTransformed.vertex[k].position.y) * 0xff / 34.2f;
 						triTransformed.vertex[k].color.b = (triTransformed.vertex[k].position.z + 80.f) * 0xff / 160.0f;
-					}
+					}*/
 					for (int k = 0; k < 3; k++) {
 						Vec3 L = (lightPosition - triTransformed.vertex[k].position).normalize();
 						Vec3 V = (camera - triTransformed.vertex[k].position).normalize();
