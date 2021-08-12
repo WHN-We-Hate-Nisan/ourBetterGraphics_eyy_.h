@@ -23,7 +23,7 @@ float CrazyFunction(const Vec3& Pos)
 }
 float PlaneFunction(const Vec3& Pos)
 {
-    return -Pos.y + OkByeFunction(Pos); //+Kriti ko function
+    return -Pos.y + OkByeFunction(Pos)*1.619f; //+Kriti ko function
     //return -Pos.y + (Fourier(Pos.x, Pos.z) + Fourier(Pos.z, Pos.z)) / 2; //Fourier terrain
     //return -Pos.y + (expf(Pos.x*10) + expf(Pos.z*10)) / 2;//Ramilo Function
 }

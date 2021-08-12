@@ -365,7 +365,7 @@ class Shape3D {
 	Texture* texture;
 
 	//Vec3 camera{ 0.0f, 0.0f, 0.0f };
-	Vec3 camera{ 0.0f, 10.0f, 30.0f };
+	Vec3 camera{ 0.0f, 5.0f, 0.0f };
 
 	//Lighting Parameters
 	Vec3 lightDirection = { 1.0f, 1.0f, 1.0f };
@@ -424,7 +424,7 @@ public:
 
 
 		//Marching Cubes
-		GeneratedCube marchingCube;
+		GeneratedCube marchingCube(10.0f, 0.2f);
 		marchingCube.triangles;
 		mesh.triangles.insert(mesh.triangles.end(), marchingCube.triangles.begin(), marchingCube.triangles.end());
 

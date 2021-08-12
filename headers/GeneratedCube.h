@@ -108,8 +108,8 @@ public:
             _Indices[FaceIndex * 3 + 1] = CurFace.I[1];
             _Indices[FaceIndex * 3 + 2] = CurFace.I[2];
         }
-        ColorbyNormals(mesh);
-        //ColorbyInterPolation(meshVertices);
+        //ColorbyNormals(mesh);
+        ColorbyThresHold(mesh);
         //ConvertToVertices(mesh);
         FillTriangles(mesh);
     }
@@ -158,7 +158,7 @@ public:
             //float lower = 0.2f, threshold = 0.4f, upper = 0.7f;
             //remap each normal's (x, y, z) to (r, g, b)
             if (meshVertices[VertexIndex].position.y < threshold) 
-                meshVertices[VertexIndex].color = interPolateColors(lower, threshold, meshVertices[VertexIndex].position.y, ColorL1, ColorL2);
+                meshVertices[VertexIndex].color = interPolateColors(lower, threshold, meshVertices[VertexIndex].position.y, ColorL2, ColorL2);
             else 
                 meshVertices[VertexIndex].color = interPolateColors(threshold, upper, meshVertices[VertexIndex].position.y, ColorU1, ColorU2);
         }
@@ -209,6 +209,7 @@ public:
         Normal.y = (_Function({Pos.x, Pos.y + _Epsilon, Pos.z, 1.0f}) - value);
         Normal.z = (_Function({ Pos.x, Pos.y, Pos.z + _Epsilon, 1.0f }) - value);
         Normal.normalize();
+        Normal = {-Normal.x, -Normal.y, Normal.z, Normal.w};
     }
     void FillGrid(float* Grid, int z)
     {
