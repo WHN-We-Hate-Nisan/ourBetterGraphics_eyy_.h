@@ -1,4 +1,6 @@
 #pragma once
+#include"Essentials.h"
+#include"Triangle.h"
 
 class Cube3D {
 public:

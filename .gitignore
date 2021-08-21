@@ -281,3 +281,5 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+*.blend1
+*.blend

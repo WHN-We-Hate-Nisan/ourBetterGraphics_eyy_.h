@@ -1,4 +1,5 @@
 #pragma once
+#include"Essentials.h"
 
 class Shape2D {
 	typedef std::vector<Vect2<float>> VertSet;
