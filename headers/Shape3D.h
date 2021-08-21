@@ -2,7 +2,6 @@
 #include "Texture.h"
 #include "Mesh.h"
 #include "Mat4x4.h"
-#include "GeneratedCube.h"
 
 struct Controller {
 	bool up = 0, down = 0, left = 0, right = 0,
@@ -79,18 +78,9 @@ public:
 		//mesh.LoadFromObjectFile("../Assets/Cube2.obj");
 		//mesh.LoadFromObjectFile("../Assets/Teapot.obj");
 		//mesh.LoadFromObjectFile("../Assets/Axis.obj");
-		//mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
+		mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
 		//mesh.LoadFromObjectFile("../Assets/Sample.obj");
 
-		//Marching Cubes
-		GeneratedCube marchingCube(32.0f, 2.0f);
-		marchingCube.triangles;
-		mesh.triangles.insert(mesh.triangles.end(), marchingCube.triangles.begin(), marchingCube.triangles.end());
-		
-		GeneratedCube waterCube(32.0f, 2.0f, 2, 3);
-		marchingCube.triangles;
-		mesh.triangles.insert(mesh.triangles.end(), waterCube.triangles.begin(), waterCube.triangles.end());
-		
 		//For Release
 		//mesh.LoadFromObjectFile("Light.obj");
 		//mesh.LoadFromObjectFile("Object.obj");
