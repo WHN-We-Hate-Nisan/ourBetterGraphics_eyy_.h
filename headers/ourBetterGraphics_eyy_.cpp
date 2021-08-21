@@ -1,12 +1,11 @@
 #pragma once
-#include "Shape2D.h"
+#include"Essentials.h"
 #include "ourBetterGraphics_eyy_.h"
 
 void resetMatrix(void* mat, int bytesToZero)
 {
 	memset(mat, 0, bytesToZero);
 }
-
 void displaymatrix(float mat[][max_Vertex], int rows, int columns)
 {
 	consoleLog("Matrix Display\n");

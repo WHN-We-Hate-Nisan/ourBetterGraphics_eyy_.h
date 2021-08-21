@@ -1,4 +1,5 @@
 #pragma once
+#include "Essentials.h"
 #include "MarchingCubes.h"
 
 Vec3 VertexInterp(const Vec3& p1, const Vec3& p2, float valp1, float valp2);

@@ -1,5 +1,8 @@
 #pragma once
+#include "Texture.h"
+#include "Triangle.h"
 #include "GeneratedCube.h"
+
 struct Mesh {
 	std::vector<Triangle> triangles;
 	typedef std::vector<Vec3> VertSet;
@@ -365,17 +368,17 @@ class Shape3D {
 	Texture* texture;
 
 	//Vec3 camera{ 0.0f, 0.0f, 0.0f };
-	Vec3 camera{ 0.0f, 5.0f, 0.0f };
+	Vec3 camera{ 0.0f, 15.0f, -15.0f };
 
 	//Lighting Parameters
 	Vec3 lightDirection = { 1.0f, 1.0f, 1.0f };
 	//Vec3 lightPosition = { 5.0f, 5.0f,5.0f };
-	Vec3 lightPosition = { 5.0f, 20.0f, 40.0f };
+	Vec3 lightPosition = { 0.0f, 5.0f, 5.0f };
 	float Ka = 0.75f, Kd = 0.75f, Ks = 0.5f,
 		Ia = 5.0f, Il = 7.0f;
 	int n = 10;
 
-	float speed = 50.0f;
+	float speed = 10.0f;
 	Vec3 lookDir = { 0,0,1 };
 	float yaw = 0;
 
@@ -422,12 +425,15 @@ public:
 		//mesh.LoadFromObjectFile("../Assets/Mountain2.obj");
 		//mesh.LoadFromObjectFile("../Assets/Sample.obj");
 
-
 		//Marching Cubes
-		GeneratedCube marchingCube(10.0f, 0.2f);
+		GeneratedCube marchingCube(32.0f, 2.0f);
 		marchingCube.triangles;
 		mesh.triangles.insert(mesh.triangles.end(), marchingCube.triangles.begin(), marchingCube.triangles.end());
-
+		
+		GeneratedCube waterCube(32.0f, 2.0f, 2, 3);
+		marchingCube.triangles;
+		mesh.triangles.insert(mesh.triangles.end(), waterCube.triangles.begin(), waterCube.triangles.end());
+		
 		//For Release
 		//mesh.LoadFromObjectFile("Light.obj");
 		//mesh.LoadFromObjectFile("Object.obj");
@@ -544,7 +550,7 @@ public:
 			{
 				if (index < 12) {
 					for (int k = 0; k < 3; k++)
-						triTransformed.vertex[k].color = Color(0xffffffff);
+						triTransformed.vertex[k].color = Color(0xff,0xff,0,0xff);
 					for (int k = 0; k < 3; k++)
 						triTransformed.vertex[k].intensity = 12.5f;
 				}
@@ -581,7 +587,7 @@ public:
 				//Forms upto 2 additional triangles
 				int nClippedTriangles = 0;
 				Triangle clipped[2];
-				nClippedTriangles = Triangle::ClipAgainstPlane({ 0.0f,0.0f, 0.1f }, { 0.0f,0.0f, 0.1f }, triViewed, clipped[0], clipped[1]);
+				nClippedTriangles = ClipAgainstPlane({ 0.0f,0.0f, 0.1f }, { 0.0f,0.0f, 0.1f }, triViewed, clipped[0], clipped[1]);
 
 				for (int n = 0; n < nClippedTriangles; n++) {
 					//Projection
@@ -630,16 +636,16 @@ public:
 
 					switch (p) {
 						//bottom
-					case 0: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, test, clipped[0], clipped[1]);
+					case 0: nTrisToAdd = ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, test, clipped[0], clipped[1]);
 						break;
 						//top
-					case 1: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, (float)globalBuffer.height - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]);
+					case 1: nTrisToAdd = ClipAgainstPlane({ 0.0f, (float)globalBuffer.height - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, test, clipped[0], clipped[1]);
 						break;
 						//left
-					case 2: nTrisToAdd = Triangle::ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]);
+					case 2: nTrisToAdd = ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]);
 						break;
 						//right
-					case 3: nTrisToAdd = Triangle::ClipAgainstPlane({ (float)globalBuffer.width - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]);
+					case 3: nTrisToAdd = ClipAgainstPlane({ (float)globalBuffer.width - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, test, clipped[0], clipped[1]);
 						break;
 					}
 					for (int w = 0; w < nTrisToAdd; w++)

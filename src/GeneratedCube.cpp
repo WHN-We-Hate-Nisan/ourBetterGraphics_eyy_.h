@@ -1,5 +1,6 @@
+#pragma once
+#include "Essentials.h"
 #include "GeneratedCube.h"
-#include <glm/gtc/noise.hpp>
 
 Color interPolateColors(float input1, float input2, float position, Color Color1, Color Color2) {
     float r = interPolate(input1, input2, position, Color1.r, Color2.r);
@@ -16,14 +17,13 @@ float RandomFunction(const Vec3& Pos)
     Vec3 P = { Pos.x * 10.0f,Pos.y * 10.0f,Pos.z * 10.0f };
     return sinf(P.length()) * P.x + sinf(P.length()) * P.y;
 }
-float CrazyFunction(const Vec3& Pos)
+float WaterFunction(const Vec3& Pos)
 {
-    Vec3 P = { Pos.x * 3.0f,Pos.y * 3.0f,Pos.z * 3.0f };
-    return sinf(P.x * P.y + P.x * P.z + P.y * P.z) + sinf(P.x * P.y) + sinf(P.y * P.z) + sinf(P.x * P.z) - 1.0f;
+    return -Pos.y + 5.0f;
 }
 float PlaneFunction(const Vec3& Pos)
 {
-    return -Pos.y + OkByeFunction(Pos)*1.619f; //+Kriti ko function
+    return -Pos.y + NoiseFunction(Pos); //+Kriti ko function
     //return -Pos.y + (Fourier(Pos.x, Pos.z) + Fourier(Pos.z, Pos.z)) / 2; //Fourier terrain
     //return -Pos.y + (expf(Pos.x*10) + expf(Pos.z*10)) / 2;//Ramilo Function
 }
@@ -42,16 +42,16 @@ float Fourier(float f1, float f2) {
     }
     return sum;
 }
-double OkByeFunction(Vec3 Pos, int octaves, Vec3 offSet, int multiplier)
+double NoiseFunction(Vec3 Pos, int octaves, Vec3 offSet, int multiplier)
 {
     //OUTPUTS
     double maxValue = 0;
     double total = 0;
 
     //variables
-    double freq = 0.5f;
-    double amp = 2;
-    double persistence = 1;
+    double freq = 0.045f;
+    double amp = 10.f;
+    double persistence = 0.25f;
     
         for (unsigned i = 0; i < octaves; ++i)
         {
@@ -62,5 +62,5 @@ double OkByeFunction(Vec3 Pos, int octaves, Vec3 offSet, int multiplier)
             amp *= persistence;
             freq *= 2;
         }
-    return total / maxValue;
+        return total;// / maxValue;
 }

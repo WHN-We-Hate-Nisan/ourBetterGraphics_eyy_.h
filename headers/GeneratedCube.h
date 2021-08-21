@@ -1,11 +1,13 @@
 #pragma once
+#include"Essentials.h"
+#include "Triangle.h"
 #include "MarchingCubes.h"
 
 float SphereFunction(const Vec3&);
 float RandomFunction(const Vec3&);
-float CrazyFunction(const Vec3&);
+float WaterFunction(const Vec3&);
 float PlaneFunction(const Vec3&);
-double OkByeFunction(Vec3, int = 4, Vec3 = { 0,0,0 }, int = 1);
+double NoiseFunction(Vec3, int = 4, Vec3 = { 0,0,0 }, int = 1);
 Color interPolateColors(float input1, float input2, float position, Color Color1, Color Color2);
 float Fourier(float f1, float f2);
 
@@ -15,6 +17,7 @@ private:
     static const UINT FunctionCount = 4;
     float (*_functions[FunctionCount])(const Vec3& Pos);
     UINT _functionIndex;
+    UINT _colorFunctionIndex;
 
     UINT _XCount, _YCount, _ZCount;
     Vec3 _Start, _End, _Diff;
@@ -39,19 +42,20 @@ private:
 public:
     std::vector<Triangle> triangles;
 
-    GeneratedCube(float boxSize=10.0f, float cellSize=1.0f) {
+    GeneratedCube(float boxSize=10.0f, float cellSize=1.0f, UINT functionIndex=3, UINT colorFunctionIndex=1) {
         _Vertices = 0;
         _Indices = 0;
         _VertexCount = 0;
         _IndexCount = 0;
         _Epsilon = 0.0003f;
 
-        _functionIndex = 3;
+        _functionIndex = functionIndex;
         _functions[0] = SphereFunction;
         _functions[1] = RandomFunction;
-        _functions[2] = CrazyFunction;
+        _functions[2] = WaterFunction;
         _functions[3] = PlaneFunction;
-        triangles= std::vector<Triangle>();
+
+        _colorFunctionIndex = colorFunctionIndex;   
 
         IsoApproximate(boxSize, cellSize, _functions[_functionIndex]);
         //IsoApproximate(1.25f, 0.025f, _functions[_functionIndex]);
@@ -108,8 +112,27 @@ public:
             _Indices[FaceIndex * 3 + 1] = CurFace.I[1];
             _Indices[FaceIndex * 3 + 2] = CurFace.I[2];
         }
-        //ColorbyNormals(mesh);
-        ColorbyThresHold(mesh);
+        
+        switch (_colorFunctionIndex) {
+        case 0:
+            ColorbyNormals();
+            break;
+        case 1:
+            ColorbyInterPolation();
+            break;
+        case 2:
+            ColorbyThresHold();
+            break;
+        case 3:
+            ColorWater();
+            break;
+        default:
+            ColorbyThresHold();
+            break;
+        }
+        //ColorbyNormals();
+        ColorbyThresHold();
+                
         //ConvertToVertices(mesh);
         FillTriangles(mesh);
     }
@@ -128,39 +151,45 @@ public:
             _Vertices[9 * VertexIndex + 8] = meshVertices[VertexIndex].color.b;
         }
     }
-    void ColorbyNormals(Vertex* meshVertices,
-        float fr = 256.0f, float fg = 256.0f, float fb = 256.0f)
+    void ColorbyNormals()
 	{
+        float fr = 256.0f, fg = 256.0f, fb = 256.0f;
 		for (UINT VertexIndex = 0; VertexIndex < _AllVertices.size(); VertexIndex++) {
 
-			unsigned char r = (meshVertices[VertexIndex].normal.x / 2.0f + 0.5f) * fr;
-			unsigned char g = (meshVertices[VertexIndex].normal.y / 2.0f + 0.5f) * fg;
-			unsigned char b = (meshVertices[VertexIndex].normal.z / 2.0f + 0.5f) * fb;    //remap each normal's (x, y, z) to (r, g, b)
-			meshVertices[VertexIndex].color = Color(r, g, b, 0xff);
+			unsigned char r = (mesh[VertexIndex].normal.x / 2.0f + 0.5f) * fr;
+			unsigned char g = (mesh[VertexIndex].normal.y / 2.0f + 0.5f) * fg;
+			unsigned char b = (mesh[VertexIndex].normal.z / 2.0f + 0.5f) * fb;    //remap each normal's (x, y, z) to (r, g, b)
+			mesh[VertexIndex].color = Color(r, g, b, 0xff);
 		}
 	}
-    void ColorbyInterPolation(Vertex* meshVertices)
+    void ColorbyInterPolation()
     {
         for (UINT VertexIndex = 0; VertexIndex < _AllVertices.size(); VertexIndex++) {           
-            Color ColorA = Color(0.0f, 150.0f, 198.0f, 0xff); //from  0, 150, 199 //Lower Color
-            Color ColorB = Color(233.0f, 196.0f, 106.0f, 0xff); //to   233, 196, 106 //Upper Color
-            meshVertices[VertexIndex].color = interPolateColors(0.3f, 0.8f, meshVertices[VertexIndex].position.y, ColorA, ColorB);
+            Color ColorA = Color(108, 197, 81, 0xff); //from  0, 150, 199 //Lower Color
+            Color ColorB = Color(233, 196, 106, 0xff); //to   233, 196, 106 //Upper Color
+            mesh[VertexIndex].color = interPolateColors(-1.f, 1.f, mesh[VertexIndex].position.y, ColorA, ColorB);
         }
     }
-    void ColorbyThresHold(Vertex* meshVertices)
+    void ColorbyThresHold()
     {
         for (UINT VertexIndex = 0; VertexIndex < _AllVertices.size(); VertexIndex++) {
-            Color ColorL1 = Color(  3.0f,   4.0f,  94.0f, 0xff); //from   3,   4,  94 //Lower Color1
-            Color ColorL2 = Color(  0.0f, 150.0f, 198.0f, 0xff); //from   0, 150, 199 //Lower Color2
-            Color ColorU1 = Color(108.0f, 197.0f,  81.0f, 0xff); //to   108, 197, 81 //Upper Color1
-            Color ColorU2 = Color(233.0f, 196.0f, 106.0f, 0xff); //to   233, 196, 106 //Upper Color2
+            Color ColorL1 = Color(  3,   4,  94, 0xff); //from   3,   4,  94 //Lower Color1
+            Color ColorL2 = Color(  0, 150, 198, 0xff); //from   0, 150, 199 //Lower Color2
+            Color ColorU1 = Color(108, 197,  81, 0xff); //to   108, 197, 81 //Upper Color1
+            Color ColorU2 = Color(233, 196, 106, 0xff); //to   233, 196, 106 //Upper Color2
             float lower = -1.0f, threshold = 0.1f, upper = 1.0f;
             //float lower = 0.2f, threshold = 0.4f, upper = 0.7f;
             //remap each normal's (x, y, z) to (r, g, b)
-            if (meshVertices[VertexIndex].position.y < threshold) 
-                meshVertices[VertexIndex].color = interPolateColors(lower, threshold, meshVertices[VertexIndex].position.y, ColorL2, ColorL2);
+            if (mesh[VertexIndex].position.y < threshold) 
+                mesh[VertexIndex].color = interPolateColors(lower, threshold, mesh[VertexIndex].position.y, ColorL2, ColorL2);
             else 
-                meshVertices[VertexIndex].color = interPolateColors(threshold, upper, meshVertices[VertexIndex].position.y, ColorU1, ColorU2);
+                mesh[VertexIndex].color = interPolateColors(threshold, upper, mesh[VertexIndex].position.y, ColorU1, ColorU2);
+        }
+    }
+    void ColorWater()
+    {
+        for (UINT VertexIndex = 0; VertexIndex < _AllVertices.size(); VertexIndex++) {
+            mesh[VertexIndex].color = Color(3, 4, 94, 0xff); //Water    
         }
     }
     template <class type> __forceinline void Swap(type& t1, type& t2)
